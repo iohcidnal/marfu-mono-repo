@@ -1,0 +1,8 @@
+.DS_Store
+.vscode
+api
+build
+coverage
+node_modules
+yarn-debug.log*
+yarn-error.log*
