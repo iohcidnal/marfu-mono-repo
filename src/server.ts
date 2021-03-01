@@ -1,10 +1,11 @@
-import http from 'http';
 import app from './app';
 
-const port: Number = parseInt(process.env.PORT || '3000', 10);
-app.set('port', port);
+const port: String = process.env.PORT || '3030';
 
-// Create http server
-const server = http.createServer(app);
-
-server.listen(port, () => console.log('Listening on port ' + port));
+app.listen(port, () => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`Dev server listening on http://localhost:${port}/api`);
+  } else {
+    console.log(`Listening on ${port}`);
+  }
+});

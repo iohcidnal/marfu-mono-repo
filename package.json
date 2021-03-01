@@ -2,19 +2,20 @@
   "name": "marfu-api",
   "version": "1.0.0",
   "description": "Medication Admin Record for Family Use API",
-  "main": "api/server.js",
+  "main": "build/server.js",
   "engines": {
     "node": "15.9.0"
   },
   "scripts": {
+    "dev": "NODE_ENV=development concurrently \"yarn compile:watch\" \"yarn dev:server\"",
     "compile:watch": "tsc --watch",
-    "dev:start": "nodemon api/app.js",
-    "dev": "NODE_ENV=development concurrently \"yarn compile:watch\" \"yarn dev:start\"",
-    "compile": "tsc",
+    "dev:server": "nodemon build/server.js",
     "postinstall": "yarn compile",
-    "start": "node api/server.js",
+    "compile": "tsc",
+    "start": "node build/server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint './src/*.{js,ts}' --quiet --fix"
+    "lint": "eslint './src/*.{js,ts}' --quiet --fix",
+    "deploy": "git push heroku master"
   },
   "keywords": [
     "nodejs",
