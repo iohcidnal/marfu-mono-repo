@@ -2,13 +2,17 @@
   "name": "marfu-api",
   "version": "1.0.0",
   "description": "Medication Admin Record for Family Use API",
-  "main": "src/app.ts",
+  "main": "api/server.js",
+  "engines": {
+    "node": "15.9.0"
+  },
   "scripts": {
     "compile:watch": "tsc --watch",
     "dev:start": "nodemon api/app.js",
     "dev": "NODE_ENV=development concurrently \"yarn compile:watch\" \"yarn dev:start\"",
     "compile": "tsc",
-    "start": "ts-node src/server.ts",
+    "postinstall": "yarn compile",
+    "start": "node api/server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint './src/*.{js,ts}' --quiet --fix"
   },
