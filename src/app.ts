@@ -1,12 +1,12 @@
 import express from 'express';
-import { Request, Response } from 'express';
+import routes from './routes';
 
 const app = express();
 
-app.get('/api', (req: Request, res: Response) => {
-  res.send({
-    message: 'hello from the other side...'
-  });
+app.get('/', (req: express.Request, res: express.Response) => {
+  res.status(200).send('marfu API');
 });
+
+app.use('/api', routes);
 
 export default app;
