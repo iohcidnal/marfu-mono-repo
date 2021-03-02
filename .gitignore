@@ -1,6 +1,5 @@
 .DS_Store
 .vscode
-api
 build
 coverage
 node_modules

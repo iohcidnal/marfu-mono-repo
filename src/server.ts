@@ -1,6 +1,6 @@
 import app from './app';
 
-const port: String = process.env.PORT || '3030';
+const port: string = process.env.PORT || '3030';
 
 app.listen(port, () => {
   if (process.env.NODE_ENV === 'development') {
