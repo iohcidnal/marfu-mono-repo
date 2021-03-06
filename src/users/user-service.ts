@@ -1,5 +1,5 @@
 import { v4 as createUuid } from 'uuid';
-import { userModel } from '../models';
+import userModel from './user-model';
 
 function userService() {
   async function create(payload: IUser): Promise<IUser> {
