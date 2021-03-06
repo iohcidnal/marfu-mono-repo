@@ -25,6 +25,11 @@ beforeAll(async () => {
   });
 });
 
+afterAll(() => {
+  // Close mongoose connection for Jest to exit properly
+  mongoose.connection.close();
+});
+
 describe('userConroller', () => {
   it('should create the correct user', async () => {
     req.body = {

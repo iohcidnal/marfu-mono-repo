@@ -13,7 +13,8 @@
     "postinstall": "yarn compile",
     "compile": "tsc",
     "start": "node build/server.js",
-    "test": "jest --watch",
+    "test:watch": "jest --watch",
+    "test": "jest",
     "lint": "eslint './src/*.{js,ts}' --quiet --fix",
     "deploy": "git push heroku master"
   },
