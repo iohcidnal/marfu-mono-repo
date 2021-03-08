@@ -15,7 +15,7 @@ function userController() {
 
   async function get(req: express.Request, res: express.Response, next: express.NextFunction) {
     try {
-      const result = await userService.get(req.params.userId);
+      const result = await userService.getByUserId(req.params.userId);
       return res.status(200).json(result);
     } catch (error) {
       next(error);
