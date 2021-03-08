@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 
 import UserModel from './user-model';
 import controller from './user-controller';
+import { validateNewUser } from './user-middlewares';
 
 const req = {} as Request;
 const res = {} as Response;
@@ -31,6 +32,8 @@ afterAll(() => {
   mongoose.connection.close();
 });
 
+afterEach(jest.clearAllMocks);
+
 describe('userConroller', () => {
   it('should create the correct user', async () => {
     req.body = {
@@ -45,8 +48,8 @@ describe('userConroller', () => {
     expect(result).toEqual({ userId: 'fake-user-id', firstName: 'Chandler', lastName: 'Bing' });
   });
 
-  it('should fail when user is not valid', async () => {
-    req.body = {};
+  it('should fail validation', async () => {
+    req.body = { userName: 'chanbing', password: 'fakepassword' };
     const result = await controller.post(req, res, next);
 
     expect(next).toHaveBeenCalledWith(
@@ -90,6 +93,37 @@ describe('userConroller', () => {
 
       expect(next).toHaveBeenCalledWith(new Error('User not found.'));
       expect(result).toBeUndefined();
+    });
+  });
+});
+
+describe('user middlewares', () => {
+  describe('validateNewUser', () => {
+    it('should fail when username is missing', () => {
+      req.body = { firstName: 'Joey', lastName: 'Tribiani', password: 'password!' };
+      validateNewUser(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it('should fail when password is missing', () => {
+      req.body = { firstName: 'Joey', lastName: 'Tribiani', userName: 'joeytrib' };
+      validateNewUser(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it('should call next', () => {
+      req.body = {
+        firstName: 'Chandler',
+        lastName: 'Bing',
+        userName: 'chanbing',
+        password: 'fakepassword'
+      };
+      validateNewUser(req, res, next);
+      expect(next).toHaveBeenCalled();
     });
   });
 });

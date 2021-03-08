@@ -3,7 +3,7 @@ import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 
 import connectDb from './database';
-import userRoutes from './users/user-route';
+import userRoutes from './users/user-routes';
 
 dotenv.config();
 
