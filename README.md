@@ -7,6 +7,6 @@
 - MongoDB
 - Jest
 
-## Architecture
+## Onion Architecture
 
-`routes` -> `controllers` -> `services` -> `repository/models` -> `database`
+`routes` -> `controllers`/`middlewares` -> `services` -> `models` -> `database`
