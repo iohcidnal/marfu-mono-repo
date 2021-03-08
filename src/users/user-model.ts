@@ -29,6 +29,7 @@ const UserSchema = new mongoose.Schema(
 );
 
 UserSchema.statics.toDto = function (doc: IUserDocument) {
+  if (!doc) throw new Error('User not found.');
   const dto: IUser = {
     userId: doc.userId,
     firstName: doc.firstName,
