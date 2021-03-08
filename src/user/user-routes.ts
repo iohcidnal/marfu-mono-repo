@@ -4,7 +4,7 @@ import { validateNewUser } from './user-middlewares';
 
 const router = express.Router();
 
-router.get('/users/:userId', userController.get);
 router.post('/users/', validateNewUser, userController.post);
+router.post('/users/authenticate', userController.authenticate);
 
 export default router;

@@ -1,7 +1,14 @@
-interface IUser {
+interface IUserBase {
   userId: string;
   firstName: string;
   lastName: string;
-  userName?: string;
-  password?: string;
+}
+
+interface IUser extends IUserBase {
+  userName: string;
+  password: string;
+}
+
+interface IUserAuth extends IUserBase {
+  authToken: string;
 }

@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 import UserModel from './user-model';
 import controller from './user-controller';
@@ -58,7 +60,7 @@ describe('userConroller', () => {
     expect(result).toBeUndefined();
   });
 
-  describe('get', () => {
+  describe('authenticate', () => {
     beforeAll(async () => {
       let model = new UserModel({
         userId: '123',
@@ -80,20 +82,21 @@ describe('userConroller', () => {
     });
 
     it('should get the correct user', async () => {
-      req.params = { userId: '123' };
-      const result = await controller.get(req, res, next);
+      jest.spyOn(bcrypt, 'compareSync').mockImplementation(() => true);
+      jest.spyOn(jwt, 'sign').mockImplementation(() => 'fake-jwt');
 
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(result).toEqual({ userId: '123', firstName: 'Joey', lastName: 'Tribiani' });
+      req.body = { userName: 'rossgellar', password: 'fakepassword2' };
+      const result = await controller.authenticate(req, res, next);
+
+      expect(result).toEqual({
+        userId: '456',
+        firstName: 'Ross',
+        lastName: 'Gellar',
+        authToken: 'fake-jwt'
+      });
     });
 
-    it('should fail when user is not found', async () => {
-      req.params = { userId: 'user-not-found' };
-      const result = await controller.get(req, res, next);
-
-      expect(next).toHaveBeenCalledWith(new Error('User not found.'));
-      expect(result).toBeUndefined();
-    });
+    // TODO: Cover other lines
   });
 });
 

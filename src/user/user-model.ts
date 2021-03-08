@@ -28,19 +28,17 @@ const UserSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-UserSchema.statics.toDto = function (doc: IUserDocument) {
-  if (!doc) throw new Error('User not found.');
-  const dto: IUser = {
+UserSchema.statics.toDto = function (doc: IUserDocument): IUserBase {
+  return {
     userId: doc.userId,
     firstName: doc.firstName,
     lastName: doc.lastName
   };
-  return dto;
 };
 
 interface IUserDocument extends IUser, mongoose.Document {}
 interface IUserModel extends mongoose.Model<IUserDocument> {
-  toDto: (doc: IUserDocument | null) => IUser;
+  toDto: (doc: IUserDocument | null) => IUserBase;
 }
 
 export default mongoose.model<IUserDocument, IUserModel>('user', UserSchema);

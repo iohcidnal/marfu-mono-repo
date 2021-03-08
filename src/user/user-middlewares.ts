@@ -7,10 +7,10 @@ export function validateNewUser(
 ) {
   const user: IUser = req.body;
   if (!user.userName) {
-    return res.status(400).json({ message: 'User name is missing' });
+    return res.status(400).json({ message: 'User name is missing.' });
   }
   if (!user.password) {
-    return res.status(400).json({ message: 'Password is missing' });
+    return res.status(400).json({ message: 'Password is missing.' });
   }
 
   next();
