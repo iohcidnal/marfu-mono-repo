@@ -16,8 +16,6 @@ function userService() {
       expiresIn: 86400 // 24 hours
     });
 
-    console.log('authToken :>> ', authToken);
-
     return {
       userId: user.userId,
       firstName: user.firstName,
