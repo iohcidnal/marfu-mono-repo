@@ -12,3 +12,9 @@ interface IUser extends IUserBase {
 interface IUserAuth extends IUserBase {
   authToken: string;
 }
+
+interface IMember {
+  _id: string;
+  firstName: string;
+  lastName: string;
+}
