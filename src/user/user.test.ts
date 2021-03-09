@@ -15,10 +15,6 @@ res.status = jest.fn().mockImplementation(() => ({
   json: jest.fn(result => result)
 }));
 
-jest.mock('uuid', () => ({
-  v4: () => 'fake-user-id'
-}));
-
 beforeAll(async () => {
   const mongoUrl = process.env.MONGO_URL as string;
   await mongoose.connect(mongoUrl, { useNewUrlParser: true, useCreateIndex: true }, err => {
@@ -47,7 +43,7 @@ describe('userConroller', () => {
     const result = await controller.post(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(201);
-    expect(result).toEqual({ userId: 'fake-user-id', firstName: 'Chandler', lastName: 'Bing' });
+    expect(result).toEqual(expect.objectContaining({ firstName: 'Chandler', lastName: 'Bing' }));
   });
 
   it('should fail validation', async () => {
@@ -63,7 +59,6 @@ describe('userConroller', () => {
   describe('authenticate', () => {
     beforeAll(async () => {
       let model = new UserModel({
-        userId: '123',
         firstName: 'Joey',
         lastName: 'Tribiani',
         userName: 'joeytrib',
@@ -72,7 +67,6 @@ describe('userConroller', () => {
       await model.save();
 
       model = new UserModel({
-        userId: '456',
         firstName: 'Ross',
         lastName: 'Gellar',
         userName: 'rossgellar',
@@ -88,12 +82,13 @@ describe('userConroller', () => {
       req.body = { userName: 'rossgellar', password: 'fakepassword2' };
       const result = await controller.authenticate(req, res, next);
 
-      expect(result).toEqual({
-        userId: '456',
-        firstName: 'Ross',
-        lastName: 'Gellar',
-        authToken: 'fake-jwt'
-      });
+      expect(result).toEqual(
+        expect.objectContaining({
+          firstName: 'Ross',
+          lastName: 'Gellar',
+          authToken: 'fake-jwt'
+        })
+      );
     });
 
     it("should return 404 when password doesn't match", async () => {

@@ -1,5 +1,5 @@
 interface IUserBase {
-  userId: string;
+  _id: string;
   firstName: string;
   lastName: string;
 }

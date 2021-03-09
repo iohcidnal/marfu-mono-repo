@@ -12,12 +12,12 @@ function userService() {
     const isPasswordValid = bcrypt.compareSync(payload.password, user.password);
     if (!isPasswordValid) return null;
 
-    const authToken = jwt.sign({ id: user.userId }, process.env.SECRET as string, {
+    const authToken = jwt.sign({ id: user._id }, process.env.SECRET as string, {
       expiresIn: 86400 // 24 hours
     });
 
     return {
-      userId: user.userId,
+      _id: user._id,
       firstName: user.firstName,
       lastName: user.lastName,
       authToken
@@ -27,7 +27,6 @@ function userService() {
   async function create(payload: IUser): Promise<IUserBase> {
     const user: IUser = {
       ...payload,
-      userId: createUuid(),
       password: bcrypt.hashSync(payload.password, 8)
     };
     const doc = await userModel.create(user);

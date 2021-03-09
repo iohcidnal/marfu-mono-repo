@@ -2,11 +2,6 @@ import mongoose from 'mongoose';
 
 const UserSchema = new mongoose.Schema(
   {
-    userId: {
-      type: String,
-      unique: true,
-      required: true
-    },
     firstName: {
       type: String,
       required: true
@@ -30,13 +25,15 @@ const UserSchema = new mongoose.Schema(
 
 UserSchema.statics.toDto = function (doc: IUserDocument): IUserBase {
   return {
-    userId: doc.userId,
+    _id: doc._id,
     firstName: doc.firstName,
     lastName: doc.lastName
   };
 };
 
-interface IUserDocument extends IUser, mongoose.Document {}
+interface IUserDocument extends IUser, mongoose.Document {
+  _id: string;
+}
 interface IUserModel extends mongoose.Model<IUserDocument> {
   toDto: (doc: IUserDocument | null) => IUserBase;
 }
