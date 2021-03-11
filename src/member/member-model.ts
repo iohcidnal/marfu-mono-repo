@@ -9,7 +9,7 @@ const MemberSchema = new mongoose.Schema(
     lastName: {
       type: String
     },
-    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'user' }
+    createdBy: { required: true, type: mongoose.Schema.Types.ObjectId, ref: 'user' }
   },
   { timestamps: true }
 );

@@ -1,4 +1,3 @@
-import { v4 as createUuid } from 'uuid';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
