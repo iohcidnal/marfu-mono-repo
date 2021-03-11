@@ -1,5 +1,8 @@
-interface IUserBase {
+interface IModelBase {
   _id: string;
+}
+
+interface IUserBase extends IModelBase {
   firstName: string;
   lastName: string;
 }
@@ -13,8 +16,7 @@ interface IUserAuth extends IUserBase {
   authToken: string;
 }
 
-interface IMember {
-  _id: string;
+interface IMember extends IModelBase {
   firstName: string;
   lastName: string;
 }
