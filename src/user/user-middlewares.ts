@@ -1,13 +1,9 @@
-import express from 'express';
+import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
 import userModel from './user-model';
 
-export function validateNewUser(
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction
-) {
+export function validateNewUser(req: Request, res: Response, next: NextFunction) {
   const user: IUser = req.body;
   if (!user.userName) {
     return res.status(400).json({ message: 'User name is missing.' });
@@ -19,11 +15,7 @@ export function validateNewUser(
   next();
 }
 
-export async function authenticateUser(
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction
-) {
+export async function authenticateUser(req: Request, res: Response, next: NextFunction) {
   try {
     const authorization = req.get('Authorization');
     if (!authorization) {

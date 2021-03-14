@@ -1,11 +1,7 @@
-import express from 'express';
+import { Request, Response, NextFunction } from 'express';
 import * as userService from './user-service';
 
-export async function authenticate(
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction
-) {
+export async function authenticate(req: Request, res: Response, next: NextFunction) {
   try {
     const payload = req.body;
     const result = await userService.authenticate(payload);
@@ -17,11 +13,7 @@ export async function authenticate(
   }
 }
 
-export async function post(
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction
-) {
+export async function post(req: Request, res: Response, next: NextFunction) {
   try {
     const payload = req.body;
     const result = await userService.create(payload);
