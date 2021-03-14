@@ -35,7 +35,7 @@ export async function authenticateUser(
       return res.status(401).json({ message: 'Invalid bearer token.' });
     }
 
-    const decoded: IModelBase = jwt.verify(token, process.env.SECRET as string) as IModelBase;
+    const decoded = jwt.verify(token, process.env.SECRET as string) as IModelBase;
     const user = await userModel.findById(decoded._id).exec();
     if (!user) {
       return res.status(401).json({ message: 'User not found.' });

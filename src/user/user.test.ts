@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 
 import UserModel from './user-model';
 import controller from './user-controller';
-import { validateNewUser } from './user-middlewares';
+import { validateNewUser, authenticateUser } from './user-middlewares';
 
 const req = {} as Request;
 const res = {} as Response;
@@ -17,12 +17,16 @@ res.status = jest.fn().mockImplementation(() => ({
 
 beforeAll(async () => {
   const mongoUrl = process.env.MONGO_URL as string;
-  await mongoose.connect(mongoUrl, { useNewUrlParser: true, useCreateIndex: true }, err => {
-    if (err) {
-      console.error(err);
-      process.exit(1);
+  await mongoose.connect(
+    mongoUrl,
+    { useUnifiedTopology: true, useNewUrlParser: true, useCreateIndex: true },
+    err => {
+      if (err) {
+        console.error(err);
+        process.exit(1);
+      }
     }
-  });
+  );
 });
 
 afterAll(() => {
@@ -76,8 +80,8 @@ describe('userConroller', () => {
     });
 
     it('should get the correct user', async () => {
-      jest.spyOn(bcrypt, 'compareSync').mockImplementation(() => true);
-      jest.spyOn(jwt, 'sign').mockImplementation(() => 'fake-jwt');
+      bcrypt.compareSync = jest.fn(() => true);
+      jwt.sign = jest.fn(() => 'fake-jwt');
 
       req.body = { userName: 'rossgellar', password: 'fakepassword2' };
       const result = await controller.authenticate(req, res, next);
@@ -91,20 +95,17 @@ describe('userConroller', () => {
       );
     });
 
-    it("should return 404 when password doesn't match", async () => {
-      jest.spyOn(bcrypt, 'compareSync').mockImplementation(() => false);
-
-      req.body = { userName: 'rossgellar', password: 'fakepassword123' };
+    it("should return 404 when userName doesn't match", async () => {
+      req.body = { userName: 'rossgellar123', password: 'fakepassword' };
       const result = await controller.authenticate(req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(404);
       expect(result).toEqual({ message: 'User name or password do not match.' });
     });
 
-    it("should return 404 when userName doesn't match", async () => {
-      jest.spyOn(bcrypt, 'compareSync').mockImplementation(() => false);
-
-      req.body = { userName: 'rossgellar123', password: 'fakepassword' };
+    it("should return 404 when password doesn't match", async () => {
+      bcrypt.compareSync = jest.fn().mockReturnValue(false);
+      req.body = { userName: 'rossgellar', password: 'fakepassword123' };
       const result = await controller.authenticate(req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(404);
@@ -148,6 +149,81 @@ describe('user middlewares', () => {
       };
       validateNewUser(req, res, next);
       expect(next).toHaveBeenCalled();
+    });
+  });
+
+  describe('authenticateUser', () => {
+    afterEach(async () => {
+      await mongoose.connection.db.dropDatabase();
+    });
+
+    it('should be unauthorized when auth header is missing', async () => {
+      req.get = jest.fn().mockReturnValue(null);
+      const result = await authenticateUser(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(401);
+      expect(result).toEqual({ message: 'Authorization missing.' });
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it('should be unauthorized when auth header is invalid', async () => {
+      req.get = jest.fn().mockReturnValue('fake-token');
+      const result = await authenticateUser(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(401);
+      expect(result).toEqual({ message: 'Invalid bearer token.' });
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it('should be unauthorized when user is not found', async () => {
+      const model = new UserModel({
+        _id: '012345678901234567890124',
+        firstName: 'Chandler',
+        lastName: 'Bing',
+        userName: 'chandlerbing',
+        password: 'password123'
+      });
+      await model.save();
+      const token = '012345678901234567890123';
+      req.get = jest.fn().mockReturnValue('Bearer ' + token);
+      jwt.verify = jest.fn(token => ({ _id: token }));
+
+      const result = await authenticateUser(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(401);
+      expect(jwt.verify).toHaveBeenCalledWith(token, undefined);
+      expect(result).toEqual({ message: 'User not found.' });
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it('should call next when user is authenticated', async () => {
+      const token = '012345678901234567890123';
+      const model = new UserModel({
+        _id: token,
+        firstName: 'Chandler',
+        lastName: 'Bing',
+        userName: 'chandlerbing',
+        password: 'password123'
+      });
+      await model.save();
+      req.get = jest.fn().mockReturnValue('Bearer ' + token);
+      jwt.verify = jest.fn(token => ({ _id: token }));
+
+      const result = await authenticateUser(req, res, next);
+
+      expect(result).toBeUndefined();
+      expect(res.status).not.toHaveBeenCalled();
+      expect(next).toHaveBeenCalled();
+    });
+
+    it('should call next with error', async () => {
+      req.get = jest.fn(() => {
+        throw new Error('Fake error');
+      });
+      const result = await authenticateUser(req, res, next);
+
+      expect(result).toBeUndefined();
+      expect(next).toHaveBeenCalledWith(new Error('Fake error'));
     });
   });
 });
