@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
 import UserModel from './user-model';
-import controller from './user-controller';
+import * as controller from './user-controller';
 import { validateNewUser, authenticateUser } from './user-middlewares';
 
 const req = {} as Request;
