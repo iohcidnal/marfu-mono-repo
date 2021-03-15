@@ -1,4 +1,4 @@
-import memberModel from './member-model';
+import memberModel from './member.model';
 
 export async function create(payload: IMember): Promise<IMember> {
   return await memberModel.create(payload);

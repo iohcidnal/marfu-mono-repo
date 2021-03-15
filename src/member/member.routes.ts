@@ -1,7 +1,7 @@
 import express from 'express';
 
-import { authenticateUser } from '../user/user-middlewares';
-import * as memberController from './member-controller';
+import { authenticateUser } from '../user/user.middlewares';
+import * as memberController from './member.controller';
 
 const router = express.Router();
 

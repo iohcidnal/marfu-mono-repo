@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import * as memberService from './member-service';
+import * as memberService from './member.service';
 
 export async function post(req: Request, res: Response, next: NextFunction) {
   try {

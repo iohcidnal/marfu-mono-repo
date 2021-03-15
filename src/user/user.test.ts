@@ -3,9 +3,9 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
-import UserModel from './user-model';
-import * as controller from './user-controller';
-import { validateNewUser, authenticateUser } from './user-middlewares';
+import UserModel from './user.model';
+import * as controller from './user.controller';
+import { validateNewUser, authenticateUser } from './user.middlewares';
 
 const req = {} as Request;
 const res = {} as Response;

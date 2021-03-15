@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import * as userService from './user-service';
+import * as userService from './user.service';
 
 export async function authenticate(req: Request, res: Response, next: NextFunction) {
   try {

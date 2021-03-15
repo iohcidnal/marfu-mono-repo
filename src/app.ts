@@ -2,8 +2,8 @@ import express from 'express';
 import dotenv from 'dotenv';
 
 import connectDb from './database';
-import userRoutes from './user/user-routes';
-import memberRoutes from './member/member-routes';
+import userRoutes from './user/user.routes';
+import memberRoutes from './member/member.routes';
 
 dotenv.config();
 

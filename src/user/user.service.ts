@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
-import userModel from './user-model';
+import userModel from './user.model';
 
 export async function authenticate(payload: IUser): Promise<IUserAuth | null> {
   const user = await userModel.findOne({ userName: payload.userName }).exec();
