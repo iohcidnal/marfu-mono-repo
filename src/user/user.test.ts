@@ -68,8 +68,6 @@ describe('userConroller', () => {
         userName: 'joeytrib',
         password: 'fakepassword'
       });
-      await model.save();
-
       model = new UserModel({
         firstName: 'Ross',
         lastName: 'Gellar',

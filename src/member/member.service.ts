@@ -1,7 +1,8 @@
 import memberModel from './member.model';
 
 export async function create(payload: IMember): Promise<IMember> {
-  return await memberModel.create(payload);
+  const doc = await memberModel.create(payload);
+  return memberModel.toDto(doc);
 }
 
 export async function getAll(): Promise<IMember[]> {
