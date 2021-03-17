@@ -26,6 +26,11 @@ afterAll(() => {
   mongoose.connection.close();
 });
 
+afterEach(async () => {
+  jest.clearAllMocks();
+  await mongoose.connection.db.dropDatabase();
+});
+
 describe('member', () => {
   it('should POST', async () => {
     req.body = {
@@ -46,52 +51,50 @@ describe('member', () => {
 
     const result = await controller.post(req, res, next);
 
+    expect(res.status).not.toHaveBeenCalled();
     expect(result).toBeUndefined();
     expect(next).toHaveBeenCalledWith(expect.objectContaining(new Error()));
   });
 
-  describe('get', () => {
-    afterEach(async () => {
-      await mongoose.connection.db.dropDatabase();
+  it('should get all members', async () => {
+    const createdByModel = new userModel({
+      _id: new mongoose.Types.ObjectId('012345678901234567890123'),
+      firstName: 'Ross',
+      lastName: 'Gellar',
+      userName: 'rossgellar',
+      password: 'fakepassword2'
+    });
+    await createdByModel.save();
+
+    let model = new memberModel({
+      firstName: 'Joey',
+      lastName: 'Tribiani',
+      createdBy: new mongoose.Types.ObjectId('012345678901234567890123')
+    });
+    await model.save();
+
+    model = new memberModel({
+      firstName: 'Chandler',
+      lastName: 'Bing',
+      createdBy: new mongoose.Types.ObjectId('012345678901234567890123')
+    });
+    await model.save();
+
+    const result = await controller.get(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(result).toHaveLength(2);
+  });
+
+  it('should call next with error', async () => {
+    memberModel.find = jest.fn(() => {
+      throw new Error('Fake error');
     });
 
-    it('should get all members', async () => {
-      const createdByModel = new userModel({
-        _id: new mongoose.Types.ObjectId('012345678901234567890123'),
-        firstName: 'Ross',
-        lastName: 'Gellar',
-        userName: 'rossgellar',
-        password: 'fakepassword2'
-      });
-      await createdByModel.save();
+    const result = await controller.get(req, res, next);
 
-      let model = new memberModel({
-        firstName: 'Joey',
-        lastName: 'Tribiani',
-        createdBy: new mongoose.Types.ObjectId('012345678901234567890123')
-      });
-      model = new memberModel({
-        firstName: 'Chandler',
-        lastName: 'Bing',
-        createdBy: new mongoose.Types.ObjectId('012345678901234567890123')
-      });
-      await model.save();
-
-      const result = await controller.get(req, res, next);
-
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(result).toHaveLength(2);
-    });
-
-    it('should call next with error', async () => {
-      memberModel.find = jest.fn(() => {
-        throw new Error('Fake error');
-      });
-
-      const result = await controller.get(req, res, next);
-
-      expect(result).toBeUndefined();
-      expect(next).toHaveBeenCalledWith(expect.objectContaining(new Error()));
-    });
+    expect(res.status).not.toHaveBeenCalled();
+    expect(result).toBeUndefined();
+    expect(next).toHaveBeenCalledWith(expect.objectContaining(new Error()));
   });
 });

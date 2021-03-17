@@ -17,16 +17,11 @@ res.status = jest.fn().mockImplementation(() => ({
 
 beforeAll(async () => {
   const mongoUrl = process.env.MONGO_URL as string;
-  await mongoose.connect(
-    mongoUrl,
-    { useUnifiedTopology: true, useNewUrlParser: true, useCreateIndex: true },
-    err => {
-      if (err) {
-        console.error(err);
-        process.exit(1);
-      }
-    }
-  );
+  await mongoose.connect(mongoUrl, {
+    useUnifiedTopology: true,
+    useNewUrlParser: true,
+    useCreateIndex: true
+  });
 });
 
 afterAll(() => {
@@ -36,7 +31,7 @@ afterAll(() => {
 
 afterEach(jest.clearAllMocks);
 
-describe('userConroller', () => {
+describe('user', () => {
   it('should create the correct user', async () => {
     req.body = {
       firstName: 'Chandler',
@@ -68,6 +63,7 @@ describe('userConroller', () => {
         userName: 'joeytrib',
         password: 'fakepassword'
       });
+      await model.save();
       model = new UserModel({
         firstName: 'Ross',
         lastName: 'Gellar',
@@ -120,33 +116,31 @@ describe('userConroller', () => {
   });
 });
 
-describe('user middlewares', () => {
-  describe('validateNewUser', () => {
-    it('should fail when username is missing', () => {
-      req.body = { firstName: 'Joey', lastName: 'Tribiani', password: 'password!' };
-      validateNewUser(req, res, next);
+describe('validateNewUser', () => {
+  it('should fail when username is missing', () => {
+    req.body = { firstName: 'Joey', lastName: 'Tribiani', password: 'password!' };
+    validateNewUser(req, res, next);
 
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(next).not.toHaveBeenCalled();
-    });
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(next).not.toHaveBeenCalled();
+  });
 
-    it('should fail when password is missing', () => {
-      req.body = { firstName: 'Joey', lastName: 'Tribiani', userName: 'joeytrib' };
-      validateNewUser(req, res, next);
+  it('should fail when password is missing', () => {
+    req.body = { firstName: 'Joey', lastName: 'Tribiani', userName: 'joeytrib' };
+    validateNewUser(req, res, next);
 
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(next).not.toHaveBeenCalled();
-    });
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(next).not.toHaveBeenCalled();
+  });
 
-    it('should call next', () => {
-      req.body = {
-        firstName: 'Chandler',
-        lastName: 'Bing',
-        userName: 'chanbing',
-        password: 'fakepassword'
-      };
-      validateNewUser(req, res, next);
-      expect(next).toHaveBeenCalled();
-    });
+  it('should call next', () => {
+    req.body = {
+      firstName: 'Chandler',
+      lastName: 'Bing',
+      userName: 'chanbing',
+      password: 'fakepassword'
+    };
+    validateNewUser(req, res, next);
+    expect(next).toHaveBeenCalled();
   });
 });

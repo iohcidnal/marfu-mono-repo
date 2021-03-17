@@ -14,7 +14,7 @@
     "compile": "tsc",
     "start": "node build/server.js",
     "test:watch": "jest --watch",
-    "test": "jest",
+    "test": "jest --runInBand",
     "lint": "eslint './src/*.{js,ts}' --quiet --fix",
     "deploy": "git push heroku master"
   },
