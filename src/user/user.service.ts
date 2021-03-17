@@ -1,13 +1,13 @@
-import bcrypt from 'bcryptjs';
+import service from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
-import userModel from './user.model';
+import model from './user.model';
 
 export async function authenticate(payload: IUser): Promise<IUserAuth | null> {
-  const user = await userModel.findOne({ userName: payload.userName }).exec();
+  const user = await model.findOne({ userName: payload.userName }).exec();
   if (!user) return null;
 
-  const isPasswordValid = bcrypt.compareSync(payload.password, user.password);
+  const isPasswordValid = service.compareSync(payload.password, user.password);
   if (!isPasswordValid) return null;
 
   const authToken = jwt.sign({ _id: user._id }, process.env.SECRET as string);
@@ -23,9 +23,9 @@ export async function authenticate(payload: IUser): Promise<IUserAuth | null> {
 export async function create(payload: IUser): Promise<IUserBase> {
   const user: IUser = {
     ...payload,
-    password: bcrypt.hashSync(payload.password, 8)
+    password: service.hashSync(payload.password, 8)
   };
-  const doc = await userModel.create(user);
+  const doc = await model.create(user);
 
-  return userModel.toDto(doc);
+  return model.toDto(doc);
 }

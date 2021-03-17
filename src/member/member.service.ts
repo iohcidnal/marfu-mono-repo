@@ -1,11 +1,11 @@
-import memberModel from './member.model';
+import model from './member.model';
 
 export async function create(payload: IMember): Promise<IMember> {
-  const doc = await memberModel.create(payload);
-  return memberModel.toDto(doc);
+  const doc = await model.create(payload);
+  return model.toDto(doc);
 }
 
 export async function getAll(): Promise<IMember[]> {
-  const result = memberModel.find().populate('createdBy', '_id firstName lastName');
+  const result = model.find().populate('createdBy', '_id firstName lastName');
   return result;
 }

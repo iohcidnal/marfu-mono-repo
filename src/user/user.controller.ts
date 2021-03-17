@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
-import * as userService from './user.service';
+import * as service from './user.service';
 
 export async function authenticate(req: Request, res: Response, next: NextFunction) {
   try {
     const payload = req.body;
-    const result = await userService.authenticate(payload);
+    const result = await service.authenticate(payload);
     if (result) return res.status(200).json(result);
 
     return res.status(404).json({ message: 'User name or password do not match.' });
@@ -16,7 +16,7 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
 export async function post(req: Request, res: Response, next: NextFunction) {
   try {
     const payload = req.body;
-    const result = await userService.create(payload);
+    const result = await service.create(payload);
 
     return res.status(201).json(result);
   } catch (error) {

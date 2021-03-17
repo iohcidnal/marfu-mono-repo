@@ -1,10 +1,10 @@
 import express from 'express';
-import * as userController from './user.controller';
+import * as controller from './user.controller';
 import { validateNewUser } from './user.middlewares';
 
 const router = express.Router();
 
-router.post('/users/', validateNewUser, userController.post);
-router.post('/users/authenticate', userController.authenticate);
+router.post('/users/', validateNewUser, controller.post);
+router.post('/users/authenticate', controller.authenticate);
 
 export default router;
