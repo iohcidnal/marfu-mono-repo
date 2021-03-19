@@ -20,3 +20,20 @@ interface IMember extends IModelBase {
   firstName: string;
   lastName: string;
 }
+
+const enum medicationStatus {
+  NEW = 'NEW',
+  DONE = 'DONE',
+  COMING = 'COMING',
+  PAST_DUE = 'PAST_DUE'
+}
+
+interface IMedication extends IModelBase {
+  medicationName: string;
+  dosage: string;
+  route: string;
+  frequency: Date[];
+  startDate: Date;
+  endDate: Date;
+  status: medicationStatus;
+}
