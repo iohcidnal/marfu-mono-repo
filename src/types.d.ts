@@ -42,11 +42,9 @@ interface IMedication extends IModelBase {
   endDate: Date;
 }
 
-// interface IFrequencyStatus extends IModelBase {
-//   freqDateTime: Date;
-//   status: medicationStatus;
-// }
-
-// interface IMedicationWithFrequencyStatus extends IMedication {
-//   frequencyStatus: IFrequencyStatus[];
-// }
+interface IFrequencyLogDto extends IModelBase {
+  frequencyId: string;
+  administeredDateTime: Date;
+  note: string;
+  administeredBy: string;
+}
