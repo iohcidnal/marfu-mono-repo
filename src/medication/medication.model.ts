@@ -1,5 +1,10 @@
 import mongoose from 'mongoose';
 
+// Frequency schema's _id will be stored in the medication logs
+const FrequencySchema = new mongoose.Schema({
+  freqDateTime: { type: Date, required: true }
+});
+
 const MedicationSchema = new mongoose.Schema(
   {
     medicationName: {
@@ -14,7 +19,7 @@ const MedicationSchema = new mongoose.Schema(
       type: String,
       required: true
     },
-    frequency: [{ type: Date, required: true }],
+    frequency: [FrequencySchema],
     startDate: { type: Date, required: true },
     endDate: { type: Date },
     createdBy: { required: true, type: mongoose.Schema.Types.ObjectId, ref: 'user' }
@@ -38,8 +43,7 @@ MedicationSchema.statics.toDto = function (doc: IMedicationDocument): IMedicatio
     route: doc.route,
     frequency: doc.frequency,
     startDate: doc.startDate,
-    endDate: doc.endDate,
-    status: medicationStatus.NEW
+    endDate: doc.endDate
   };
 };
 
