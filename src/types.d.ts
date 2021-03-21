@@ -28,18 +28,19 @@ const enum medicationStatus {
   PAST_DUE = 'PAST_DUE'
 }
 
-interface IFrequency extends IModelBase {
-  freqDateTime: Date;
-  freqStatus?: medicationStatus;
+interface IFrequencyDto extends IModelBase {
+  medicationId: string;
+  dateTime: Date;
+  status?: medicationStatus;
 }
 
-interface IMedication extends IModelBase {
+interface IMedicationDto extends IModelBase {
   medicationName: string;
   dosage: string;
   route: string;
-  frequency: IFrequency[];
   startDate: Date;
   endDate: Date;
+  frequencies?: IFrequencyDto[];
 }
 
 interface IFrequencyLogDto extends IModelBase {

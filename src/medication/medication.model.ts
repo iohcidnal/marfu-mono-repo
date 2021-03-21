@@ -1,10 +1,5 @@
 import mongoose from 'mongoose';
 
-// Frequency schema's _id will be stored in the medication logs
-const FrequencySchema = new mongoose.Schema({
-  freqDateTime: { type: Date, required: true }
-});
-
 const MedicationSchema = new mongoose.Schema(
   {
     medicationName: {
@@ -19,29 +14,41 @@ const MedicationSchema = new mongoose.Schema(
       type: String,
       required: true
     },
-    frequency: [FrequencySchema],
-    startDate: { type: Date, required: true },
+    startDate: {
+      type: Date,
+      required: true
+    },
     endDate: { type: Date },
-    createdBy: { required: true, type: mongoose.Schema.Types.ObjectId, ref: 'user' }
+    frequencies: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: 'frequency'
+      }
+    ],
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: 'user'
+    }
   },
   { timestamps: true }
 );
 
-interface IMedicationDocument extends IMedication, mongoose.Document {
+interface IMedicationDocument extends IMedicationDto, mongoose.Document {
   _id: string;
 }
 
 interface IMedicationModel extends mongoose.Model<IMedicationDocument> {
-  toDto: (doc: IMedicationDocument) => IMedication;
+  toDto: (doc: IMedicationDocument) => IMedicationDto;
 }
 
-MedicationSchema.statics.toDto = function (doc: IMedicationDocument): IMedication {
+MedicationSchema.statics.toDto = function (doc: IMedicationDocument): IMedicationDto {
   return {
     _id: doc._id,
     medicationName: doc.medicationName,
     dosage: doc.dosage,
     route: doc.route,
-    frequency: doc.frequency,
     startDate: doc.startDate,
     endDate: doc.endDate
   };
