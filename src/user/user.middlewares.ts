@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 
 export function validateNewUser(req: Request, res: Response, next: NextFunction) {
-  const user: IUser = req.body;
+  const user: IUserDto = req.body;
   if (!user.userName) {
     return res.status(400).json({ message: 'User name is missing.' });
   }

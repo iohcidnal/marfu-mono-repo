@@ -31,7 +31,7 @@ UserSchema.statics.toDto = function (doc: IUserDocument): IUserBase {
   };
 };
 
-interface IUserDocument extends IUser, mongoose.Document {
+interface IUserDocument extends IUserDto, mongoose.Document {
   _id: string;
 }
 interface IUserModel extends mongoose.Model<IUserDocument> {

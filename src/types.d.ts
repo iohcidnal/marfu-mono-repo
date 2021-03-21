@@ -7,16 +7,16 @@ interface IUserBase extends IModelBase {
   lastName: string;
 }
 
-interface IUser extends IUserBase {
+interface IUserDto extends IUserBase {
   userName: string;
   password: string;
 }
 
-interface IUserAuth extends IUserBase {
+interface IUserAuthDto extends IUserBase {
   authToken: string;
 }
 
-interface IMember extends IModelBase {
+interface IMemberDto extends IModelBase {
   firstName: string;
   lastName: string;
 }

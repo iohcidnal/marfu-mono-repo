@@ -14,7 +14,7 @@ const MemberSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-MemberSchema.statics.toDto = function (doc: IMemberDocument): IMember {
+MemberSchema.statics.toDto = function (doc: IMemberDocument): IMemberDto {
   return {
     _id: doc._id,
     firstName: doc.firstName,
@@ -22,11 +22,11 @@ MemberSchema.statics.toDto = function (doc: IMemberDocument): IMember {
   };
 };
 
-interface IMemberDocument extends IMember, mongoose.Document {
+interface IMemberDocument extends IMemberDto, mongoose.Document {
   _id: string;
 }
 interface IMemberModel extends mongoose.Model<IMemberDocument> {
-  toDto: (doc: IMemberDocument | null) => IMember;
+  toDto: (doc: IMemberDocument | null) => IMemberDto;
 }
 
 export default mongoose.model<IMemberDocument, IMemberModel>('member', MemberSchema);

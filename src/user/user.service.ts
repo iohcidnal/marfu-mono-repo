@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 
 import model from './user.model';
 
-export async function authenticate(payload: IUser): Promise<IUserAuth | null> {
+export async function authenticate(payload: IUserDto): Promise<IUserAuthDto | null> {
   const user = await model.findOne({ userName: payload.userName }).exec();
   if (!user) return null;
 
@@ -20,8 +20,8 @@ export async function authenticate(payload: IUser): Promise<IUserAuth | null> {
   };
 }
 
-export async function create(payload: IUser): Promise<IUserBase> {
-  const user: IUser = {
+export async function create(payload: IUserDto): Promise<IUserBase> {
+  const user: IUserDto = {
     ...payload,
     password: service.hashSync(payload.password, 8)
   };

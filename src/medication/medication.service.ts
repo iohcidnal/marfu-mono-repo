@@ -12,13 +12,15 @@ export async function create({
   const session = await model.startSession();
   session.startTransaction();
 
+  // Create frequency IDs
   const freqIds = Array(frequencies?.length)
     .fill(null)
     .map(() => mongoose.Types.ObjectId().toHexString());
+  // Create medication with frequency IDs
   const medicationDoc = (
     await model.create([{ ...medication, frequencies: freqIds }], { session: session })
   )[0];
-
+  // Create frequencies
   const frequencyDtos = frequencies?.map((freq, index) => ({
     ...freq,
     _id: freqIds[index],
