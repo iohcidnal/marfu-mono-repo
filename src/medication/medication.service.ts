@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 
 import model from './medication.model';
 import freqModel from './frequency.model';
+import { getAllByFrequencyIds as getAllFreqLogsByFrequencyIds } from '../frequency-log/frequency-log.service';
 
 const ONE_HOUR_IN_MILLISECONDS = 3600000;
 
@@ -36,8 +37,14 @@ export async function create({
 
 export async function getAll(clientDateTime: string): Promise<IMedicationDto[]> {
   const docs = await model.find().populate('frequencies').exec();
+  // Get all frequency IDs to retrieve
+  const frequencyIds = docs.flatMap(doc =>
+    doc.frequencies?.map(freq => freq._id.toString())
+  ) as string[];
+  const freqDocs = await getAllFreqLogsByFrequencyIds(frequencyIds);
+
   const result: IMedicationDto[] = docs.map(doc => {
-    const frequencyStatus = getFrequencyStatus(clientDateTime, doc);
+    const frequencyStatus = getFrequencyStatus(clientDateTime, doc, freqDocs);
     return {
       _id: doc._id,
       medicationName: doc.medicationName,
@@ -52,12 +59,28 @@ export async function getAll(clientDateTime: string): Promise<IMedicationDto[]> 
   return result;
 }
 
-function getFrequencyStatus(clientDateTime: string, doc: IMedicationDto): IFrequencyDto[] {
+function getFrequencyStatus(
+  clientDateTime: string,
+  doc: IMedicationDto,
+  freqLogDocs: IFrequencyLogDto[] | null
+): IFrequencyDto[] {
   const currentDateTime = new Date(clientDateTime);
   const frequency = doc.frequencies as IFrequencyDto[];
 
-  const status = frequency.reduce((accumulator: IFrequencyDto[], freq) => {
-    // TODO: Check if freq._id is in the medication logs. If it is, mark frequency with DONE.
+  const result = frequency.reduce((accumulator: IFrequencyDto[], freq) => {
+    const freqId = freq._id.toString();
+    const medicationId = doc._id.toString();
+    // If frequency is in the frequency logs, mark it with DONE.
+    if (freqLogDocs?.some(log => log.frequencyId.toString() === freqId)) {
+      accumulator.push({
+        _id: freqId,
+        medicationId,
+        dateTime: freq.dateTime,
+        status: medicationStatus.DONE
+      });
+
+      return accumulator;
+    }
 
     const freqDateTime = createFrequencyDateTime(currentDateTime, freq.dateTime);
 
@@ -66,8 +89,8 @@ function getFrequencyStatus(clientDateTime: string, doc: IMedicationDto): IFrequ
       const isFreqWithinAnHour = diff <= ONE_HOUR_IN_MILLISECONDS;
       if (isFreqWithinAnHour) {
         accumulator.push({
-          _id: freq._id,
-          medicationId: doc._id,
+          _id: freqId,
+          medicationId,
           dateTime: freqDateTime,
           status: medicationStatus.COMING
         });
@@ -80,8 +103,8 @@ function getFrequencyStatus(clientDateTime: string, doc: IMedicationDto): IFrequ
       const diff = currentDateTime.valueOf() - freqDateTime.valueOf();
       const isFreqPastWithinAnHour = diff <= ONE_HOUR_IN_MILLISECONDS;
       accumulator.push({
-        _id: freq._id,
-        medicationId: doc._id,
+        _id: freqId,
+        medicationId,
         dateTime: freqDateTime,
         status: isFreqPastWithinAnHour ? medicationStatus.COMING : medicationStatus.PAST_DUE
       });
@@ -92,7 +115,7 @@ function getFrequencyStatus(clientDateTime: string, doc: IMedicationDto): IFrequ
     return accumulator;
   }, []);
 
-  return status;
+  return result;
 }
 
 /**

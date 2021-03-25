@@ -12,3 +12,11 @@ export async function getByFrequencyId(id: string): Promise<IFrequencyLogDto[]> 
     .exec();
   return docs.map(doc => model.toDto(doc));
 }
+
+export async function getAllByFrequencyIds(
+  frequencyIds: string[] | undefined
+): Promise<IFrequencyLogDto[] | null> {
+  if (!frequencyIds) return null;
+  const docs = await model.find().where('frequencyId').in(frequencyIds).exec();
+  return docs;
+}
