@@ -1,4 +1,4 @@
-import service from 'bcryptjs';
+import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
 import model from './user.model';
@@ -7,7 +7,7 @@ export async function authenticate(payload: IUserDto): Promise<IUserAuthDto | nu
   const user = await model.findOne({ userName: payload.userName }).lean();
   if (!user) return null;
 
-  const isPasswordValid = service.compareSync(payload.password, user.password);
+  const isPasswordValid = bcrypt.compareSync(payload.password, user.password);
   if (!isPasswordValid) return null;
 
   const authToken = jwt.sign({ _id: user._id }, process.env.SECRET as string);
@@ -23,9 +23,19 @@ export async function authenticate(payload: IUserDto): Promise<IUserAuthDto | nu
 export async function create(payload: IUserDto): Promise<IUserBase> {
   const user: IUserDto = {
     ...payload,
-    password: service.hashSync(payload.password, 8)
+    password: bcrypt.hashSync(payload.password, 8)
   };
   const doc = await model.create(user);
 
   return model.toDto(doc);
+}
+
+export async function update(payload: IUserDto): Promise<IUserBase | null> {
+  const user: IUserDto = {
+    ...payload,
+    password: bcrypt.hashSync(payload.password, 8)
+  };
+  const doc = await model.findByIdAndUpdate(payload._id, user, { new: true, lean: true });
+
+  return doc;
 }

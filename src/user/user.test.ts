@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
-import UserModel from './user.model';
+import userModel from './user.model';
 import * as controller from './user.controller';
 import { validateNewUser } from './user.middlewares';
 
@@ -57,14 +57,14 @@ describe('user', () => {
 
   describe('authenticate', () => {
     beforeAll(async () => {
-      let model = new UserModel({
+      let model = new userModel({
         firstName: 'Joey',
         lastName: 'Tribiani',
         userName: 'joeytrib',
         password: 'fakepassword'
       });
       await model.save();
-      model = new UserModel({
+      model = new userModel({
         firstName: 'Ross',
         lastName: 'Gellar',
         userName: 'rossgellar',
@@ -113,6 +113,43 @@ describe('user', () => {
       expect(next).toHaveBeenCalledWith(new Error("Cannot read property 'userName' of null"));
       expect(result).toBeUndefined();
     });
+  });
+
+  it('should update user', async () => {
+    await mongoose.connection.db.dropDatabase();
+    bcrypt.hashSync = jest.fn(password => `hash-${password}`);
+    const model = new userModel({
+      firstName: 'Joey',
+      lastName: 'Tribiani',
+      userName: 'joeytrib',
+      password: 'fakepassword'
+    });
+    const user = await model.save();
+
+    req.body = {
+      _id: user._id,
+      firstName: 'Joey2',
+      password: 'fakepassword2'
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result: any = await controller.put(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(result.firstName).toBe('Joey2');
+    expect(result.lastName).toBe('Tribiani');
+    expect(result.password).toBe('hash-fakepassword2');
+  });
+
+  it('should call next with error', async () => {
+    userModel.findByIdAndUpdate = jest.fn(() => {
+      throw new Error('Fake error');
+    });
+    const result = await controller.put(req, res, next);
+
+    expect(res.status).not.toHaveBeenCalled();
+    expect(result).toBeUndefined();
+    expect(next).toHaveBeenCalledWith(expect.objectContaining(new Error()));
   });
 });
 
