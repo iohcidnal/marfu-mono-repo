@@ -36,7 +36,7 @@ export async function create({
 }
 
 export async function getAll(clientDateTime: string): Promise<IMedicationDto[]> {
-  const docs = await model.find().populate('frequencies').exec();
+  const docs = await model.find().lean().populate('frequencies');
   // Get all frequency IDs to retrieve
   const frequencyIds = docs.flatMap(doc =>
     doc.frequencies?.map(freq => freq._id.toString())

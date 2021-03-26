@@ -6,6 +6,6 @@ export async function create(payload: IMemberDto): Promise<IMemberDto> {
 }
 
 export async function getAll(): Promise<IMemberDto[]> {
-  const docs = await model.find().populate('createdBy', '_id firstName lastName').exec();
-  return docs.map(doc => model.toDto(doc));
+  const docs = await model.find().lean().populate('createdBy', '_id firstName lastName');
+  return docs;
 }

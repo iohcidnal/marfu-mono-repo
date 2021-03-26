@@ -8,15 +8,16 @@ export async function create(payload: IFrequencyLogDto): Promise<IFrequencyLogDt
 export async function getByFrequencyId(id: string): Promise<IFrequencyLogDto[]> {
   const docs = await model
     .find({ frequencyId: id })
-    .populate('administeredBy', 'firstName lastName')
-    .exec();
-  return docs.map(doc => model.toDto(doc));
+    .lean()
+    .populate('administeredBy', 'firstName lastName');
+  return docs;
 }
 
 export async function getAllByFrequencyIds(
   frequencyIds: string[] | undefined
 ): Promise<IFrequencyLogDto[] | null> {
   if (!frequencyIds) return null;
-  const docs = await model.find().where('frequencyId').in(frequencyIds).exec();
+
+  const docs = await model.find().lean().where('frequencyId').in(frequencyIds);
   return docs;
 }

@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import model from './user.model';
 
 export async function authenticate(payload: IUserDto): Promise<IUserAuthDto | null> {
-  const user = await model.findOne({ userName: payload.userName }).exec();
+  const user = await model.findOne({ userName: payload.userName }).lean();
   if (!user) return null;
 
   const isPasswordValid = service.compareSync(payload.password, user.password);
