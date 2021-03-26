@@ -97,4 +97,46 @@ describe('member', () => {
     expect(result).toBeUndefined();
     expect(next).toHaveBeenCalledWith(expect.objectContaining(new Error()));
   });
+
+  it('should update', async () => {
+    const createdByModel = new userModel({
+      _id: new mongoose.Types.ObjectId('012345678901234567890123'),
+      firstName: 'Ross',
+      lastName: 'Gellar',
+      userName: 'rossgellar',
+      password: 'fakepassword2'
+    });
+    await createdByModel.save();
+
+    const model = new memberModel({
+      firstName: 'Joey',
+      lastName: 'Tribiani',
+      createdBy: new mongoose.Types.ObjectId('012345678901234567890123')
+    });
+    await model.save();
+
+    req.body = {
+      _id: model._id,
+      firstName: 'Joey2',
+      lastName: 'Tribiani2'
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result: any = await controller.put(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(result.firstName).toBe('Joey2');
+    expect(result.lastName).toBe('Tribiani2');
+  });
+
+  it('PUT should call next with error', async () => {
+    memberModel.findByIdAndUpdate = jest.fn(() => {
+      throw new Error('Fake error');
+    });
+    const result = await controller.put(req, res, next);
+
+    expect(res.status).not.toHaveBeenCalled();
+    expect(result).toBeUndefined();
+    expect(next).toHaveBeenCalledWith(expect.objectContaining(new Error()));
+  });
 });
