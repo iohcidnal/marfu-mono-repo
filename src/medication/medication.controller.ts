@@ -19,3 +19,12 @@ export async function get(req: Request, res: Response, next: NextFunction) {
     next(error);
   }
 }
+
+export async function put(req: Request, res: Response, next: NextFunction) {
+  try {
+    const result = await service.update(req.body);
+    return res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+}

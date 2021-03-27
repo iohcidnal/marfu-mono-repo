@@ -59,6 +59,17 @@ export async function getAll(clientDateTime: string): Promise<IMedicationDto[]> 
   return result;
 }
 
+export async function update(payload: IMedicationDto): Promise<IMedicationDto | null> {
+  // Update frequencies
+  for await (const freq of payload.frequencies ?? []) {
+    // updateOne updates one document in the database without returning it
+    freqModel.updateOne({ _id: freq._id }, { dateTime: freq.dateTime }).exec();
+  }
+
+  const doc = await model.findByIdAndUpdate(payload._id, payload, { lean: true, new: true });
+  return doc;
+}
+
 function getFrequencyStatus(
   clientDateTime: string,
   doc: IMedicationDto,
