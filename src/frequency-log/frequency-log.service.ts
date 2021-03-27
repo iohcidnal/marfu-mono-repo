@@ -21,3 +21,8 @@ export async function getAllByFrequencyIds(
   const docs = await model.find().lean().where('frequencyId').in(frequencyIds);
   return docs;
 }
+
+export async function update(payload: IFrequencyLogDto): Promise<IFrequencyLogDto | null> {
+  const doc = await model.findByIdAndUpdate(payload._id, payload, { lean: true, new: true });
+  return doc;
+}
