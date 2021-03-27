@@ -12,8 +12,10 @@ export async function post(req: Request, res: Response, next: NextFunction) {
 
 export async function get(req: Request, res: Response, next: NextFunction) {
   try {
+    const memberId = req.params.memberId;
     const clientDateTime = req.body.clientDateTime;
-    const result = await service.getAll(clientDateTime);
+    const result = await service.getAll(memberId, clientDateTime);
+
     return res.status(200).json(result);
   } catch (error) {
     next(error);

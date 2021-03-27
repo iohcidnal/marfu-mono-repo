@@ -2,6 +2,10 @@ import mongoose from 'mongoose';
 
 const MedicationSchema = new mongoose.Schema(
   {
+    memberId: {
+      type: String,
+      required: true
+    },
     medicationName: {
       type: String,
       required: true
@@ -46,6 +50,7 @@ interface IMedicationModel extends mongoose.Model<IMedicationDocument> {
 MedicationSchema.statics.toDto = function (doc: IMedicationDocument): IMedicationDto {
   return {
     _id: doc._id,
+    memberId: doc.memberId,
     medicationName: doc.medicationName,
     dosage: doc.dosage,
     route: doc.route,

@@ -35,6 +35,7 @@ interface IFrequencyDto extends IModelBase {
 }
 
 interface IMedicationDto extends IModelBase {
+  memberId: string;
   medicationName: string;
   dosage: string;
   route: string;

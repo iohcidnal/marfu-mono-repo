@@ -6,7 +6,7 @@ import * as controller from './medication.controller';
 const router = express.Router();
 
 router.post('/medications', authenticateUser, controller.post);
-router.get('/medications', authenticateUser, controller.get);
+router.get('/medications/:memberId', authenticateUser, controller.get);
 router.put('/medications', authenticateUser, controller.put);
 
 export default router;
