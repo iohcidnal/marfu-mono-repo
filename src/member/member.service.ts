@@ -14,3 +14,9 @@ export async function update(payload: IMemberDto): Promise<IMemberDto | null> {
   const doc = await model.findByIdAndUpdate(payload._id, payload, { lean: true, new: true });
   return doc;
 }
+
+export async function deleteById(id: string): Promise<IMemberDto | null> {
+  // This triggers `findOneAndDelete` middleware to delete related records
+  const result = await model.findOneAndDelete({ _id: id });
+  return result;
+}

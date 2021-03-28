@@ -8,5 +8,6 @@ const router = express.Router();
 router.post('/members', authenticateUser, controller.post);
 router.get('/members', authenticateUser, controller.get);
 router.put('/members', authenticateUser, controller.put);
+router.delete('/members/:id', authenticateUser, controller.deleteById);
 
 export default router;

@@ -27,3 +27,12 @@ export async function put(req: Request, res: Response, next: NextFunction) {
     next(error);
   }
 }
+
+export async function deleteById(req: Request, res: Response, next: NextFunction) {
+  try {
+    const result = await service.deleteById(req.params.id);
+    return res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+}
