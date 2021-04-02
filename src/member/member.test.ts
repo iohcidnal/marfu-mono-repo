@@ -4,6 +4,8 @@ import mongoose from 'mongoose';
 import * as controller from './member.controller';
 import memberModel from './member.model';
 import userModel from '../user/user.model';
+import medicationModel from '../medication/medication.model';
+import freqModel from '../medication/frequency.model';
 
 const req = {} as Request;
 const res = {} as Response;
@@ -134,6 +136,58 @@ describe('member', () => {
       throw new Error('Fake error');
     });
     const result = await controller.put(req, res, next);
+
+    expect(res.status).not.toHaveBeenCalled();
+    expect(result).toBeUndefined();
+    expect(next).toHaveBeenCalledWith(expect.objectContaining(new Error()));
+  });
+
+  it('should DELETE member and its related records', async () => {
+    const createdByModel = new userModel({
+      _id: new mongoose.Types.ObjectId('012345678901234567890123'),
+      firstName: 'Ross',
+      lastName: 'Gellar',
+      userName: 'rossgellar',
+      password: 'fakepassword2'
+    });
+    await createdByModel.save();
+
+    const model = new memberModel({
+      firstName: 'Joey',
+      lastName: 'Tribiani',
+      createdBy: new mongoose.Types.ObjectId('012345678901234567890123')
+    });
+    await model.save();
+
+    medicationModel.deleteMany = jest.fn();
+    freqModel.deleteMany = jest.fn();
+
+    const medication = new medicationModel({
+      memberId: model._id,
+      medicationName: 'fake med',
+      dosage: 'fake dosage',
+      route: 'fake route',
+      startDate: new Date(),
+      frequencies: [mongoose.Types.ObjectId(), mongoose.Types.ObjectId()],
+      createdBy: createdByModel._id
+    });
+    await medication.save();
+
+    req.params = {
+      id: model._id
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result: any = await controller.deleteById(req, res, next);
+
+    expect(result.firstName).toBe('Joey');
+    expect(medicationModel.deleteMany).toHaveBeenCalled();
+    expect(freqModel.deleteMany).toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  it('DELETE should call next with error', async () => {
+    const result = await controller.deleteById(req, res, next);
 
     expect(res.status).not.toHaveBeenCalled();
     expect(result).toBeUndefined();
