@@ -6,6 +6,8 @@ import { getAllByFrequencyIds as getAllFreqLogsByFrequencyIds } from '../frequen
 
 const ONE_HOUR_IN_MILLISECONDS = 3600000;
 
+/* istanbul ignore next */
+/* mongodbMemoryServerOptions does not support transactions */
 export async function create({
   frequencies,
   ...medication
@@ -111,18 +113,14 @@ function getFrequencyStatus(
       }
     }
 
-    if (freqDateTime < currentDateTime) {
-      const diff = currentDateTime.valueOf() - freqDateTime.valueOf();
-      const isFreqPastWithinAnHour = diff <= ONE_HOUR_IN_MILLISECONDS;
-      accumulator.push({
-        _id: freqId,
-        medicationId,
-        dateTime: freqDateTime,
-        status: isFreqPastWithinAnHour ? medicationStatus.COMING : medicationStatus.PAST_DUE
-      });
-
-      return accumulator;
-    }
+    const diff = currentDateTime.valueOf() - freqDateTime.valueOf();
+    const isFreqPastWithinAnHour = diff <= ONE_HOUR_IN_MILLISECONDS;
+    accumulator.push({
+      _id: freqId,
+      medicationId,
+      dateTime: freqDateTime,
+      status: isFreqPastWithinAnHour ? medicationStatus.COMING : medicationStatus.PAST_DUE
+    });
 
     return accumulator;
   }, []);

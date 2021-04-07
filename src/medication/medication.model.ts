@@ -47,6 +47,7 @@ interface IMedicationModel extends mongoose.Model<IMedicationDocument> {
   toDto: (doc: IMedicationDocument) => IMedicationDto;
 }
 
+/* istanbul ignore next */
 MedicationSchema.statics.toDto = function (doc: IMedicationDocument): IMedicationDto {
   return {
     _id: doc._id,

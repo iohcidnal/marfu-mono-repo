@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import * as service from './medication.service';
 
+/* istanbul ignore next */
+/* mongodbMemoryServerOptions does not support transactions */
 export async function post(req: Request, res: Response, next: NextFunction) {
   try {
     const result = await service.create(req.body);
