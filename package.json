@@ -13,7 +13,9 @@
   "scripts": {
     "server:compile": "yarn workspace server compile",
     "server:dev": "yarn workspace server dev",
-    "test:all": "yarn workspaces run test"
+    "test:all": "yarn workspaces run test",
+    "postinstall": "yarn workspace server postinstall",
+    "start": "yarn workspace server start"
   },
   "keywords": [
     "nodejs",
