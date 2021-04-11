@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
+import { IUserAuthDto, IUserDto, IUserBase } from '@common';
 import model from './user.model';
 
 export async function authenticate(payload: IUserDto): Promise<IUserAuthDto | null> {

@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { IUserDto } from '@common';
 
 export function validateNewUser(req: Request, res: Response, next: NextFunction) {
   const user: IUserDto = req.body;

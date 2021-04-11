@@ -1,6 +1,8 @@
 {
   "name": "server",
   "version": "1.0.0",
+  "author": "Ian Landicho",
+  "license": "MIT",
   "description": "Medication Admin Record for Family Use API",
   "main": "build/server.js",
   "engines": {

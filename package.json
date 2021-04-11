@@ -11,9 +11,12 @@
     "packages/*"
   ],
   "scripts": {
+    "common:compile": "yarn workspace common compile",
+    "common:compile:watch": "yarn workspace common compile:watch",
     "server:compile": "yarn workspace server compile",
     "server:dev": "yarn workspace server dev",
     "test:all": "yarn workspaces run test",
+    "dev": "concurrently \"yarn common:compile:watch\" \"yarn server:dev\"",
     "start": "yarn workspace server start"
   },
   "keywords": [
@@ -24,7 +27,7 @@
     "mono-repo"
   ],
   "author": "Ian Landicho",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {},
   "devDependencies": {
     "@types/jest": "^26.0.20",

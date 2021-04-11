@@ -1,40 +1,40 @@
-interface IModelBase {
+export interface IModelBase {
   _id: string;
 }
 
-interface IUserBase extends IModelBase {
+export interface IUserBase extends IModelBase {
   firstName: string;
   lastName: string;
 }
 
-interface IUserDto extends IUserBase {
+export interface IUserDto extends IUserBase {
   userName: string;
   password: string;
 }
 
-interface IUserAuthDto extends IUserBase {
+export interface IUserAuthDto extends IUserBase {
   authToken: string;
 }
 
-interface IMemberDto extends IModelBase {
+export interface IMemberDto extends IModelBase {
   firstName: string;
   lastName: string;
 }
 
-const enum medicationStatus {
+export const enum medicationStatus {
   NEW = 'NEW',
   DONE = 'DONE',
   COMING = 'COMING',
   PAST_DUE = 'PAST_DUE'
 }
 
-interface IFrequencyDto extends IModelBase {
+export interface IFrequencyDto extends IModelBase {
   medicationId: string;
   dateTime: Date;
   status?: medicationStatus;
 }
 
-interface IMedicationDto extends IModelBase {
+export interface IMedicationDto extends IModelBase {
   memberId: string;
   medicationName: string;
   dosage: string;
@@ -44,7 +44,7 @@ interface IMedicationDto extends IModelBase {
   frequencies?: IFrequencyDto[];
 }
 
-interface IFrequencyLogDto extends IModelBase {
+export interface IFrequencyLogDto extends IModelBase {
   frequencyId: string;
   administeredDateTime: Date;
   note: string;

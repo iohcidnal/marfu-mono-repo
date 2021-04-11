@@ -2,12 +2,9 @@
   "extends": "../../tsconfig.json",
 
   "compilerOptions": {
-    "paths": {
-      "@common": ["../common/src"]
-    } /* A series of entries which re-map imports to lookup locations relative to the 'baseUrl'. */,
+    "composite": true /* Enable project compilation */,
     "outDir": "./build" /* Redirect output structure to the directory. */,
     "rootDir": "./src" /* Specify the root directory of input files. Use to control the output directory structure with --outDir. */
   },
-  "include": ["./src/**/*.ts"],
-  "references": [{ "path": "../common" }]
+  "include": ["./src/**/*.ts"]
 }

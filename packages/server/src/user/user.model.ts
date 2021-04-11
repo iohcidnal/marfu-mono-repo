@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { IUserBase, IUserDto } from '@common';
 
 const UserSchema = new mongoose.Schema(
   {
