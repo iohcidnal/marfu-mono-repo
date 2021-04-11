@@ -1,10 +1,11 @@
 .DS_Store
 .env
+.next
 .vscode
 build
 coverage
 globalConfig.json
 node_modules
+tsconfig.tsbuildinfo
 yarn-debug.log*
 yarn-error.log*
-tsconfig.tsbuildinfo

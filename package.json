@@ -15,8 +15,9 @@
     "common:compile:watch": "yarn workspace common compile:watch",
     "server:compile": "yarn workspace server compile",
     "server:dev": "yarn workspace server dev",
+    "client:dev": "yarn workspace client dev",
     "test:all": "yarn workspaces run test",
-    "dev": "concurrently \"yarn common:compile:watch\" \"yarn server:dev\"",
+    "dev": "concurrently \"yarn common:compile:watch\" \"yarn server:dev\" \" yarn client:dev\"",
     "start": "yarn workspace server start"
   },
   "keywords": [
