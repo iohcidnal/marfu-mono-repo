@@ -1,4 +1,5 @@
 import model from './frequency-log.model';
+import { IFrequencyLogDto } from '@common';
 
 export async function create(payload: IFrequencyLogDto): Promise<IFrequencyLogDto> {
   const doc = await model.create(payload);

@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { IMedicationDto } from '@common';
 
 const MedicationSchema = new mongoose.Schema(
   {

@@ -1,48 +1,37 @@
 {
-  "name": "marfu-api",
+  "name": "marfu",
   "version": "1.0.0",
-  "description": "Medication Admin Record for Family Use API",
+  "description": "Medication Admin Record for Family Use",
   "main": "build/server.js",
   "engines": {
     "node": "15.x"
   },
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "NODE_ENV=development concurrently \"yarn compile:watch\" \"yarn dev:server\"",
-    "compile:watch": "tsc --watch",
-    "dev:server": "nodemon build/server.js",
-    "postinstall": "yarn compile",
-    "compile": "tsc",
-    "start": "node build/server.js",
-    "test:watch": "jest --no-cache --runInBand --watch",
-    "test:debug": "ndb jest --watch --no-cache --runInBand --watch",
-    "test": "jest --no-cache --runInBand",
-    "lint": "eslint './src/*.{js,ts}' --quiet --fix",
-    "deploy": "git push heroku master"
+    "common:compile": "yarn workspace common compile",
+    "common:compile:watch": "yarn workspace common compile:watch",
+    "server:compile": "yarn workspace server compile",
+    "server:dev": "yarn workspace server dev",
+    "client:dev": "yarn workspace client dev",
+    "test:all": "yarn workspaces run test",
+    "dev": "concurrently \"yarn common:compile:watch\" \"yarn server:dev\" \" yarn client:dev\"",
+    "start": "yarn workspace server start"
   },
   "keywords": [
     "nodejs",
     "express",
-    "mongoose"
+    "mongoose",
+    "workspaces",
+    "mono-repo"
   ],
   "author": "Ian Landicho",
-  "license": "ISC",
-  "dependencies": {
-    "bcryptjs": "^2.4.3",
-    "cors": "^2.8.5",
-    "dotenv": "^8.2.0",
-    "express": "^4.17.1",
-    "jsonwebtoken": "^8.5.1",
-    "mongoose": "^5.11.18"
-  },
+  "license": "MIT",
+  "dependencies": {},
   "devDependencies": {
-    "@shelf/jest-mongodb": "^1.2.3",
-    "@types/bcryptjs": "^2.4.2",
-    "@types/cors": "^2.8.10",
-    "@types/debug": "^4.1.5",
-    "@types/express": "^4.17.11",
     "@types/jest": "^26.0.20",
-    "@types/jsonwebtoken": "^8.5.0",
-    "@types/mongoose": "^5.10.3",
     "@typescript-eslint/eslint-plugin": "^4.16.1",
     "@typescript-eslint/parser": "^4.16.1",
     "concurrently": "^6.0.0",
@@ -62,7 +51,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-push": "yarn test"
+      "pre-push": "yarn test:all"
     }
   }
 }

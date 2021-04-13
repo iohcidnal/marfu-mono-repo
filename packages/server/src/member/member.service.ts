@@ -1,3 +1,4 @@
+import { IMemberDto } from '@common';
 import model from './member.model';
 
 export async function create(payload: IMemberDto): Promise<IMemberDto> {

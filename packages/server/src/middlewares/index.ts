@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
+import { IModelBase } from '@common';
 import userModel from '../user/user.model';
 
 export async function authenticateUser(req: Request, res: Response, next: NextFunction) {

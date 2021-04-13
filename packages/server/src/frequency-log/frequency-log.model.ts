@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { IFrequencyLogDto } from '@common';
 
 const FrequencyLogSchema = new mongoose.Schema(
   {

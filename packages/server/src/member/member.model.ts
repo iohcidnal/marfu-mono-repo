@@ -1,4 +1,6 @@
 import mongoose from 'mongoose';
+
+import { IMemberDto } from '@common';
 import medicationModel from '../medication/medication.model';
 import freqModel from '../medication/frequency.model';
 

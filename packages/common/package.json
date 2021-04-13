@@ -1,0 +1,14 @@
+{
+  "name": "common",
+  "version": "1.0.0",
+  "main": "./build/index.js",
+  "author": "Ian Landicho",
+  "license": "MIT",
+  "scripts": {
+    "compile:watch": "tsc --watch",
+    "compile": "tsc",
+    "postinstall": "yarn compile",
+    "test": "echo common test not needed"
+  },
+  "devDependencies": {}
+}

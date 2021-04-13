@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { IMedicationDto, IFrequencyDto, IFrequencyLogDto, medicationStatus } from '@common';
 
 import model from './medication.model';
 import freqModel from './frequency.model';
