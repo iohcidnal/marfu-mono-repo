@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   FormControl,
+  FormErrorMessage,
   FormLabel,
   Heading,
   Input,
@@ -9,6 +10,9 @@ import {
   Stack,
   Text
 } from '@chakra-ui/react';
+import { useForm } from 'react-hook-form';
+
+import { IUserDto } from '@common';
 
 export default function SignIn() {
   return (
@@ -33,6 +37,17 @@ function Header() {
 }
 
 function Form() {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors }
+  } = useForm<IUserDto>({ mode: 'all' });
+
+  function onSubmit(data: IUserDto) {
+    // TODO: Call api to submit
+    console.log('data :>> ', data.password, data.userName);
+  }
+
   return (
     <Stack align="center">
       <Stack spacing="6" width={['full', 'lg']}>
@@ -40,22 +55,24 @@ function Form() {
           <Text color="gray.600" fontSize="20px" mb={6} fontWeight="semibold">
             Sign in to continue
           </Text>
-          <form>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <Stack spacing={6}>
-              <FormControl id="email">
+              <FormControl id="userName" isRequired isInvalid={!!errors.userName}>
                 <FormLabel>Email address</FormLabel>
-                <Input type="email" size="lg" />
+                <Input {...register('userName', { required: true })} type="email" size="lg" />
+                {errors.userName && <FormErrorMessage>Email address is required.</FormErrorMessage>}
               </FormControl>
-              <FormControl id="password">
+              <FormControl id="password" isRequired isInvalid={!!errors.password}>
                 <Stack isInline justifyContent="space-between">
                   <FormLabel>Password</FormLabel>
                   <Link color="blue.600" fontSize="sm" fontWeight="bold">
                     Forgot password?
                   </Link>
                 </Stack>
-                <Input type="password" size="lg" />
+                <Input {...register('password', { required: true })} type="password" size="lg" />
+                {errors.password && <FormErrorMessage>Password is required.</FormErrorMessage>}
               </FormControl>
-              <Button w="full" size="lg">
+              <Button type="submit" w="full" size="lg">
                 Sign in
               </Button>
               <Stack isInline fontSize="sm" fontWeight="bold">
