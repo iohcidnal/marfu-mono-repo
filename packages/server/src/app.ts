@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import dotenv from 'dotenv';
 
 import connectDb from './database';
@@ -11,6 +12,8 @@ dotenv.config();
 
 const app = express();
 app.use(express.json());
+// TODO: Limit cors origin
+app.use(cors());
 
 connectDb();
 
