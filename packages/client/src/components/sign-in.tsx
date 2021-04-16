@@ -40,12 +40,21 @@ function Form() {
   const {
     register,
     handleSubmit,
-    formState: { errors }
+    formState: { errors },
+    formState
   } = useForm<IUserDto>({ mode: 'all' });
 
-  function onSubmit(data: IUserDto) {
-    // TODO: Call api to submit
-    console.log('data :>> ', data.password, data.userName);
+  async function onSubmit(data: IUserDto) {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API}users/authenticate`, {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    });
+
+    console.log('res :>> ', res);
   }
 
   return (
@@ -55,12 +64,18 @@ function Form() {
           <Text color="gray.600" fontSize="20px" mb={6} fontWeight="semibold">
             Sign in to continue
           </Text>
-          <form onSubmit={handleSubmit(onSubmit)}>
+          <form onSubmit={handleSubmit(onSubmit)} noValidate>
             <Stack spacing={6}>
               <FormControl id="userName" isRequired isInvalid={!!errors.userName}>
-                <FormLabel>Email address</FormLabel>
-                <Input {...register('userName', { required: true })} type="email" size="lg" />
-                {errors.userName && <FormErrorMessage>Email address is required.</FormErrorMessage>}
+                <FormLabel>User name</FormLabel>
+                <Input
+                  {...register('userName', {
+                    required: 'User name is required.'
+                  })}
+                  type="email"
+                  size="lg"
+                />
+                {errors.userName && <FormErrorMessage>{errors.userName.message}</FormErrorMessage>}
               </FormControl>
               <FormControl id="password" isRequired isInvalid={!!errors.password}>
                 <Stack isInline justifyContent="space-between">
@@ -69,10 +84,20 @@ function Form() {
                     Forgot password?
                   </Link>
                 </Stack>
-                <Input {...register('password', { required: true })} type="password" size="lg" />
-                {errors.password && <FormErrorMessage>Password is required.</FormErrorMessage>}
+                <Input
+                  {...register('password', { required: 'Password is required.' })}
+                  type="password"
+                  size="lg"
+                />
+                {errors.password && <FormErrorMessage>{errors.password.message}</FormErrorMessage>}
               </FormControl>
-              <Button type="submit" w="full" size="lg">
+              <Button
+                type="submit"
+                disabled={!formState.isValid}
+                colorScheme="blue"
+                w="full"
+                size="lg"
+              >
                 Sign in
               </Button>
               <Stack isInline fontSize="sm" fontWeight="bold">
