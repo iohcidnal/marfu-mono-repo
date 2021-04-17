@@ -8,11 +8,14 @@ import {
   Input,
   Link,
   Stack,
-  Text
+  Text,
+  useToast
 } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
+import { useMutation } from 'react-query';
 
 import { IUserDto } from '@common';
+import fetcher from './fetcher';
 
 export default function SignIn() {
   return (
@@ -43,18 +46,10 @@ function Form() {
     formState: { errors },
     formState
   } = useForm<IUserDto>({ mode: 'all' });
+  const mutation = useSignIn();
 
-  async function onSubmit(data: IUserDto) {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API}users/authenticate`, {
-      method: 'POST',
-      mode: 'cors',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data)
-    });
-
-    console.log('res :>> ', res);
+  function onSubmit(payload: IUserDto) {
+    mutation.mutate(payload);
   }
 
   return (
@@ -93,6 +88,7 @@ function Form() {
               </FormControl>
               <Button
                 type="submit"
+                isLoading={mutation.isLoading}
                 disabled={!formState.isValid}
                 colorScheme="blue"
                 w="full"
@@ -110,4 +106,29 @@ function Form() {
       </Stack>
     </Stack>
   );
+}
+
+function useSignIn() {
+  const toast = useToast();
+  const mutation = useMutation(
+    (payload: Record<string, any>) =>
+      fetcher({ url: `${process.env.NEXT_PUBLIC_API}users/authenticate`, method: 'POST', payload }),
+    {
+      onSuccess: ({ status, data }) => {
+        if (status !== 200) {
+          toast({
+            title: 'Sign in failed',
+            description: data.message,
+            status: 'error',
+            position: 'top-right',
+            isClosable: true
+          });
+        } else {
+          // TODO: Redirect to dashboard
+        }
+      }
+    }
+  );
+
+  return mutation;
 }
