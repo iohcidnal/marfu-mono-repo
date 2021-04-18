@@ -1,0 +1,133 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SignIn should render properly 1`] = `
+<DocumentFragment>
+  <div
+    class="chakra-stack css-lgt9ky"
+  >
+    <div
+      class="css-lr4539"
+    >
+      <h2
+        class="chakra-heading css-14umdt2"
+      >
+        marfu
+      </h2>
+      <p
+        class="chakra-text css-i9bggq"
+      >
+        Medication Administration Record for Family Use
+      </p>
+    </div>
+    <div
+      class="chakra-stack css-owjkmg"
+    >
+      <div
+        class="chakra-stack css-7ek7do"
+      >
+        <div
+          class="css-tnk16i"
+        >
+          <p
+            class="chakra-text css-9dl0t2"
+          >
+            Sign in to continue
+          </p>
+          <form
+            novalidate=""
+          >
+            <div
+              class="chakra-stack css-b5leqj"
+            >
+              <div
+                class="chakra-form-control css-1kxonj9"
+                role="group"
+              >
+                <label
+                  class="chakra-form__label css-10m1y3x"
+                  for="userName"
+                  id="userName-label"
+                >
+                  User name
+                  <span
+                    aria-hidden="true"
+                    class="chakra-form__required-indicator css-1ssjhh"
+                    role="presentation"
+                  >
+                    *
+                  </span>
+                </label>
+                <input
+                  aria-required="true"
+                  class="chakra-input css-1jhp4gn"
+                  id="userName"
+                  name="userName"
+                  required=""
+                  type="email"
+                />
+              </div>
+              <div
+                class="chakra-form-control css-1kxonj9"
+                role="group"
+              >
+                <div
+                  class="chakra-stack css-1yqpede"
+                >
+                  <label
+                    class="chakra-form__label css-10m1y3x"
+                    for="password"
+                    id="password-label"
+                  >
+                    Password
+                    <span
+                      aria-hidden="true"
+                      class="chakra-form__required-indicator css-1ssjhh"
+                      role="presentation"
+                    >
+                      *
+                    </span>
+                  </label>
+                  <a
+                    class="chakra-link css-34lw4l"
+                  >
+                    Forgot password?
+                  </a>
+                </div>
+                <input
+                  aria-required="true"
+                  class="chakra-input css-1jhp4gn"
+                  id="password"
+                  name="password"
+                  required=""
+                  type="password"
+                />
+              </div>
+              <button
+                class="chakra-button css-jg4a2p"
+                disabled=""
+                type="submit"
+              >
+                Sign in
+              </button>
+              <div
+                class="chakra-stack css-mzzrj0"
+              >
+                <p
+                  class="chakra-text css-0"
+                >
+                  New user?
+                </p>
+                <a
+                  class="chakra-link css-t9eb1q"
+                >
+                  Create an account
+                </a>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;

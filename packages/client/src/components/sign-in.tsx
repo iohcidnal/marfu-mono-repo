@@ -15,7 +15,7 @@ import { useForm } from 'react-hook-form';
 import { useMutation } from 'react-query';
 
 import { IUserDto } from '@common';
-import fetcher from './fetcher';
+import { fetcher } from '../utils';
 
 export default function SignIn() {
   return (
