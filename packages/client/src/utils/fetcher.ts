@@ -16,6 +16,7 @@ export default async function fetcher(
   const option: RequestInit = {
     method: config.method,
     mode: 'cors',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json'
     },

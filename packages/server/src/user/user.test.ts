@@ -1,15 +1,22 @@
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 
 import userModel from './user.model';
 import * as controller from './user.controller';
 import { validateNewUser } from './user.middlewares';
 
-const req = {} as Request;
+interface IReq extends Request {
+  session: any;
+}
+
+const req = {} as IReq;
 const res = {} as Response;
 const next = jest.fn();
+
+req.session = jest.fn().mockImplementation(() => ({
+  user: jest.fn(result => result)
+}));
 
 res.status = jest.fn().mockImplementation(() => ({
   json: jest.fn(result => result)
@@ -75,16 +82,21 @@ describe('user', () => {
 
     it('should get the correct user', async () => {
       bcrypt.compareSync = jest.fn(() => true);
-      jwt.sign = jest.fn(() => 'fake-jwt');
 
       req.body = { userName: 'rossgellar', password: 'fakepassword2' };
       const result = await controller.authenticate(req, res, next);
 
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(req.session.user).toEqual(
+        expect.objectContaining({
+          firstName: 'Ross',
+          lastName: 'Gellar'
+        })
+      );
       expect(result).toEqual(
         expect.objectContaining({
           firstName: 'Ross',
-          lastName: 'Gellar',
-          authToken: 'fake-jwt'
+          lastName: 'Gellar'
         })
       );
     });

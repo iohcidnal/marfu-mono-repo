@@ -12,10 +12,6 @@ export interface IUserDto extends IUserBase {
   password: string;
 }
 
-export interface IUserAuthDto extends IUserBase {
-  authToken: string;
-}
-
 export interface IMemberDto extends IModelBase {
   firstName: string;
   lastName: string;

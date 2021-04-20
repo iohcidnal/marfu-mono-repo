@@ -27,3 +27,21 @@ export async function authenticateUser(req: Request, res: Response, next: NextFu
     next(error);
   }
 }
+
+// TODO: Replace authenticateUser with validateSession since session is now used instead of jwt
+export async function validateSession(req: Request, res: Response, next: NextFunction) {
+  try {
+    if (req.session.user) {
+      const user = await userModel.findById(req.session.user._id).exec();
+      if (!user) {
+        return res.status(401).json({ message: 'User not found.' });
+      }
+      req._id = req.session.user._id;
+      next();
+    } else {
+      return res.status(401).json({ message: 'User not authenticated.' });
+    }
+  } catch (error) {
+    next(error);
+  }
+}

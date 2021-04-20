@@ -1,21 +1,17 @@
 import express from 'express';
-import cors from 'cors';
 import dotenv from 'dotenv';
 
-import connectDb from './database';
 import userRoutes from './user/user.routes';
 import memberRoutes from './member/member.routes';
 import medicationRoutes from './medication/medication.routes';
 import frequencyLogRoutes from './frequency-log/frequency-log.routes';
+import loadMiddlewares from './load-middlewares';
+import connectDb from './database';
 
 dotenv.config();
-
-const app = express();
-app.use(express.json());
-// TODO: Limit cors origin
-app.use(cors());
-
 connectDb();
+
+const app = loadMiddlewares();
 
 app.get('/', (req: express.Request, res: express.Response) => {
   res.status(200).send('marfu API');

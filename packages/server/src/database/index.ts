@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 export default function connectDb() {
   const dbUrl: string = process.env.DB_URL as string;
 
-  return mongoose.connect(
+  mongoose.connect(
     dbUrl,
     {
       useNewUrlParser: true,
