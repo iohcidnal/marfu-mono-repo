@@ -1,12 +1,12 @@
 import express from 'express';
 
-import { authenticateUser } from '../middlewares';
+import { validateUser } from '../middlewares';
 import * as controller from './frequency-log.controller';
 
 const router = express.Router();
 
-router.post('/frequency-logs', authenticateUser, controller.post);
-router.get('/frequency-logs/:frequencyId', authenticateUser, controller.getByFrequencyId);
-router.put('/frequency-logs', authenticateUser, controller.put);
+router.post('/frequency-logs', validateUser, controller.post);
+router.get('/frequency-logs/:frequencyId', validateUser, controller.getByFrequencyId);
+router.put('/frequency-logs', validateUser, controller.put);
 
 export default router;

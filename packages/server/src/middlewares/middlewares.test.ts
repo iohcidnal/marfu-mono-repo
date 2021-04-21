@@ -1,11 +1,15 @@
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
-import jwt from 'jsonwebtoken';
 
-import { authenticateUser } from './index';
+import { validateUser } from './index';
 import UserModel from '../user/user.model';
 
-const req = {} as Request;
+interface IReq extends Request {
+  session: any;
+  _id: string;
+}
+
+const req = {} as IReq;
 const res = {} as Response;
 const next = jest.fn();
 
@@ -27,77 +31,64 @@ afterAll(() => {
   mongoose.connection.close();
 });
 
-afterEach(jest.clearAllMocks);
+afterEach(async () => {
+  jest.clearAllMocks();
+  await mongoose.connection.db.dropDatabase();
+});
 
-describe('authenticateUser', () => {
-  afterEach(async () => {
-    await mongoose.connection.db.dropDatabase();
-  });
-
-  it('should be unauthorized when auth header is missing', async () => {
-    req.get = jest.fn().mockReturnValue(null);
-    const result = await authenticateUser(req, res, next);
-
-    expect(res.status).toHaveBeenCalledWith(401);
-    expect(result).toEqual({ message: 'Authorization missing.' });
-    expect(next).not.toHaveBeenCalled();
-  });
-
-  it('should be unauthorized when auth header is invalid', async () => {
-    req.get = jest.fn().mockReturnValue('fake-token');
-    const result = await authenticateUser(req, res, next);
-
-    expect(res.status).toHaveBeenCalledWith(401);
-    expect(result).toEqual({ message: 'Invalid bearer token.' });
-    expect(next).not.toHaveBeenCalled();
-  });
+describe('validateUser', () => {
+  const user = {
+    _id: '012345678901234567890124',
+    firstName: 'Chandler',
+    lastName: 'Bing',
+    userName: 'chandlerbing',
+    password: 'password123'
+  };
 
   it('should be unauthorized when user is not found', async () => {
-    const model = new UserModel({
-      _id: '012345678901234567890124',
-      firstName: 'Chandler',
-      lastName: 'Bing',
-      userName: 'chandlerbing',
-      password: 'password123'
-    });
+    const model = new UserModel(user);
     await model.save();
-    const token = '012345678901234567890123';
-    req.get = jest.fn().mockReturnValue('Bearer ' + token);
-    jwt.verify = jest.fn(token => ({ _id: token }));
+    req.session = {
+      user: { _id: 'abc345678901234567890124' }
+    };
 
-    const result = await authenticateUser(req, res, next);
+    const result = await validateUser(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(401);
-    expect(jwt.verify).toHaveBeenCalledWith(token, undefined);
     expect(result).toEqual({ message: 'User not found.' });
     expect(next).not.toHaveBeenCalled();
   });
 
-  it('should call next when user is authenticated', async () => {
-    const token = '012345678901234567890123';
-    const model = new UserModel({
-      _id: token,
-      firstName: 'Chandler',
-      lastName: 'Bing',
-      userName: 'chandlerbing',
-      password: 'password123'
-    });
+  it('should set req._id when user is found', async () => {
+    const model = new UserModel(user);
     await model.save();
-    req.get = jest.fn().mockReturnValue('Bearer ' + token);
-    jwt.verify = jest.fn(token => ({ _id: token }));
+    req.session = {
+      user: { _id: user._id }
+    };
 
-    const result = await authenticateUser(req, res, next);
+    await validateUser(req, res, next);
 
-    expect(result).toBeUndefined();
-    expect(res.status).not.toHaveBeenCalled();
+    expect(req._id).toBe(user._id);
     expect(next).toHaveBeenCalled();
   });
 
+  it('should be unauthorized when user is undefined', async () => {
+    req.session = { user: undefined };
+    const result = await validateUser(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(result).toEqual({ message: 'User not authenticated.' });
+    expect(next).not.toHaveBeenCalled();
+  });
+
   it('should call next with error', async () => {
-    req.get = jest.fn(() => {
+    UserModel.findById = jest.fn(() => {
       throw new Error('Fake error');
     });
-    const result = await authenticateUser(req, res, next);
+    req.session = {
+      user: { _id: 'abc345678901234567890124' }
+    };
+    const result = await validateUser(req, res, next);
 
     expect(result).toBeUndefined();
     expect(next).toHaveBeenCalledWith(new Error('Fake error'));

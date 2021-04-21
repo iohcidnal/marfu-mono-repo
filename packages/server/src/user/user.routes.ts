@@ -2,13 +2,13 @@ import express from 'express';
 
 import * as controller from './user.controller';
 import { validateNewUser } from './user.middlewares';
-import { authenticateUser, validateSession } from '../middlewares';
+import { validateUser } from '../middlewares';
 
 const router = express.Router();
 
 router.post('/users', validateNewUser, controller.post);
 router.post('/users/authenticate', controller.authenticate);
-router.put('/users', authenticateUser, controller.put);
-router.get('/users/dashboard', validateSession, controller.getDashboardItems);
+router.put('/users', validateUser, controller.put);
+router.get('/users/dashboard', validateUser, controller.getDashboardItems);
 
 export default router;

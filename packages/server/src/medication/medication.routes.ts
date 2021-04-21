@@ -1,12 +1,12 @@
 import express from 'express';
 
-import { authenticateUser } from '../middlewares';
+import { validateUser } from '../middlewares';
 import * as controller from './medication.controller';
 
 const router = express.Router();
 
-router.post('/medications', authenticateUser, controller.post);
-router.get('/medications/:memberId', authenticateUser, controller.get);
-router.put('/medications', authenticateUser, controller.put);
+router.post('/medications', validateUser, controller.post);
+router.get('/medications/:memberId', validateUser, controller.get);
+router.put('/medications', validateUser, controller.put);
 
 export default router;
