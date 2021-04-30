@@ -12,11 +12,23 @@ export async function post(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function get(req: Request, res: Response, next: NextFunction) {
+export async function getAllByMemberId(req: Request, res: Response, next: NextFunction) {
   try {
-    const memberId = req.params.memberId;
-    const clientDateTime = req.body.clientDateTime;
-    const result = await service.getAll(memberId, clientDateTime);
+    const memberId: string = req.params.memberId;
+    const clientDateTime: string = req.body.clientDateTime;
+    const result = await service.getAllByMemberId(memberId, clientDateTime);
+
+    return res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function getAllByMemberIds(req: Request, res: Response, next: NextFunction) {
+  try {
+    const memberIds: string[] = req.body.memberIds;
+    const clientDateTime: string = req.body.clientDateTime;
+    const result = await service.getAllByMemberIds(memberIds, clientDateTime);
 
     return res.status(200).json(result);
   } catch (error) {

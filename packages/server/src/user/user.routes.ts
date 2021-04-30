@@ -9,6 +9,5 @@ const router = express.Router();
 router.post('/users', validateNewUser, controller.post);
 router.post('/users/authenticate', controller.authenticate);
 router.put('/users', validateUser, controller.put);
-router.get('/users/dashboard', validateUser, controller.getDashboardItems);
 
 export default router;

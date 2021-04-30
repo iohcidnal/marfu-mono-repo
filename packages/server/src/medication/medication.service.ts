@@ -38,25 +38,47 @@ export async function create({
   return model.toDto(medicationDoc);
 }
 
-export async function getAll(memberId: string, clientDateTime: string): Promise<IMedicationDto[]> {
+export async function getAllByMemberId(
+  memberId: string,
+  clientDateTime: string
+): Promise<IMedicationDto[]> {
   const docs = await model.find({ memberId }).lean().populate('frequencies');
-  // Get all frequency IDs to retrieve
-  const frequencyIds = docs.flatMap(doc =>
-    doc.frequencies?.map(freq => freq._id.toString())
-  ) as string[];
-  const freqDocs = await getAllFreqLogsByFrequencyIds(frequencyIds);
+  const freqLogs = await getFrequencyLogs(docs);
 
   const result: IMedicationDto[] = docs.map(doc => {
-    const frequencyStatus = getFrequencyStatus(clientDateTime, doc, freqDocs);
+    const frequencies = getFrequenciesStatus(clientDateTime, doc, freqLogs);
     return {
       _id: doc._id,
       memberId: doc.memberId,
       medicationName: doc.medicationName,
       dosage: doc.dosage,
-      frequencies: frequencyStatus,
+      frequencies,
       route: doc.route,
       startDate: doc.startDate,
       endDate: doc.endDate
+    };
+  });
+
+  return result;
+}
+
+export async function getAllByMemberIds(memberIds: string[], clientDateTime: string) {
+  const docs = await model.find().lean().where('memberId').in(memberIds).populate('frequencies');
+  const freqLogs = await getFrequencyLogs(docs);
+
+  const result: IMedicationDto[] = docs.map(doc => {
+    const frequenciesStatus = getFrequenciesStatus(clientDateTime, doc, freqLogs);
+    const status = getMedicationStatus(frequenciesStatus);
+
+    return {
+      _id: doc._id,
+      memberId: doc.memberId,
+      medicationName: doc.medicationName,
+      dosage: doc.dosage,
+      route: doc.route,
+      startDate: doc.startDate,
+      endDate: doc.endDate,
+      status
     };
   });
 
@@ -74,7 +96,28 @@ export async function update(payload: IMedicationDto): Promise<IMedicationDto | 
   return doc;
 }
 
-function getFrequencyStatus(
+async function getFrequencyLogs(docs: IMedicationDto[]): Promise<IFrequencyLogDto[] | null> {
+  // Get all frequency IDs to retrieve
+  const frequencyIds = docs.flatMap(doc =>
+    doc.frequencies?.map(freq => freq._id.toString())
+  ) as string[];
+  const freqLogs = await getAllFreqLogsByFrequencyIds(frequencyIds);
+
+  return freqLogs;
+}
+
+function getMedicationStatus(frequenciesStatus: IFrequencyDto[]): medicationStatus {
+  let status = medicationStatus.DONE;
+  if (frequenciesStatus.some(freq => freq.status === medicationStatus.PAST_DUE)) {
+    status = medicationStatus.PAST_DUE;
+  } else if (frequenciesStatus.some(freq => freq.status === medicationStatus.COMING)) {
+    status = medicationStatus.COMING;
+  }
+
+  return status;
+}
+
+function getFrequenciesStatus(
   clientDateTime: string,
   doc: IMedicationDto,
   freqLogDocs: IFrequencyLogDto[] | null

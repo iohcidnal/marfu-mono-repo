@@ -44,9 +44,3 @@ export async function put(req: Request, res: Response, next: NextFunction) {
     next(error);
   }
 }
-
-export async function getDashboardItems(req: Request, res: Response, next: NextFunction) {
-  // TODO: return all created and shared members and its medications
-  console.log('getDashboardItems req.session._id :>> ', req._id);
-  return res.status(200).json(['item1', 'item2', 'item3']);
-}

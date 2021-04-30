@@ -38,6 +38,7 @@ export interface IMedicationDto extends IModelBase {
   startDate: Date;
   endDate: Date;
   frequencies?: IFrequencyDto[];
+  status?: medicationStatus;
 }
 
 export interface IFrequencyLogDto extends IModelBase {
