@@ -8,29 +8,33 @@ interface DashboardProps {
 }
 
 const colorMap = {
-  PAST_DUE: 'red.700',
-  COMING: 'green'
+  PAST_DUE: {
+    color: 'white',
+    bgColor: 'red'
+  },
+  COMING: {
+    color: 'white',
+    bgColor: 'green'
+  }
 };
 
 export default function Dashboard({ medications }: DashboardProps) {
   return (
-    <Wrap p="10">
+    <Wrap p="10" justify="center" alignContent="flex-start">
       {medications.map(med => {
         return (
           <WrapItem key={med._id}>
             <Box
-              maxW="sm"
+              w="xs"
               borderWidth="1px"
               borderRadius="lg"
               p="4"
               as="button"
-              color={colorMap[med.status]}
+              shadow="md"
+              {...colorMap[med.status]}
             >
-              <Text fontSize="lg" fontWeight="semibold" as="h4">
+              <Text fontSize="lg" fontWeight="semibold">
                 {med.firstName} {med.lastName}
-              </Text>
-              <Text fontSize="md" as="h4">
-                {med.medicationName}
               </Text>
             </Box>
           </WrapItem>
