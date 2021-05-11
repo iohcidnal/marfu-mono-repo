@@ -133,13 +133,3 @@ function useSignIn() {
 
   return mutation;
 }
-
-export const getServerSideProps: GetServerSideProps = async context => {
-  console.log('context :>> ', context);
-
-  return {
-    props: {
-      test: 'test'
-    }
-  };
-};
