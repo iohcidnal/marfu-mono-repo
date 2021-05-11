@@ -19,6 +19,7 @@
     "test": "jest --no-cache --runInBand"
   },
   "dependencies": {
+    "@chakra-ui/icons": "^1.0.13",
     "@chakra-ui/react": "^1.5.0",
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
