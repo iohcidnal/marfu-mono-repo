@@ -82,7 +82,7 @@ describe('medication', () => {
 
     req.params = { memberId: 'fake-id' };
     req.body = { clientDateTime: new Date(2021, 12, 25, 11, 0) };
-    const result: any = await controller.get(req, res, next);
+    const result: any = await controller.getAllByMemberId(req, res, next);
 
     let frequency = result[0].frequencies.find(
       (freq: { _id: string }) => freq._id === '6060bd138f88b122aa5aeb68'
@@ -121,7 +121,7 @@ describe('medication', () => {
 
     req.params = { memberId: 'fake-id' };
     req.body = { clientDateTime: new Date(2021, 12, 25, 11, 0) };
-    const result: any = await controller.get(req, res, next);
+    const result: any = await controller.getAllByMemberId(req, res, next);
 
     expect(res.status).not.toHaveBeenCalled();
     expect(result).toBeUndefined();

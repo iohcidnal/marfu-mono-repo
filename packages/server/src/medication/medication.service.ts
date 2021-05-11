@@ -66,23 +66,32 @@ export async function getAllByMemberIds(memberIds: string[], clientDateTime: str
   const docs = await model.find().lean().where('memberId').in(memberIds).populate('frequencies');
   const freqLogs = await getFrequencyLogs(docs);
 
-  const result: IMedicationDto[] = docs.map(doc => {
+  const medications: IMedicationDto[] = [];
+  for (const doc of docs) {
+    let medication = medications.find(med => med.memberId === doc.memberId);
+    if (medication?.status === medicationStatus.PAST_DUE) continue;
+
     const frequenciesStatus = getFrequenciesStatus(clientDateTime, doc, freqLogs);
     const status = getMedicationStatus(frequenciesStatus);
 
-    return {
-      _id: doc._id,
-      memberId: doc.memberId,
-      medicationName: doc.medicationName,
-      dosage: doc.dosage,
-      route: doc.route,
-      startDate: doc.startDate,
-      endDate: doc.endDate,
-      status
-    };
-  });
+    if (medication) {
+      // Replace med if it is not past due.
+      medication = { ...medication, ...doc };
+    } else {
+      medications.push({
+        _id: doc._id,
+        memberId: doc.memberId,
+        medicationName: doc.medicationName,
+        dosage: doc.dosage,
+        route: doc.route,
+        startDate: doc.startDate,
+        endDate: doc.endDate,
+        status
+      });
+    }
+  }
 
-  return result;
+  return medications;
 }
 
 export async function update(payload: IMedicationDto): Promise<IMedicationDto | null> {
