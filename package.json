@@ -55,7 +55,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-push": "yarn test:all"
+      "pre-push": "yarn workspaces run test"
     }
   }
 }
