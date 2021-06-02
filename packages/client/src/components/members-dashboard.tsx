@@ -15,7 +15,7 @@ import { HamburgerIcon, AddIcon } from '@chakra-ui/icons';
 import { IMemberDto, IMedicationDto } from '@common';
 
 interface Props {
-  medications: (IMemberDto & IMedicationDto)[];
+  membersWithMeds: (IMemberDto & IMedicationDto)[];
 }
 
 const colorMap = {
@@ -29,7 +29,7 @@ const colorMap = {
   }
 };
 
-export default function MembersDashboard({ medications }: Props) {
+export default function MembersDashboard({ membersWithMeds }: Props) {
   return (
     <>
       <Box p="4" shadow="md">
@@ -51,7 +51,7 @@ export default function MembersDashboard({ medications }: Props) {
         </HStack>
       </Box>
       <Wrap p="10" justify="center" alignContent="flex-start">
-        {medications.map(med => {
+        {membersWithMeds.map(med => {
           return (
             <WrapItem key={med._id}>
               <Box
