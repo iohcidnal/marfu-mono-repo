@@ -9,8 +9,7 @@ export const getServerSideProps: GetServerSideProps = async context => {
   const option: RequestInit = {
     headers: context.req ? { cookie: context.req.headers.cookie } : undefined
   };
-  // TODO: Make fetch re-usable for server side calls
-  const result = await fetch(`${process.env.NEXT_PUBLIC_API}members`, option);
+  const result = await fetch(`${process.env.NEXT_PUBLIC_API}users/session`, option);
 
   if (result.status === 200) {
     return {

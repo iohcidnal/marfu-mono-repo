@@ -44,3 +44,12 @@ export async function put(req: Request, res: Response, next: NextFunction) {
     next(error);
   }
 }
+
+export async function checkSession(req: Request, res: Response, next: NextFunction) {
+  try {
+    if (req._id) return res.sendStatus(200);
+    return res.sendStatus(404);
+  } catch (error) {
+    next(error);
+  }
+}

@@ -6,6 +6,7 @@ import { validateUser } from '../middlewares';
 
 const router = express.Router();
 
+router.get('/users/session', validateUser, controller.checkSession);
 router.post('/users', validateNewUser, controller.post);
 router.post('/users/authenticate', controller.authenticate);
 router.put('/users', validateUser, controller.put);
