@@ -10,10 +10,20 @@ export async function post(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function get(req: Request, res: Response, next: NextFunction) {
+export async function getAll(req: Request, res: Response, next: NextFunction) {
   try {
     const result = await service.getAll();
     return res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function getById(req: Request, res: Response, next: NextFunction) {
+  try {
+    const result = await service.getById(req.params.id);
+    if (result) return res.status(200).json(result);
+    return res.status(401).json('Member not found.');
   } catch (error) {
     next(error);
   }

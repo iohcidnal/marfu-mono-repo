@@ -82,7 +82,7 @@ describe('member', () => {
     });
     await model.save();
 
-    const result = await controller.get(req, res, next);
+    const result = await controller.getAll(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(200);
     expect(result).toHaveLength(2);
@@ -93,12 +93,14 @@ describe('member', () => {
       throw new Error('Fake error');
     });
 
-    const result = await controller.get(req, res, next);
+    const result = await controller.getAll(req, res, next);
 
     expect(res.status).not.toHaveBeenCalled();
     expect(result).toBeUndefined();
     expect(next).toHaveBeenCalledWith(expect.objectContaining(new Error()));
   });
+
+  it.todo('test get by id');
 
   it('should update', async () => {
     const createdByModel = new userModel({

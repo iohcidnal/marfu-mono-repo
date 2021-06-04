@@ -11,6 +11,11 @@ export async function getAll(): Promise<IMemberDto[]> {
   return docs;
 }
 
+export async function getById(id: string): Promise<IMemberDto | null> {
+  const doc = model.findById(id).lean();
+  return doc;
+}
+
 export async function update(payload: IMemberDto): Promise<IMemberDto | null> {
   const doc = await model.findByIdAndUpdate(payload._id, payload, { lean: true, new: true });
   return doc;
