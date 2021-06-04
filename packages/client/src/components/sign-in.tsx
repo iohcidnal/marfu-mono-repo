@@ -1,4 +1,4 @@
-import { GetServerSideProps } from 'next';
+import { useRouter } from 'next/router';
 import {
   Box,
   Button,
@@ -110,13 +110,17 @@ function Form() {
 }
 
 function useSignIn() {
+  const router = useRouter();
   const toast = useToast();
+
   const mutation = useMutation(
     (payload: Record<string, any>) =>
       fetcher({ url: `${process.env.NEXT_PUBLIC_API}users/authenticate`, method: 'POST', payload }),
     {
       onSuccess: ({ status, data }) => {
-        if (status !== 200) {
+        if (status == 200) {
+          router.replace('/dashboard');
+        } else {
           toast({
             title: 'Sign in failed',
             description: data.message,
@@ -124,8 +128,6 @@ function useSignIn() {
             position: 'top-right',
             isClosable: true
           });
-        } else {
-          // TODO: Redirect to dashboard
         }
       }
     }
