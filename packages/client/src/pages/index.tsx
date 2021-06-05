@@ -1,16 +1,13 @@
 import { GetServerSideProps } from 'next';
 import { SignIn } from '../components';
+import { fetcher } from '../utils';
 
 export default function Index() {
   return <SignIn />;
 }
 
 export const getServerSideProps: GetServerSideProps = async context => {
-  const option: RequestInit = {
-    headers: context.req ? { cookie: context.req.headers.cookie } : undefined
-  };
-  const result = await fetch(`${process.env.NEXT_PUBLIC_API}users/session`, option);
-
+  const result = await fetcher({ url: `${process.env.NEXT_PUBLIC_API}users/session` }, context);
   if (result.status === 200) {
     return {
       redirect: {
