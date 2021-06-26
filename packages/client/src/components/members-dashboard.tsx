@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import {
   Menu,
   MenuButton,
@@ -53,21 +54,23 @@ export default function MembersDashboard({ membersWithMeds }: Props) {
       <Wrap p="10" justify="center" alignContent="flex-start">
         {membersWithMeds.map(med => {
           return (
-            <WrapItem key={med._id}>
-              <Box
-                w="xs"
-                borderWidth="1px"
-                borderRadius="lg"
-                p="4"
-                as="button"
-                shadow="md"
-                {...colorMap[med.status]}
-              >
-                <Text fontSize="lg" fontWeight="semibold">
-                  {med.firstName} {med.lastName}
-                </Text>
-              </Box>
-            </WrapItem>
+            <Link href={`/member/${encodeURIComponent(med.memberId)}`} key={med._id}>
+              <WrapItem>
+                <Box
+                  w="xs"
+                  borderWidth="1px"
+                  borderRadius="lg"
+                  p="4"
+                  as="button"
+                  shadow="md"
+                  {...colorMap[med.status]}
+                >
+                  <Text fontSize="lg" fontWeight="semibold">
+                    {med.firstName} {med.lastName}
+                  </Text>
+                </Box>
+              </WrapItem>
+            </Link>
           );
         })}
       </Wrap>
