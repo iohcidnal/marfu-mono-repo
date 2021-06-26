@@ -33,6 +33,8 @@ afterEach(async () => {
   await mongoose.connection.db.dropDatabase();
 });
 
+// TODO: Group tests together by verb to make it more clear.
+
 describe('member', () => {
   it('should POST', async () => {
     req.body = {
@@ -100,7 +102,47 @@ describe('member', () => {
     expect(next).toHaveBeenCalledWith(expect.objectContaining(new Error()));
   });
 
-  it.todo('test get by id');
+  describe('get by id', () => {
+    it('should return the correct member', async () => {
+      const createdByModel = new userModel({
+        _id: new mongoose.Types.ObjectId('012345678901234567890123'),
+        firstName: 'Ross',
+        lastName: 'Gellar',
+        userName: 'rossgellar',
+        password: 'fakepassword2'
+      });
+      await createdByModel.save();
+
+      let model = new memberModel({
+        firstName: 'Joey',
+        lastName: 'Tribiani',
+        createdBy: new mongoose.Types.ObjectId('012345678901234567890123')
+      });
+      await model.save();
+      // ID that we will be looking for
+      req.params = {
+        id: model._id
+      };
+
+      model = new memberModel({
+        firstName: 'Chandler',
+        lastName: 'Bing',
+        createdBy: new mongoose.Types.ObjectId('012345678901234567890123')
+      });
+      await model.save();
+
+      const result = await controller.getById(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(result).toMatchObject(
+        expect.objectContaining({
+          firstName: 'Joey',
+          lastName: 'Tribiani',
+          createdBy: new mongoose.Types.ObjectId('012345678901234567890123')
+        })
+      );
+    });
+  });
 
   it('should update', async () => {
     const createdByModel = new userModel({
