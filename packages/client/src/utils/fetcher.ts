@@ -1,19 +1,19 @@
-interface FetchConfig {
+interface IFetchConfig {
   url: string;
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   payload?: any;
 }
 
-interface FetchResult {
+interface IFetchResult {
   status: number;
   statusText: string;
   data: any;
 }
 
 export default async function fetcher(
-  config: FetchConfig = { url: null, method: 'GET', payload: null },
+  config: IFetchConfig = { url: null, method: 'GET', payload: null },
   requestContext = null
-): Promise<FetchResult> {
+): Promise<IFetchResult> {
   const option: RequestInit = {
     method: config.method,
     mode: 'cors',
@@ -29,10 +29,7 @@ export default async function fetcher(
     option.headers['cookie'] = requestContext.req.headers.cookie;
   }
 
-  console.log('option :>> ', option);
   const response: Response = await fetch(config.url, option);
-  console.log('response :>> ', response);
-
   const data = await response.json();
 
   return {

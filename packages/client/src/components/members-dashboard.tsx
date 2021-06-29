@@ -15,7 +15,7 @@ import { HamburgerIcon, AddIcon } from '@chakra-ui/icons';
 
 import { IMemberDto, IMedicationDto } from '@common';
 
-interface Props {
+interface IProps {
   membersWithMeds: (IMemberDto & IMedicationDto)[];
 }
 
@@ -30,7 +30,7 @@ const colorMap = {
   }
 };
 
-export default function MembersDashboard({ membersWithMeds }: Props) {
+export default function MembersDashboard({ membersWithMeds }: IProps) {
   return (
     <>
       <Box p="4" shadow="md">

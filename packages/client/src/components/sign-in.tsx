@@ -118,7 +118,7 @@ function useSignIn() {
       fetcher({ url: `${process.env.NEXT_PUBLIC_API}users/authenticate`, method: 'POST', payload }),
     {
       onSuccess: ({ status, data }) => {
-        if (status == 200) {
+        if (status === 200) {
           router.replace('/dashboard');
         } else {
           toast({

@@ -2,7 +2,7 @@ import { act } from '@testing-library/react';
 import { renderWithProviders } from '../utils';
 import MembersDashboard from './members-dashboard';
 
-const render = renderWithProviders(<MembersDashboard medications={[]} />);
+const render = renderWithProviders(<MembersDashboard membersWithMeds={[]} />);
 
 describe('SignIn', () => {
   it('should render properly', async () => {
