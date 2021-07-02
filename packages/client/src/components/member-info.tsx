@@ -8,19 +8,26 @@ import {
   DrawerFooter,
   DrawerHeader,
   DrawerOverlay,
+  FormControl,
+  FormErrorMessage,
+  FormLabel,
   Heading,
   HStack,
   IconButton,
+  Input,
   LinkBox,
   Menu,
   MenuButton,
   MenuItem,
   MenuList,
+  Stack,
   Text,
   useDisclosure,
   Wrap
 } from '@chakra-ui/react';
 import { HamburgerIcon, AddIcon } from '@chakra-ui/icons';
+import { useForm } from 'react-hook-form';
+
 import { IMemberDto, IMedicationDto } from '@common';
 
 interface IProps {
@@ -29,7 +36,6 @@ interface IProps {
 }
 
 export default function MemberInfo({ member, medications }: IProps) {
-  console.log('{member, medications} :>> ', { member, medications });
   return (
     <>
       {/* TODO: Display breadcrumbs */}
@@ -82,6 +88,17 @@ function MedicationMenu() {
 }
 
 function DrawerForm({ isOpen, onClose, medicationId = null }) {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    formState
+  } = useForm<IMedicationDto>({ mode: 'all' });
+
+  function onSubmit(payload: IMedicationDto) {
+    console.log('medication :>> ', payload);
+  }
+
   return (
     <Drawer onClose={onClose} isOpen={isOpen} size="md">
       <DrawerOverlay />
@@ -92,18 +109,88 @@ function DrawerForm({ isOpen, onClose, medicationId = null }) {
         </DrawerHeader>
         <DrawerBody>
           {/* TODO: Create form  */}
-          <form></form>
+          <form noValidate onSubmit={handleSubmit(onSubmit)}>
+            <Stack>
+              <FormControl id="medicationName" isRequired isInvalid={!!errors.medicationName}>
+                <FormLabel>Medication name</FormLabel>
+                <Input
+                  type="text"
+                  size="lg"
+                  {...register('medicationName', {
+                    required: 'Medication name is required.'
+                  })}
+                />
+                {errors.medicationName && (
+                  <FormErrorMessage>{errors.medicationName.message}</FormErrorMessage>
+                )}
+              </FormControl>
+              <FormControl id="dosage" isRequired isInvalid={!!errors.dosage}>
+                <FormLabel>Dosage</FormLabel>
+                <Input
+                  type="text"
+                  size="lg"
+                  {...register('dosage', {
+                    required: 'Dosage is required.'
+                  })}
+                />
+                {errors.dosage && <FormErrorMessage>{errors.dosage.message}</FormErrorMessage>}
+              </FormControl>
+              <FormControl id="route" isRequired isInvalid={!!errors.route}>
+                <FormLabel>Route</FormLabel>
+                <Input
+                  type="text"
+                  size="lg"
+                  {...register('route', {
+                    required: 'Route is required.'
+                  })}
+                />
+                {errors.route && <FormErrorMessage>{errors.route.message}</FormErrorMessage>}
+              </FormControl>
+              <FormControl id="startDate" isRequired isInvalid={!!errors.startDate}>
+                <FormLabel>Start date:</FormLabel>
+                <Input
+                  type="date"
+                  size="lg"
+                  {...register('startDate', {
+                    required: 'Start date is required.'
+                  })}
+                />
+                {errors.startDate && (
+                  <FormErrorMessage>{errors.startDate.message}</FormErrorMessage>
+                )}
+              </FormControl>
+              <FormControl id="endDate" isRequired isInvalid={!!errors.endDate}>
+                <FormLabel>End date:</FormLabel>
+                <Input
+                  type="date"
+                  size="lg"
+                  {...register('endDate', {
+                    required: 'End date is required.'
+                  })}
+                />
+                {errors.endDate && <FormErrorMessage>{errors.endDate.message}</FormErrorMessage>}
+              </FormControl>
+              <FormControl id="note">
+                <FormLabel>Note</FormLabel>
+                <Input type="text" size="lg" {...register('note')} />
+              </FormControl>
+
+              {/* TODO: Stop here to display an inline input when `Add frequency` is clicked */}
+              <Button leftIcon={<AddIcon />} colorScheme="gray" w="full" variant="outline">
+                Add frequency
+              </Button>
+
+              <HStack pt="4">
+                <Button colorScheme="blue" w="full" size="lg" variant="outline" onClick={onClose}>
+                  Cancel
+                </Button>
+                <Button type="submit" colorScheme="blue" w="full" size="lg">
+                  Save
+                </Button>
+              </HStack>
+            </Stack>
+          </form>
         </DrawerBody>
-        <DrawerFooter borderTopWidth="1px">
-          <HStack>
-            <Button colorScheme="blue" w="full" size="lg" variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button type="submit" colorScheme="blue" w="full" size="lg">
-              Save
-            </Button>
-          </HStack>
-        </DrawerFooter>
       </DrawerContent>
     </Drawer>
   );
@@ -159,7 +246,7 @@ function MedicationCard({ medication }: { medication: IMedicationDto }) {
         <Text fontWeight="semibold">Schedule:</Text>
         <HStack>
           {medication.frequencies.map(freq => (
-            <Text>
+            <Text key={freq._id}>
               {new Intl.DateTimeFormat('en-US', {
                 timeStyle: 'short',
                 hour12: false
@@ -169,18 +256,23 @@ function MedicationCard({ medication }: { medication: IMedicationDto }) {
         </HStack>
       </HStack>
 
-      {/* TODO: Handle onClick. Should display a Drawer: https://chakra-ui.com/docs/overlay/drawer */}
-      <HStack mt="4" justifyContent="space-between">
-        <Button colorScheme="gray" w="full" size="sm" variant="outline">
-          Update
-        </Button>
-        <Button colorScheme="gray" w="full" size="sm" variant="outline">
-          Add logs
-        </Button>
-        <Button colorScheme="gray" w="full" size="sm" variant="outline">
-          View logs
-        </Button>
-      </HStack>
+      <CardActions />
     </LinkBox>
+  );
+}
+
+function CardActions() {
+  return (
+    <HStack mt="4" justifyContent="space-between">
+      <Button colorScheme="gray" w="full" size="sm" variant="outline">
+        Update
+      </Button>
+      <Button colorScheme="gray" w="full" size="sm" variant="outline">
+        Add logs
+      </Button>
+      <Button colorScheme="gray" w="full" size="sm" variant="outline">
+        View logs
+      </Button>
+    </HStack>
   );
 }
