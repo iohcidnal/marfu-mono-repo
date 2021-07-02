@@ -150,7 +150,10 @@ function MedicationCard({ medication }: { medication: IMedicationDto }) {
         </HStack>
       </HStack>
 
-      {/* TODO: Add new field `Note` for medication. This will be primarily use for instructions */}
+      <HStack>
+        <Text fontWeight="semibold">Note:</Text>
+        <Text>{medication.note}</Text>
+      </HStack>
 
       <HStack mt="2">
         <Text fontWeight="semibold">Schedule:</Text>

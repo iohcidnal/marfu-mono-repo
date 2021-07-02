@@ -19,6 +19,10 @@ const MedicationSchema = new mongoose.Schema(
       type: String,
       required: true
     },
+    note: {
+      type: String,
+      required: false
+    },
     startDate: {
       type: Date,
       required: true
@@ -56,6 +60,7 @@ MedicationSchema.statics.toDto = function (doc: IMedicationDocument): IMedicatio
     medicationName: doc.medicationName,
     dosage: doc.dosage,
     route: doc.route,
+    note: doc.note,
     startDate: doc.startDate,
     endDate: doc.endDate
   };

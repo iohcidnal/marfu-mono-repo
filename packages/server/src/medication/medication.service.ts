@@ -54,6 +54,7 @@ export async function getAllByMemberId(
       dosage: doc.dosage,
       frequencies,
       route: doc.route,
+      note: doc.note,
       startDate: doc.startDate,
       endDate: doc.endDate
     };
@@ -84,6 +85,7 @@ export async function getAllByMemberIds(memberIds: string[], clientDateTime: str
         medicationName: doc.medicationName,
         dosage: doc.dosage,
         route: doc.route,
+        note: doc.note,
         startDate: doc.startDate,
         endDate: doc.endDate,
         status
