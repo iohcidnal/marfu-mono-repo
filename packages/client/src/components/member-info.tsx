@@ -1,5 +1,13 @@
 import {
   Box,
+  Button,
+  Drawer,
+  DrawerBody,
+  DrawerCloseButton,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerOverlay,
   Heading,
   HStack,
   IconButton,
@@ -9,10 +17,10 @@ import {
   MenuItem,
   MenuList,
   Text,
+  useDisclosure,
   Wrap
 } from '@chakra-ui/react';
 import { HamburgerIcon, AddIcon } from '@chakra-ui/icons';
-
 import { IMemberDto, IMedicationDto } from '@common';
 
 interface IProps {
@@ -40,23 +48,64 @@ function TitleBar({ title }: { title: string }) {
     <>
       <Box p="4" shadow="md">
         <HStack>
-          <Menu>
-            <MenuButton
-              as={IconButton}
-              aria-label="Options"
-              icon={<HamburgerIcon />}
-              variant="outline"
-            />
-            <MenuList>
-              <MenuItem icon={<AddIcon />}>Add new medication</MenuItem>
-            </MenuList>
-          </Menu>
+          <MedicationMenu />
           <Text fontSize="lg" fontWeight="semibold" color="gray.600">
             {title}
           </Text>
         </HStack>
       </Box>
     </>
+  );
+}
+
+function MedicationMenu() {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  return (
+    <>
+      <Menu>
+        <MenuButton
+          as={IconButton}
+          aria-label="Options"
+          icon={<HamburgerIcon />}
+          variant="outline"
+        />
+        <MenuList>
+          <MenuItem icon={<AddIcon />} onClick={onOpen}>
+            Add new medication
+          </MenuItem>
+        </MenuList>
+      </Menu>
+      <DrawerForm isOpen={isOpen} onClose={onClose} />
+    </>
+  );
+}
+
+function DrawerForm({ isOpen, onClose, medicationId = null }) {
+  return (
+    <Drawer onClose={onClose} isOpen={isOpen} size="md">
+      <DrawerOverlay />
+      <DrawerContent>
+        <DrawerCloseButton />
+        <DrawerHeader borderBottomWidth="1px">
+          {!medicationId ? 'Add New Medication' : ''}
+        </DrawerHeader>
+        <DrawerBody>
+          {/* TODO: Create form  */}
+          <form></form>
+        </DrawerBody>
+        <DrawerFooter borderTopWidth="1px">
+          <HStack>
+            <Button colorScheme="blue" w="full" size="lg" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" colorScheme="blue" w="full" size="lg">
+              Save
+            </Button>
+          </HStack>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   );
 }
 
@@ -117,14 +166,17 @@ function MedicationCard({ medication }: { medication: IMedicationDto }) {
         </HStack>
       </HStack>
 
-      {/* TODO: Stop here to handle onClick. Should display a Drawer: https://chakra-ui.com/docs/overlay/drawer */}
+      {/* TODO: Handle onClick. Should display a Drawer: https://chakra-ui.com/docs/overlay/drawer */}
       <HStack mt="4" justifyContent="space-between">
-        <Text as="button" color="teal.400" fontWeight="bold">
+        <Button colorScheme="gray" w="full" size="sm" variant="outline">
+          Update
+        </Button>
+        <Button colorScheme="gray" w="full" size="sm" variant="outline">
           Add logs
-        </Text>
-        <Text as="button" color="teal.400" fontWeight="bold">
+        </Button>
+        <Button colorScheme="gray" w="full" size="sm" variant="outline">
           View logs
-        </Text>
+        </Button>
       </HStack>
     </LinkBox>
   );
