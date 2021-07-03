@@ -1,3 +1,4 @@
+import * as React from 'react';
 import {
   Box,
   Button,
@@ -26,9 +27,9 @@ import {
   Wrap
 } from '@chakra-ui/react';
 import { HamburgerIcon, AddIcon } from '@chakra-ui/icons';
-import { useForm } from 'react-hook-form';
+import { useFieldArray, useForm } from 'react-hook-form';
 
-import { IMemberDto, IMedicationDto } from '@common';
+import { IMemberDto, IMedicationDto, IFrequencyDto } from '@common';
 
 interface IProps {
   member: IMemberDto;
@@ -87,6 +88,10 @@ function MedicationMenu() {
   );
 }
 
+interface IFreqInputs {
+  freq: IFrequencyDto[];
+}
+
 function DrawerForm({ isOpen, onClose, medicationId = null }) {
   const {
     register,
@@ -95,8 +100,21 @@ function DrawerForm({ isOpen, onClose, medicationId = null }) {
     formState
   } = useForm<IMedicationDto>({ mode: 'all' });
 
+  const { control, register: registerFreqInput, watch } = useForm<IFreqInputs>({ mode: 'all' });
+  const { fields, append } = useFieldArray({
+    control,
+    name: 'freq'
+  });
+  const watchInputs = watch('freq');
+  const freqInputs = fields.map((field, index) => ({
+    ...field,
+    ...watchInputs[index]
+  }));
+
   function onSubmit(payload: IMedicationDto) {
     console.log('medication :>> ', payload);
+    console.log('freqInputs :>> ', freqInputs);
+    // TODO: Merge freqInputs into medication before calling the API
   }
 
   return (
@@ -108,7 +126,6 @@ function DrawerForm({ isOpen, onClose, medicationId = null }) {
           {!medicationId ? 'Add New Medication' : ''}
         </DrawerHeader>
         <DrawerBody>
-          {/* TODO: Create form  */}
           <form noValidate onSubmit={handleSubmit(onSubmit)}>
             <Stack>
               <FormControl id="medicationName" isRequired isInvalid={!!errors.medicationName}>
@@ -175,10 +192,7 @@ function DrawerForm({ isOpen, onClose, medicationId = null }) {
                 <Input type="text" size="lg" {...register('note')} />
               </FormControl>
 
-              {/* TODO: Stop here to display an inline input when `Add frequency` is clicked */}
-              <Button leftIcon={<AddIcon />} colorScheme="gray" w="full" variant="outline">
-                Add frequency
-              </Button>
+              <FrequencyInput inputs={freqInputs} append={append} register={registerFreqInput} />
 
               <HStack pt="4">
                 <Button colorScheme="blue" w="full" size="lg" variant="outline" onClick={onClose}>
@@ -193,6 +207,40 @@ function DrawerForm({ isOpen, onClose, medicationId = null }) {
         </DrawerBody>
       </DrawerContent>
     </Drawer>
+  );
+}
+
+function FrequencyInput({ inputs, append, register }) {
+  return (
+    <>
+      <Button
+        leftIcon={<AddIcon />}
+        onClick={() => append({ dateTime: null })}
+        colorScheme="gray"
+        w="full"
+        variant="outline"
+      >
+        Add frequency
+      </Button>
+      <Stack>
+        {inputs.map((input, index) => {
+          return (
+            <FormControl
+              key={input.id}
+              id={`freq.${index}.dateTime`}
+              isRequired
+              isInvalid={!input.dateTime}
+            >
+              <FormLabel>{`Freq ${index + 1}`}</FormLabel>
+              <Input type="time" size="lg" {...register(`freq.${index}.dateTime`)} />
+              {!input.dateTime && (
+                <FormErrorMessage>{`Freq ${index + 1} is required.`}</FormErrorMessage>
+              )}
+            </FormControl>
+          );
+        })}
+      </Stack>
+    </>
   );
 }
 
