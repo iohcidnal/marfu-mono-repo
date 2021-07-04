@@ -30,33 +30,52 @@ import { useFieldArray, useForm } from 'react-hook-form';
 
 import { IMemberDto, IMedicationDto } from '@common';
 
-interface IProps {
+interface IMemberInfoProps {
   member: IMemberDto;
   medications: IMedicationDto[];
 }
 
-export default function MemberInfo({ member, medications }: IProps) {
+interface IMemberInfoContextProps extends IMemberInfoProps {
+  isOpen: boolean;
+  onOpen: () => void;
+  onClose: () => void;
+}
+
+const MemberInfoContext = React.createContext<IMemberInfoContextProps>(null);
+const useMemberInfoContext = () => React.useContext(MemberInfoContext);
+
+export default function MemberInfo({ member, medications }: IMemberInfoProps) {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const value = React.useMemo(
+    () => ({
+      member,
+      medications,
+      isOpen,
+      onOpen,
+      onClose
+    }),
+    [isOpen, medications, member, onClose, onOpen]
+  );
+
   return (
-    <>
+    <MemberInfoContext.Provider value={value}>
       {/* TODO: Display breadcrumbs */}
-      <TitleBar title={`Medications for ${member.firstName} ${member.lastName}`} />
-      <Wrap p="10" justify="center" alignContent="flex-start">
-        {medications.map(medication => (
-          <MedicationCard key={medication._id} medication={medication} />
-        ))}
-      </Wrap>
-    </>
+      <TitleBar />
+      <MedicationCards />
+    </MemberInfoContext.Provider>
   );
 }
 
-function TitleBar({ title }: { title: string }) {
+function TitleBar() {
+  const { member } = useMemberInfoContext();
+
   return (
     <>
       <Box p="4" shadow="md">
         <HStack>
           <MedicationMenu />
           <Text fontSize="lg" fontWeight="semibold" color="gray.600">
-            {title}
+            {`Medications for ${member.firstName} ${member.lastName}`}
           </Text>
         </HStack>
       </Box>
@@ -65,7 +84,7 @@ function TitleBar({ title }: { title: string }) {
 }
 
 function MedicationMenu() {
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { onOpen } = useMemberInfoContext();
 
   return (
     <>
@@ -82,12 +101,14 @@ function MedicationMenu() {
           </MenuItem>
         </MenuList>
       </Menu>
-      <DrawerForm isOpen={isOpen} onClose={onClose} />
+      <DrawerForm formMode="CREATE" />
     </>
   );
 }
 
-function DrawerForm({ isOpen, onClose, medicationId = null }) {
+function DrawerForm({ formMode }: { formMode: 'CREATE' | 'UPDATE' }) {
+  const { member, isOpen, onClose } = useMemberInfoContext();
+
   const {
     control,
     watch,
@@ -108,7 +129,7 @@ function DrawerForm({ isOpen, onClose, medicationId = null }) {
   }));
 
   async function onSubmit(payload: IMedicationDto) {
-    console.log('medication :>> ', payload);
+    console.log('medication :>> ', { ...payload, memberId: member._id });
     // TODO: Call API to save payload
   }
 
@@ -118,7 +139,7 @@ function DrawerForm({ isOpen, onClose, medicationId = null }) {
       <DrawerContent>
         <DrawerCloseButton />
         <DrawerHeader borderBottomWidth="1px">
-          {!medicationId ? 'Add New Medication' : ''}
+          {formMode === 'CREATE' ? 'Add New Medication' : ''}
         </DrawerHeader>
         <DrawerBody>
           <form noValidate onSubmit={handleSubmit(onSubmit)}>
@@ -237,68 +258,82 @@ function DrawerForm({ isOpen, onClose, medicationId = null }) {
   );
 }
 
-function MedicationCard({ medication }: { medication: IMedicationDto }) {
+function MedicationCards() {
+  const { medications } = useMemberInfoContext();
+
   return (
-    <LinkBox as="article" w="sm" p="4" borderWidth="1px" rounded="md" shadow="md">
-      <Heading size="md" my="2">
-        {medication.medicationName}
-      </Heading>
+    <Wrap p="10" justify="center" alignContent="flex-start">
+      {medications.map(medication => (
+        <LinkBox
+          key={medication._id}
+          as="article"
+          w="sm"
+          p="4"
+          borderWidth="1px"
+          rounded="md"
+          shadow="md"
+        >
+          <Heading size="md" my="2">
+            {medication.medicationName}
+          </Heading>
 
-      <HStack justifyContent="space-between">
-        <HStack>
-          <Text fontWeight="semibold">Dosage:</Text>
-          <Text>{medication.dosage}</Text>
-        </HStack>
-        <HStack>
-          <Text fontWeight="semibold">Route:</Text>
-          <Text>{medication.route}</Text>
-        </HStack>
-      </HStack>
+          <HStack justifyContent="space-between">
+            <HStack>
+              <Text fontWeight="semibold">Dosage:</Text>
+              <Text>{medication.dosage}</Text>
+            </HStack>
+            <HStack>
+              <Text fontWeight="semibold">Route:</Text>
+              <Text>{medication.route}</Text>
+            </HStack>
+          </HStack>
 
-      <HStack justifyContent="space-between">
-        <HStack>
-          <Text fontWeight="semibold">Start:</Text>
-          <Text>
-            {new Intl.DateTimeFormat('en-US', {
-              year: 'numeric',
-              month: 'numeric',
-              day: 'numeric'
-            }).format(new Date(medication.startDate))}
-          </Text>
-        </HStack>
-        <HStack>
-          <Text fontWeight="semibold">End:</Text>
-          <Text>
-            {new Intl.DateTimeFormat('en-US', {
-              year: 'numeric',
-              month: 'numeric',
-              day: 'numeric'
-            }).format(new Date(medication.endDate))}
-          </Text>
-        </HStack>
-      </HStack>
+          <HStack justifyContent="space-between">
+            <HStack>
+              <Text fontWeight="semibold">Start:</Text>
+              <Text>
+                {new Intl.DateTimeFormat('en-US', {
+                  year: 'numeric',
+                  month: 'numeric',
+                  day: 'numeric'
+                }).format(new Date(medication.startDate))}
+              </Text>
+            </HStack>
+            <HStack>
+              <Text fontWeight="semibold">End:</Text>
+              <Text>
+                {new Intl.DateTimeFormat('en-US', {
+                  year: 'numeric',
+                  month: 'numeric',
+                  day: 'numeric'
+                }).format(new Date(medication.endDate))}
+              </Text>
+            </HStack>
+          </HStack>
 
-      <HStack>
-        <Text fontWeight="semibold">Note:</Text>
-        <Text>{medication.note}</Text>
-      </HStack>
+          <HStack>
+            <Text fontWeight="semibold">Note:</Text>
+            <Text>{medication.note}</Text>
+          </HStack>
 
-      <HStack mt="2">
-        <Text fontWeight="semibold">Schedule:</Text>
-        <HStack>
-          {medication.frequencies.map(freq => (
-            <Text key={freq._id}>
-              {new Intl.DateTimeFormat('en-US', {
-                timeStyle: 'short',
-                hour12: false
-              }).format(new Date(freq.dateTime))}
-            </Text>
-          ))}
-        </HStack>
-      </HStack>
+          <HStack mt="2">
+            <Text fontWeight="semibold">Schedule:</Text>
+            <HStack>
+              {medication.frequencies.map(freq => (
+                <Text key={freq._id}>
+                  {new Intl.DateTimeFormat('en-US', {
+                    timeStyle: 'short',
+                    hour12: false
+                  }).format(new Date(freq.dateTime))}
+                </Text>
+              ))}
+            </HStack>
+          </HStack>
 
-      <CardActions />
-    </LinkBox>
+          <CardActions />
+        </LinkBox>
+      ))}
+    </Wrap>
   );
 }
 
