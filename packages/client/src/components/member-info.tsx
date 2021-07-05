@@ -47,6 +47,10 @@ interface IMemberInfoContextProps extends IMemberInfoProps {
   onClose: () => void;
 }
 
+const toastOptions: UseToastOptions = {
+  position: 'top-right',
+  isClosable: true
+};
 const MemberInfoContext = React.createContext<IMemberInfoContextProps>(null);
 const useMemberInfoContext = () => React.useContext(MemberInfoContext);
 
@@ -120,8 +124,8 @@ function MedicationMenu() {
 }
 
 function DrawerForm({ formMode }: { formMode: 'CREATE' | 'UPDATE' }) {
-  const { member, isOpen, onClose } = useMemberInfoContext();
-
+  const { currentUserId, member, isOpen, onClose } = useMemberInfoContext();
+  const toast = useToast();
   const {
     control,
     watch,
@@ -141,12 +145,21 @@ function DrawerForm({ formMode }: { formMode: 'CREATE' | 'UPDATE' }) {
     ...watchInputs[index]
   }));
 
-  const { currentUserId } = useMemberInfoContext();
   const mutation = useMedicationService();
 
   async function onSubmit(payload: IMedicationDto) {
-    const p = { ...payload, memberId: member._id, createdBy: currentUserId };
-    mutation.mutate(p);
+    if (freqInputs.length === 0 || freqInputs.some(freq => isNaN(freq.dateTime.valueOf()))) {
+      toast({
+        ...toastOptions,
+        status: 'error',
+        title: 'Not able to save',
+        description: 'Frequency is required.'
+      });
+      return;
+    }
+
+    const medication = { ...payload, memberId: member._id, createdBy: currentUserId };
+    mutation.mutate(medication);
   }
 
   return (
@@ -272,6 +285,7 @@ function DrawerForm({ formMode }: { formMode: 'CREATE' | 'UPDATE' }) {
                 <Button
                   colorScheme="blue"
                   disabled={!formState.isValid}
+                  isLoading={mutation.isLoading}
                   size="lg"
                   type="submit"
                   w="full"
@@ -373,11 +387,6 @@ function CardActions() {
     </HStack>
   );
 }
-
-const toastOptions: UseToastOptions = {
-  position: 'top-right',
-  isClosable: true
-};
 
 function useMedicationService() {
   const { medications, setMedications, onClose } = useMemberInfoContext();
