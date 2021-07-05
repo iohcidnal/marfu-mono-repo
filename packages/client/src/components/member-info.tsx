@@ -23,19 +23,25 @@ import {
   Stack,
   Text,
   useDisclosure,
+  useToast,
+  UseToastOptions,
   Wrap
 } from '@chakra-ui/react';
 import { HamburgerIcon, AddIcon } from '@chakra-ui/icons';
 import { useFieldArray, useForm } from 'react-hook-form';
+import { useMutation } from 'react-query';
 
 import { IMemberDto, IMedicationDto } from '@common';
+import { fetcher } from '../utils';
 
 interface IMemberInfoProps {
+  currentUserId: string;
   member: IMemberDto;
   medications: IMedicationDto[];
 }
 
 interface IMemberInfoContextProps extends IMemberInfoProps {
+  setMedications: React.Dispatch<IMedicationDto[]>;
   isOpen: boolean;
   onOpen: () => void;
   onClose: () => void;
@@ -44,17 +50,24 @@ interface IMemberInfoContextProps extends IMemberInfoProps {
 const MemberInfoContext = React.createContext<IMemberInfoContextProps>(null);
 const useMemberInfoContext = () => React.useContext(MemberInfoContext);
 
-export default function MemberInfo({ member, medications }: IMemberInfoProps) {
+export default function MemberInfo({
+  currentUserId,
+  member,
+  medications: initialMedications
+}: IMemberInfoProps) {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [medications, setMedications] = React.useState(initialMedications);
   const value = React.useMemo(
     () => ({
+      currentUserId,
       member,
       medications,
+      setMedications,
       isOpen,
       onOpen,
       onClose
     }),
-    [isOpen, medications, member, onClose, onOpen]
+    [currentUserId, isOpen, medications, member, onClose, onOpen]
   );
 
   return (
@@ -128,9 +141,12 @@ function DrawerForm({ formMode }: { formMode: 'CREATE' | 'UPDATE' }) {
     ...watchInputs[index]
   }));
 
+  const { currentUserId } = useMemberInfoContext();
+  const mutation = useMedicationService();
+
   async function onSubmit(payload: IMedicationDto) {
-    console.log('medication :>> ', { ...payload, memberId: member._id });
-    // TODO: Call API to save payload
+    const p = { ...payload, memberId: member._id, createdBy: currentUserId };
+    mutation.mutate(p);
   }
 
   return (
@@ -233,7 +249,14 @@ function DrawerForm({ formMode }: { formMode: 'CREATE' | 'UPDATE' }) {
                         type="time"
                         size="lg"
                         {...register(`frequencies.${index}.dateTime`, {
-                          required: `Freq ${index + 1} is required.`
+                          required: `Freq ${index + 1} is required.`,
+                          setValueAs: value => {
+                            const [hh, mm] = value.split(':');
+                            const date = new Date();
+                            date.setHours(Number(hh));
+                            date.setMinutes(Number(mm), 0);
+                            return date;
+                          }
                         })}
                       />
                       {inputError && <FormErrorMessage>{inputError}</FormErrorMessage>}
@@ -263,16 +286,8 @@ function MedicationCards() {
 
   return (
     <Wrap p="10" justify="center" alignContent="flex-start">
-      {medications.map(medication => (
-        <LinkBox
-          key={medication._id}
-          as="article"
-          w="sm"
-          p="4"
-          borderWidth="1px"
-          rounded="md"
-          shadow="md"
-        >
+      {medications.map((medication, index) => (
+        <LinkBox key={index} as="article" w="sm" p="4" borderWidth="1px" rounded="md" shadow="md">
           <Heading size="md" my="2">
             {medication.medicationName}
           </Heading>
@@ -319,8 +334,9 @@ function MedicationCards() {
           <HStack mt="2">
             <Text fontWeight="semibold">Schedule:</Text>
             <HStack>
-              {medication.frequencies.map(freq => (
-                <Text key={freq._id}>
+              {medication.frequencies.map((freq, index) => (
+                <Text key={index}>
+                  {/* TODO: stop here. bug in displaying time */}
                   {new Intl.DateTimeFormat('en-US', {
                     timeStyle: 'short',
                     hour12: false
@@ -351,4 +367,49 @@ function CardActions() {
       </Button>
     </HStack>
   );
+}
+
+const toastOptions: UseToastOptions = {
+  position: 'top-right',
+  isClosable: true
+};
+
+function useMedicationService() {
+  const { medications, setMedications, onClose } = useMemberInfoContext();
+  const toast = useToast();
+
+  const mutation = useMutation(
+    async (payload: IMedicationDto) => {
+      const result = await fetcher({
+        url: `${process.env.NEXT_PUBLIC_API}medications`,
+        method: 'POST',
+        payload
+      });
+
+      return {
+        ...result,
+        payload
+      };
+    },
+    {
+      onSuccess: ({ status, payload }) => {
+        if (status === 201) {
+          setMedications([...medications, payload]);
+          onClose();
+          toast({
+            ...toastOptions,
+            title: 'Medication successfuly created',
+            status: 'success'
+          });
+        } else {
+          toast({ ...toastOptions, title: 'An error occured', status: 'error' });
+        }
+      },
+      onError: () => {
+        toast({ ...toastOptions, title: 'An error occured', status: 'error' });
+      }
+    }
+  );
+
+  return mutation;
 }

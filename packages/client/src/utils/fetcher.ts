@@ -4,7 +4,7 @@ interface IFetchConfig {
   payload?: any;
 }
 
-interface IFetchResult {
+export interface IFetchResult {
   status: number;
   statusText: string;
   data: any;

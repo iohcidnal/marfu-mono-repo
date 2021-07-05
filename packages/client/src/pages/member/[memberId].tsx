@@ -1,14 +1,17 @@
+import * as React from 'react';
 import { GetServerSideProps } from 'next';
-import { fetcher } from '../../utils';
+
+import { fetcher, IFetchResult } from '../../utils';
 import { MemberInfo } from '../../components';
 
-export default function Member({ member, medications }) {
-  return <MemberInfo member={member} medications={medications} />;
+export default function Member({ currentUserId, member, medications }) {
+  return <MemberInfo currentUserId={currentUserId} member={member} medications={medications} />;
 }
 
 export const getServerSideProps: GetServerSideProps = async context => {
   const { memberId } = context.query;
   const results = await Promise.allSettled([
+    fetcher({ url: `${process.env.NEXT_PUBLIC_API}users/session` }, context),
     fetcher({ url: `${process.env.NEXT_PUBLIC_API}members/${memberId}` }, context),
     fetcher({ url: `${process.env.NEXT_PUBLIC_API}medications/${memberId}` }, context)
   ]);
@@ -25,10 +28,17 @@ export const getServerSideProps: GetServerSideProps = async context => {
     };
   }
 
+  const [
+    sessionResult,
+    memberResult,
+    medicationResult
+  ] = results as PromiseFulfilledResult<IFetchResult>[];
+
   return {
     props: {
-      member: results[0]['value'].data,
-      medications: results[1]['value'].data
+      currentUserId: sessionResult.value.data._id,
+      member: memberResult.value.data,
+      medications: medicationResult.value.data
     }
   };
 };

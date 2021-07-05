@@ -47,7 +47,7 @@ export async function put(req: Request, res: Response, next: NextFunction) {
 
 export async function checkSession(req: Request, res: Response, next: NextFunction) {
   try {
-    if (req._id) return res.status(200).json('Valid session.');
+    if (req._id) return res.status(200).json({ _id: req._id });
     return res.status(401).json('Unauthorized session.');
   } catch (error) {
     next(error);
