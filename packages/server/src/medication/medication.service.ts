@@ -151,16 +151,14 @@ function getFrequenciesStatus(
       return accumulator;
     }
 
-    const freqDateTime = createFrequencyDateTime(currentDateTime, freq.dateTime);
-
-    if (freqDateTime >= currentDateTime) {
-      const diff = freqDateTime.valueOf() - currentDateTime.valueOf();
+    if (freq.dateTime >= currentDateTime) {
+      const diff = freq.dateTime.valueOf() - currentDateTime.valueOf();
       const isFreqWithinAnHour = diff <= ONE_HOUR_IN_MILLISECONDS;
       if (isFreqWithinAnHour) {
         accumulator.push({
           _id: freqId,
           medicationId,
-          dateTime: freqDateTime,
+          dateTime: freq.dateTime,
           status: medicationStatus.COMING
         });
 
@@ -168,30 +166,17 @@ function getFrequenciesStatus(
       }
     }
 
-    const diff = currentDateTime.valueOf() - freqDateTime.valueOf();
+    const diff = currentDateTime.valueOf() - freq.dateTime.valueOf();
     const isFreqPastWithinAnHour = diff <= ONE_HOUR_IN_MILLISECONDS;
     accumulator.push({
       _id: freqId,
       medicationId,
-      dateTime: freqDateTime,
+      dateTime: freq.dateTime,
       status: isFreqPastWithinAnHour ? medicationStatus.COMING : medicationStatus.PAST_DUE
     });
 
     return accumulator;
   }, []);
 
-  return result;
-}
-
-/**
- * Creates a new date and time by concatinating freq time to the current date
- */
-function createFrequencyDateTime(currentDateTime: Date, freqDateTime: Date): Date {
-  return new Date(
-    currentDateTime.getFullYear(),
-    currentDateTime.getMonth(),
-    currentDateTime.getDate(),
-    freqDateTime.getHours(),
-    freqDateTime.getMinutes()
-  );
+  return [...result].sort((a, b) => a.dateTime.valueOf() - b.dateTime.valueOf());
 }

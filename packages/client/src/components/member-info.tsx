@@ -269,7 +269,13 @@ function DrawerForm({ formMode }: { formMode: 'CREATE' | 'UPDATE' }) {
                 <Button colorScheme="blue" w="full" size="lg" variant="outline" onClick={onClose}>
                   Cancel
                 </Button>
-                <Button type="submit" colorScheme="blue" w="full" size="lg">
+                <Button
+                  colorScheme="blue"
+                  disabled={!formState.isValid}
+                  size="lg"
+                  type="submit"
+                  w="full"
+                >
                   Save
                 </Button>
               </HStack>
@@ -336,7 +342,6 @@ function MedicationCards() {
             <HStack>
               {medication.frequencies.map((freq, index) => (
                 <Text key={index}>
-                  {/* TODO: stop here. bug in displaying time */}
                   {new Intl.DateTimeFormat('en-US', {
                     timeStyle: 'short',
                     hour12: false
