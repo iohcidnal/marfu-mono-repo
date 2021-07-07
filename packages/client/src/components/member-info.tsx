@@ -27,7 +27,15 @@ import {
   UseToastOptions,
   Wrap
 } from '@chakra-ui/react';
-import { HamburgerIcon, AddIcon } from '@chakra-ui/icons';
+import {
+  FaBars,
+  FaEllipsisH,
+  FaList,
+  FaNotesMedical,
+  FaPlus,
+  FaRegEdit,
+  FaTrash
+} from 'react-icons/fa';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { useMutation } from 'react-query';
 
@@ -106,14 +114,9 @@ function MedicationMenu() {
   return (
     <>
       <Menu>
-        <MenuButton
-          as={IconButton}
-          aria-label="Options"
-          icon={<HamburgerIcon />}
-          variant="outline"
-        />
+        <MenuButton as={IconButton} aria-label="Options" icon={<FaBars />} variant="outline" />
         <MenuList>
-          <MenuItem icon={<AddIcon />} onClick={onOpen}>
+          <MenuItem icon={<FaPlus />} onClick={onOpen}>
             Add new medication
           </MenuItem>
         </MenuList>
@@ -238,7 +241,7 @@ function DrawerForm({ formMode }: { formMode: 'CREATE' | 'UPDATE' }) {
               </FormControl>
 
               <Button
-                leftIcon={<AddIcon />}
+                leftIcon={<FaPlus />}
                 onClick={() => append({ dateTime: null })}
                 colorScheme="gray"
                 w="full"
@@ -308,9 +311,12 @@ function MedicationCards() {
     <Wrap p="10" justify="center" alignContent="flex-start">
       {medications.map((medication, index) => (
         <LinkBox key={index} as="article" w="sm" p="4" borderWidth="1px" rounded="md" shadow="md">
-          <Heading size="md" my="2">
-            {medication.medicationName}
-          </Heading>
+          <Stack>
+            <CardActions />
+            <Heading size="md" my="2">
+              {medication.medicationName}
+            </Heading>
+          </Stack>
 
           <HStack justifyContent="space-between">
             <HStack>
@@ -364,8 +370,6 @@ function MedicationCards() {
               ))}
             </HStack>
           </HStack>
-
-          <CardActions />
         </LinkBox>
       ))}
     </Wrap>
@@ -374,17 +378,15 @@ function MedicationCards() {
 
 function CardActions() {
   return (
-    <HStack mt="4" justifyContent="space-between">
-      <Button colorScheme="gray" w="full" size="sm" variant="outline">
-        Update
-      </Button>
-      <Button colorScheme="gray" w="full" size="sm" variant="outline">
-        Add logs
-      </Button>
-      <Button colorScheme="gray" w="full" size="sm" variant="outline">
-        View logs
-      </Button>
-    </HStack>
+    <Menu>
+      <MenuButton as={IconButton} aria-label="Options" icon={<FaEllipsisH />} variant="outline" />
+      <MenuList>
+        <MenuItem icon={<FaRegEdit />}>Edit medication</MenuItem>
+        <MenuItem icon={<FaTrash />}>Delete medication</MenuItem>
+        <MenuItem icon={<FaList />}>View logs</MenuItem>
+        <MenuItem icon={<FaNotesMedical />}>Add logs</MenuItem>
+      </MenuList>
+    </Menu>
   );
 }
 
