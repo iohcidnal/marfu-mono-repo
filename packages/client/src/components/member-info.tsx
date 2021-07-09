@@ -67,19 +67,15 @@ export default function MemberInfo({
   member,
   medications: initialMedications
 }: IMemberInfoProps) {
-  const { isOpen, onOpen, onClose } = useDisclosure();
   const [medications, setMedications] = React.useState(initialMedications);
   const value = React.useMemo(
     () => ({
       currentUserId,
       member,
       medications,
-      setMedications,
-      isOpen,
-      onOpen,
-      onClose
+      setMedications
     }),
-    [currentUserId, isOpen, medications, member, onClose, onOpen]
+    [currentUserId, medications, member]
   );
 
   return (
@@ -109,25 +105,29 @@ function TitleBar() {
 }
 
 function MedicationMenu() {
-  const { onOpen } = useMemberInfoContext();
+  const formRef = React.useRef<{ onOpen: () => void }>();
 
   return (
     <>
       <Menu>
         <MenuButton as={IconButton} aria-label="Options" icon={<FaBars />} variant="outline" />
         <MenuList>
-          <MenuItem icon={<FaPlus />} onClick={onOpen}>
+          <MenuItem icon={<FaPlus />} onClick={() => formRef.current.onOpen()}>
             Add new medication
           </MenuItem>
         </MenuList>
       </Menu>
-      <DrawerForm formMode="CREATE" />
+      <DrawerForm formMode="CREATE" ref={formRef} />
     </>
   );
 }
 
-function DrawerForm({ formMode }: { formMode: 'CREATE' | 'UPDATE' }) {
-  const { currentUserId, member, isOpen, onClose } = useMemberInfoContext();
+const DrawerForm = React.forwardRef(function DrawerForm(
+  { formMode, defaultValues }: { formMode: 'CREATE' | 'UPDATE'; defaultValues?: IMedicationDto },
+  ref
+) {
+  const { currentUserId, member } = useMemberInfoContext();
+  const { isOpen, onClose, onOpen } = useDisclosure();
   const toast = useToast();
   const {
     control,
@@ -136,7 +136,10 @@ function DrawerForm({ formMode }: { formMode: 'CREATE' | 'UPDATE' }) {
     handleSubmit,
     formState: { errors },
     formState
-  } = useForm<IMedicationDto>({ mode: 'all' });
+  } = useForm<IMedicationDto>({
+    mode: 'all',
+    defaultValues
+  });
 
   const { fields, append } = useFieldArray({
     control,
@@ -148,7 +151,9 @@ function DrawerForm({ formMode }: { formMode: 'CREATE' | 'UPDATE' }) {
     ...watchInputs[index]
   }));
 
-  const mutation = useMedicationService();
+  const mutation = useMedicationService(onClose);
+
+  React.useImperativeHandle(ref, () => ({ onOpen }), [onOpen]);
 
   async function onSubmit(payload: IMedicationDto) {
     if (freqInputs.length === 0 || freqInputs.some(freq => isNaN(freq.dateTime.valueOf()))) {
@@ -162,6 +167,7 @@ function DrawerForm({ formMode }: { formMode: 'CREATE' | 'UPDATE' }) {
     }
 
     const medication = { ...payload, memberId: member._id, createdBy: currentUserId };
+    console.log('medication :>> ', medication);
     mutation.mutate(medication);
   }
 
@@ -171,7 +177,7 @@ function DrawerForm({ formMode }: { formMode: 'CREATE' | 'UPDATE' }) {
       <DrawerContent>
         <DrawerCloseButton />
         <DrawerHeader borderBottomWidth="1px">
-          {formMode === 'CREATE' ? 'Add New Medication' : ''}
+          {formMode === 'CREATE' ? 'Add New Medication' : 'Edit Medication'}
         </DrawerHeader>
         <DrawerBody>
           <form noValidate onSubmit={handleSubmit(onSubmit)}>
@@ -217,7 +223,8 @@ function DrawerForm({ formMode }: { formMode: 'CREATE' | 'UPDATE' }) {
                   type="date"
                   size="lg"
                   {...register('startDate', {
-                    required: 'Start date is required.'
+                    required: 'Start date is required.',
+                    setValueAs: value => value && new Date(value).toISOString()
                   })}
                 />
                 {errors.startDate && (
@@ -230,7 +237,8 @@ function DrawerForm({ formMode }: { formMode: 'CREATE' | 'UPDATE' }) {
                   type="date"
                   size="lg"
                   {...register('endDate', {
-                    required: 'End date is required.'
+                    required: 'End date is required.',
+                    setValueAs: value => value && new Date(value).toISOString()
                   })}
                 />
                 {errors.endDate && <FormErrorMessage>{errors.endDate.message}</FormErrorMessage>}
@@ -302,7 +310,7 @@ function DrawerForm({ formMode }: { formMode: 'CREATE' | 'UPDATE' }) {
       </DrawerContent>
     </Drawer>
   );
-}
+});
 
 function MedicationCards() {
   const { medications } = useMemberInfoContext();
@@ -311,12 +319,12 @@ function MedicationCards() {
     <Wrap p="10" justify="center" alignContent="flex-start">
       {medications.map((medication, index) => (
         <LinkBox key={index} as="article" w="sm" p="4" borderWidth="1px" rounded="md" shadow="md">
-          <Stack>
-            <CardActions />
+          <HStack justifyContent="space-between">
             <Heading size="md" my="2">
               {medication.medicationName}
             </Heading>
-          </Stack>
+            <CardActions medication={medication} />
+          </HStack>
 
           <HStack justifyContent="space-between">
             <HStack>
@@ -332,23 +340,11 @@ function MedicationCards() {
           <HStack justifyContent="space-between">
             <HStack>
               <Text fontWeight="semibold">Start:</Text>
-              <Text>
-                {new Intl.DateTimeFormat('en-US', {
-                  year: 'numeric',
-                  month: 'numeric',
-                  day: 'numeric'
-                }).format(new Date(medication.startDate))}
-              </Text>
+              <Text>{formatDateFromISO(medication.startDate)}</Text>
             </HStack>
             <HStack>
               <Text fontWeight="semibold">End:</Text>
-              <Text>
-                {new Intl.DateTimeFormat('en-US', {
-                  year: 'numeric',
-                  month: 'numeric',
-                  day: 'numeric'
-                }).format(new Date(medication.endDate))}
-              </Text>
+              <Text>{formatDateFromISO(medication.endDate)}</Text>
             </HStack>
           </HStack>
 
@@ -376,22 +372,34 @@ function MedicationCards() {
   );
 }
 
-function CardActions() {
+function CardActions({ medication }) {
+  const formRef = React.useRef<{ onOpen: () => void }>();
+  const defaultValues = {
+    ...medication,
+    startDate: new Date(medication.startDate).toISOString().split('T')[0],
+    endDate: new Date(medication.endDate).toISOString().split('T')[0]
+  };
+
   return (
-    <Menu>
-      <MenuButton as={IconButton} aria-label="Options" icon={<FaEllipsisH />} variant="outline" />
-      <MenuList>
-        <MenuItem icon={<FaRegEdit />}>Edit medication</MenuItem>
-        <MenuItem icon={<FaTrash />}>Delete medication</MenuItem>
-        <MenuItem icon={<FaList />}>View logs</MenuItem>
-        <MenuItem icon={<FaNotesMedical />}>Add logs</MenuItem>
-      </MenuList>
-    </Menu>
+    <>
+      <Menu>
+        <MenuButton as={IconButton} aria-label="Options" icon={<FaEllipsisH />} variant="outline" />
+        <MenuList>
+          <MenuItem icon={<FaRegEdit />} onClick={() => formRef.current.onOpen()}>
+            Edit medication
+          </MenuItem>
+          <MenuItem icon={<FaTrash />}>Delete medication</MenuItem>
+          <MenuItem icon={<FaList />}>View logs</MenuItem>
+          <MenuItem icon={<FaNotesMedical />}>Add logs</MenuItem>
+        </MenuList>
+      </Menu>
+      <DrawerForm defaultValues={defaultValues} formMode="UPDATE" ref={formRef} />
+    </>
   );
 }
 
-function useMedicationService() {
-  const { medications, setMedications, onClose } = useMemberInfoContext();
+function useMedicationService(onClose: () => void) {
+  const { medications, setMedications } = useMemberInfoContext();
   const toast = useToast();
 
   const mutation = useMutation(
@@ -428,4 +436,9 @@ function useMedicationService() {
   );
 
   return mutation;
+}
+
+function formatDateFromISO(isoDate: Date): string {
+  const [yyyy, mm, dd] = isoDate.toString().split('T')[0].split('-');
+  return new Date(`${mm}/${dd}/${yyyy}`).toLocaleDateString();
 }
