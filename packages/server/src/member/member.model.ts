@@ -22,7 +22,8 @@ MemberSchema.statics.toDto = function (doc: IMemberDocument): IMemberDto {
   return {
     _id: doc._id,
     firstName: doc.firstName,
-    lastName: doc.lastName
+    lastName: doc.lastName,
+    createdBy: doc.createdBy
   };
 };
 

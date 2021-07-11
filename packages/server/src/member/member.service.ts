@@ -1,5 +1,6 @@
-import { IMemberDto } from '@common';
+import { IDashboardDto, IMemberDto, medicationStatus } from '@common';
 import model from './member.model';
+import * as medicationService from '../medication/medication.service';
 
 export async function create(payload: IMemberDto): Promise<IMemberDto> {
   const doc = await model.create(payload);
@@ -9,6 +10,39 @@ export async function create(payload: IMemberDto): Promise<IMemberDto> {
 export async function getAll(): Promise<IMemberDto[]> {
   const docs = await model.find().lean().populate('createdBy', '_id firstName lastName');
   return docs;
+}
+
+export async function getAllForDashboard(clientDateTime: string): Promise<IDashboardDto[]> {
+  const memberDocs = await model
+    .find()
+    .sort({ firstName: 1, lastName: 1 })
+    .lean()
+    .populate('createdBy', '_id firstName lastName');
+  const result: IDashboardDto[] = [];
+
+  for await (const member of memberDocs) {
+    let status = medicationStatus.DONE;
+    const medications = await medicationService.getAllByMemberId(
+      member._id.toString(),
+      clientDateTime
+    );
+    // status is past due if there are some past due.
+    // Coming if there are some coming. Otherwise, status is done.
+    if (medications.some(med => med.status === medicationStatus.PAST_DUE)) {
+      status = medicationStatus.PAST_DUE;
+    } else if (medications.some(med => med.status === medicationStatus.COMING)) {
+      status = medicationStatus.COMING;
+    }
+    result.push({
+      _id: member._id,
+      firstName: member.firstName,
+      lastName: member.lastName,
+      status,
+      createdBy: member.createdBy
+    });
+  }
+
+  return result;
 }
 
 export async function getById(id: string): Promise<IMemberDto | null> {

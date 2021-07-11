@@ -62,7 +62,8 @@ MedicationSchema.statics.toDto = function (doc: IMedicationDocument): IMedicatio
     route: doc.route,
     note: doc.note,
     startDate: doc.startDate,
-    endDate: doc.endDate
+    endDate: doc.endDate,
+    createdBy: doc.createdBy
   };
 };
 

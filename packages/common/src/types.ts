@@ -15,6 +15,11 @@ export interface IUserDto extends IUserBase {
 export interface IMemberDto extends IModelBase {
   firstName: string;
   lastName: string;
+  createdBy: string;
+}
+
+export interface IDashboardDto extends IMemberDto {
+  status: medicationStatus;
 }
 
 export const enum medicationStatus {
@@ -25,8 +30,8 @@ export const enum medicationStatus {
 }
 
 export interface IFrequencyDto extends IModelBase {
-  medicationId: string;
-  dateTime: Date;
+  medicationId?: string;
+  time: string;
   status?: medicationStatus;
 }
 
@@ -40,6 +45,7 @@ export interface IMedicationDto extends IModelBase {
   endDate: Date;
   frequencies?: IFrequencyDto[];
   status?: medicationStatus;
+  createdBy: string;
 }
 
 export interface IFrequencyLogDto extends IModelBase {

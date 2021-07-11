@@ -19,6 +19,16 @@ export async function getAll(req: Request, res: Response, next: NextFunction) {
   }
 }
 
+export async function getAllForDashboard(req: Request, res: Response, next: NextFunction) {
+  try {
+    const clientDateTime = req.body.clientDateTime;
+    const result = await service.getAllForDashboard(clientDateTime);
+    return res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function getById(req: Request, res: Response, next: NextFunction) {
   try {
     const result = await service.getById(req.params.id);

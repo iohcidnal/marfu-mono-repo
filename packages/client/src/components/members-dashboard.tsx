@@ -13,10 +13,10 @@ import {
 } from '@chakra-ui/react';
 import { HamburgerIcon, AddIcon } from '@chakra-ui/icons';
 
-import { IMemberDto, IMedicationDto } from '@common';
+import { IDashboardDto } from '@common';
 
 interface IProps {
-  membersWithMeds: (IMemberDto & IMedicationDto)[];
+  members: IDashboardDto[];
 }
 
 const colorMap = {
@@ -30,7 +30,7 @@ const colorMap = {
   }
 };
 
-export default function MembersDashboard({ membersWithMeds }: IProps) {
+export default function MembersDashboard({ members }: IProps) {
   return (
     <>
       <Box p="4" shadow="md">
@@ -52,9 +52,9 @@ export default function MembersDashboard({ membersWithMeds }: IProps) {
         </HStack>
       </Box>
       <Wrap p="10" justify="center" alignContent="flex-start">
-        {membersWithMeds.map(med => {
+        {members.map(member => {
           return (
-            <Link href={`/member/${encodeURIComponent(med.memberId)}`} key={med._id}>
+            <Link href={`/member/${encodeURIComponent(member._id)}`} key={member._id}>
               <WrapItem>
                 <Box
                   w="xs"
@@ -63,10 +63,10 @@ export default function MembersDashboard({ membersWithMeds }: IProps) {
                   p="4"
                   as="button"
                   shadow="md"
-                  {...colorMap[med.status]}
+                  {...colorMap[member.status]}
                 >
                   <Text fontSize="lg" fontWeight="semibold">
-                    {med.firstName} {med.lastName}
+                    {member.firstName} {member.lastName}
                   </Text>
                 </Box>
               </WrapItem>

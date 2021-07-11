@@ -47,6 +47,8 @@ export async function getAllByMemberId(
 
   const result: IMedicationDto[] = docs.map(doc => {
     const frequencies = getFrequenciesStatus(clientDateTime, doc, freqLogs);
+    const status = getMedicationStatus(frequencies);
+
     return {
       _id: doc._id,
       memberId: doc.memberId,
@@ -56,51 +58,20 @@ export async function getAllByMemberId(
       route: doc.route,
       note: doc.note,
       startDate: doc.startDate,
-      endDate: doc.endDate
+      endDate: doc.endDate,
+      status,
+      createdBy: doc.createdBy
     };
   });
 
   return result;
 }
 
-export async function getAllByMemberIds(memberIds: string[], clientDateTime: string) {
-  const docs = await model.find().lean().where('memberId').in(memberIds).populate('frequencies');
-  const freqLogs = await getFrequencyLogs(docs);
-
-  const medications: IMedicationDto[] = [];
-  for (const doc of docs) {
-    let medication = medications.find(med => med.memberId === doc.memberId);
-    if (medication?.status === medicationStatus.PAST_DUE) continue;
-
-    const frequenciesStatus = getFrequenciesStatus(clientDateTime, doc, freqLogs);
-    const status = getMedicationStatus(frequenciesStatus);
-
-    if (medication) {
-      // Replace med if it is not past due.
-      medication = { ...medication, ...doc };
-    } else {
-      medications.push({
-        _id: doc._id,
-        memberId: doc.memberId,
-        medicationName: doc.medicationName,
-        dosage: doc.dosage,
-        route: doc.route,
-        note: doc.note,
-        startDate: doc.startDate,
-        endDate: doc.endDate,
-        status
-      });
-    }
-  }
-
-  return medications;
-}
-
 export async function update(payload: IMedicationDto): Promise<IMedicationDto | null> {
   // Update frequencies
   for await (const freq of payload.frequencies ?? []) {
     // updateOne updates one document in the database without returning it
-    freqModel.updateOne({ _id: freq._id }, { dateTime: freq.dateTime }).exec();
+    freqModel.updateOne({ _id: freq._id }, { dateTime: freq.time }).exec();
   }
 
   const doc = await model.findByIdAndUpdate(payload._id, payload, { lean: true, new: true });
@@ -134,6 +105,7 @@ function getFrequenciesStatus(
   freqLogDocs: IFrequencyLogDto[] | null
 ): IFrequencyDto[] {
   const currentDateTime = new Date(clientDateTime);
+  const toDateFn = toDate(currentDateTime);
   const frequency = doc.frequencies as IFrequencyDto[];
 
   const result = frequency.reduce((accumulator: IFrequencyDto[], freq) => {
@@ -144,21 +116,22 @@ function getFrequenciesStatus(
       accumulator.push({
         _id: freqId,
         medicationId,
-        dateTime: freq.dateTime,
+        time: freq.time,
         status: medicationStatus.DONE
       });
 
       return accumulator;
     }
 
-    if (freq.dateTime >= currentDateTime) {
-      const diff = freq.dateTime.valueOf() - currentDateTime.valueOf();
+    const freqTimeAsDateTime = toDateFn(freq.time);
+    if (freqTimeAsDateTime >= currentDateTime) {
+      const diff = freqTimeAsDateTime.valueOf() - currentDateTime.valueOf();
       const isFreqWithinAnHour = diff <= ONE_HOUR_IN_MILLISECONDS;
       if (isFreqWithinAnHour) {
         accumulator.push({
           _id: freqId,
           medicationId,
-          dateTime: freq.dateTime,
+          time: freq.time,
           status: medicationStatus.COMING
         });
 
@@ -166,17 +139,37 @@ function getFrequenciesStatus(
       }
     }
 
-    const diff = currentDateTime.valueOf() - freq.dateTime.valueOf();
+    const diff = currentDateTime.valueOf() - freqTimeAsDateTime.valueOf();
     const isFreqPastWithinAnHour = diff <= ONE_HOUR_IN_MILLISECONDS;
     accumulator.push({
       _id: freqId,
       medicationId,
-      dateTime: freq.dateTime,
+      time: freq.time,
       status: isFreqPastWithinAnHour ? medicationStatus.COMING : medicationStatus.PAST_DUE
     });
 
     return accumulator;
   }, []);
 
-  return [...result].sort((a, b) => a.dateTime.valueOf() - b.dateTime.valueOf());
+  return [...result].sort((a, b) => {
+    const dateTimeA = toDateFn(a.time);
+    const dateTimeB = toDateFn(b.time);
+
+    return dateTimeA.valueOf() - dateTimeB.valueOf();
+  });
+}
+
+function toDate(currentDateTime: Date): (time: string) => Date {
+  return function (time: string): Date {
+    const [hh, mm] = time.split(':');
+    const dateTime = new Date(
+      currentDateTime.getFullYear(),
+      currentDateTime.getMonth(),
+      currentDateTime.getDate(),
+      Number(hh),
+      Number(mm)
+    );
+
+    return dateTime;
+  };
 }

@@ -24,18 +24,6 @@ export async function getAllByMemberId(req: Request, res: Response, next: NextFu
   }
 }
 
-export async function getAllByMemberIds(req: Request, res: Response, next: NextFunction) {
-  try {
-    const memberIds: string[] = req.body.memberIds;
-    const clientDateTime: string = req.body.clientDateTime;
-    const result = await service.getAllByMemberIds(memberIds, clientDateTime);
-
-    return res.status(200).json(result);
-  } catch (error) {
-    next(error);
-  }
-}
-
 export async function put(req: Request, res: Response, next: NextFunction) {
   try {
     const result = await service.update(req.body);
