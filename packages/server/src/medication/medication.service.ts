@@ -25,17 +25,17 @@ export async function create({
     await model.create([{ ...medication, frequencies: freqIds }], { session: session })
   )[0];
   // Create frequencies
-  const frequencyDtos = frequencies?.map((freq, index) => ({
+  const frequenciesDto = frequencies?.map((freq, index) => ({
     ...freq,
     _id: freqIds[index],
     medicationId: medicationDoc._id
   })) as IFrequencyDto[];
-  await freqModel.create(frequencyDtos, { session: session });
+  await freqModel.create(frequenciesDto, { session: session });
 
   await session.commitTransaction();
   session.endSession();
 
-  return model.toDto(medicationDoc);
+  return model.toDto(medicationDoc, frequenciesDto);
 }
 
 export async function getAllByMemberId(
@@ -69,12 +69,16 @@ export async function getAllByMemberId(
 
 export async function update(payload: IMedicationDto): Promise<IMedicationDto | null> {
   // Update frequencies
+  // TODO: handle new created and deleted freqs
   for await (const freq of payload.frequencies ?? []) {
     // updateOne updates one document in the database without returning it
-    freqModel.updateOne({ _id: freq._id }, { dateTime: freq.time }).exec();
+    freqModel.updateOne({ _id: freq._id }, { time: freq.time }).exec();
   }
 
-  const doc = await model.findByIdAndUpdate(payload._id, payload, { lean: true, new: true });
+  const doc = await model
+    .findByIdAndUpdate(payload._id, payload, { lean: true, new: true })
+    .populate('frequencies');
+
   return doc;
 }
 

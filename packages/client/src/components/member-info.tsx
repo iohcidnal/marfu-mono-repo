@@ -50,9 +50,6 @@ interface IMemberInfoProps {
 
 interface IMemberInfoContextProps extends IMemberInfoProps {
   setMedications: React.Dispatch<IMedicationDto[]>;
-  isOpen: boolean;
-  onOpen: () => void;
-  onClose: () => void;
 }
 
 const toastOptions: UseToastOptions = {
@@ -117,13 +114,20 @@ function MedicationMenu() {
           </MenuItem>
         </MenuList>
       </Menu>
-      <DrawerForm formMode="CREATE" ref={formRef} />
+      <DrawerForm method="POST" ref={formRef} />
     </>
   );
 }
 
+type method = 'PUT' | 'POST';
+
+interface IDrawerFormProps {
+  method: method;
+  defaultValues?: IMedicationDto;
+}
+
 const DrawerForm = React.forwardRef(function DrawerForm(
-  { formMode, defaultValues }: { formMode: 'CREATE' | 'UPDATE'; defaultValues?: IMedicationDto },
+  { method, defaultValues }: IDrawerFormProps,
   ref
 ) {
   const { currentUserId, member } = useMemberInfoContext();
@@ -151,12 +155,12 @@ const DrawerForm = React.forwardRef(function DrawerForm(
     ...watchInputs[index]
   }));
 
-  const mutation = useMedicationService(onClose);
+  const mutation = useMedicationService(onClose, method);
 
   React.useImperativeHandle(ref, () => ({ onOpen }), [onOpen]);
 
   async function onSubmit(payload: IMedicationDto) {
-    if (freqInputs.length === 0 || freqInputs.some(freq => isNaN(freq.dateTime.valueOf()))) {
+    if (freqInputs.length === 0 || freqInputs.some(freq => !freq.time)) {
       toast({
         ...toastOptions,
         status: 'error',
@@ -166,8 +170,16 @@ const DrawerForm = React.forwardRef(function DrawerForm(
       return;
     }
 
-    const medication = { ...payload, memberId: member._id, createdBy: currentUserId };
-    console.log('medication :>> ', medication);
+    const medication: IMedicationDto = {
+      ...payload,
+      frequencies: freqInputs // TODO: on edit, handle deleting and adding of freqs
+    };
+
+    if (method === 'POST') {
+      medication.memberId = member._id;
+      medication.createdBy = currentUserId;
+    }
+
     mutation.mutate(medication);
   }
 
@@ -177,7 +189,7 @@ const DrawerForm = React.forwardRef(function DrawerForm(
       <DrawerContent>
         <DrawerCloseButton />
         <DrawerHeader borderBottomWidth="1px">
-          {formMode === 'CREATE' ? 'Add New Medication' : 'Edit Medication'}
+          {method === 'POST' ? 'Add New Medication' : 'Edit Medication'}
         </DrawerHeader>
         <DrawerBody>
           <form noValidate onSubmit={handleSubmit(onSubmit)}>
@@ -223,8 +235,7 @@ const DrawerForm = React.forwardRef(function DrawerForm(
                   type="date"
                   size="lg"
                   {...register('startDate', {
-                    required: 'Start date is required.',
-                    setValueAs: value => value && new Date(value).toISOString()
+                    required: 'Start date is required.'
                   })}
                 />
                 {errors.startDate && (
@@ -237,8 +248,7 @@ const DrawerForm = React.forwardRef(function DrawerForm(
                   type="date"
                   size="lg"
                   {...register('endDate', {
-                    required: 'End date is required.',
-                    setValueAs: value => value && new Date(value).toISOString()
+                    required: 'End date is required.'
                   })}
                 />
                 {errors.endDate && <FormErrorMessage>{errors.endDate.message}</FormErrorMessage>}
@@ -250,7 +260,7 @@ const DrawerForm = React.forwardRef(function DrawerForm(
 
               <Button
                 leftIcon={<FaPlus />}
-                onClick={() => append({ dateTime: null })}
+                onClick={() => append({ time: null })}
                 colorScheme="gray"
                 w="full"
                 variant="outline"
@@ -259,12 +269,11 @@ const DrawerForm = React.forwardRef(function DrawerForm(
               </Button>
               <Stack>
                 {freqInputs.map((input, index) => {
-                  const inputError =
-                    errors.frequencies && errors.frequencies[index]?.dateTime.message;
+                  const inputError = errors.frequencies && errors.frequencies[index]?.time.message;
                   return (
                     <FormControl
                       key={input.id}
-                      id={`frequencies[${index}].dateTime`}
+                      id={`frequencies[${index}].time`}
                       isRequired
                       isInvalid={!!inputError}
                     >
@@ -272,15 +281,8 @@ const DrawerForm = React.forwardRef(function DrawerForm(
                       <Input
                         type="time"
                         size="lg"
-                        {...register(`frequencies.${index}.dateTime`, {
-                          required: `Freq ${index + 1} is required.`,
-                          setValueAs: value => {
-                            const [hh, mm] = value.split(':');
-                            const date = new Date();
-                            date.setHours(Number(hh));
-                            date.setMinutes(Number(mm), 0);
-                            return date;
-                          }
+                        {...register(`frequencies.${index}.time`, {
+                          required: `Freq ${index + 1} is required.`
                         })}
                       />
                       {inputError && <FormErrorMessage>{inputError}</FormErrorMessage>}
@@ -340,11 +342,11 @@ function MedicationCards() {
           <HStack justifyContent="space-between">
             <HStack>
               <Text fontWeight="semibold">Start:</Text>
-              <Text>{formatDateFromISO(medication.startDate)}</Text>
+              <Text>{toDate(medication.startDate).toLocaleDateString()}</Text>
             </HStack>
             <HStack>
               <Text fontWeight="semibold">End:</Text>
-              <Text>{formatDateFromISO(medication.endDate)}</Text>
+              <Text>{toDate(medication.endDate).toLocaleDateString()}</Text>
             </HStack>
           </HStack>
 
@@ -356,13 +358,8 @@ function MedicationCards() {
           <HStack mt="2">
             <Text fontWeight="semibold">Schedule:</Text>
             <HStack>
-              {medication.frequencies.map((freq, index) => (
-                <Text key={index}>
-                  {new Intl.DateTimeFormat('en-US', {
-                    timeStyle: 'short',
-                    hour12: false
-                  }).format(new Date(freq.dateTime))}
-                </Text>
+              {medication.frequencies.map(freq => (
+                <Text key={freq._id}>{freq.time}</Text>
               ))}
             </HStack>
           </HStack>
@@ -372,13 +369,8 @@ function MedicationCards() {
   );
 }
 
-function CardActions({ medication }) {
+function CardActions({ medication }: { medication: IMedicationDto }) {
   const formRef = React.useRef<{ onOpen: () => void }>();
-  const defaultValues = {
-    ...medication,
-    startDate: new Date(medication.startDate).toISOString().split('T')[0],
-    endDate: new Date(medication.endDate).toISOString().split('T')[0]
-  };
 
   return (
     <>
@@ -393,36 +385,42 @@ function CardActions({ medication }) {
           <MenuItem icon={<FaNotesMedical />}>Add logs</MenuItem>
         </MenuList>
       </Menu>
-      <DrawerForm defaultValues={defaultValues} formMode="UPDATE" ref={formRef} />
+      <DrawerForm defaultValues={medication} method="PUT" ref={formRef} />
     </>
   );
 }
 
-function useMedicationService(onClose: () => void) {
+function useMedicationService(onClose: () => void, method: method) {
   const { medications, setMedications } = useMemberInfoContext();
   const toast = useToast();
 
   const mutation = useMutation(
-    async (payload: IMedicationDto) => {
-      const result = await fetcher({
+    (payload: IMedicationDto) => {
+      return fetcher({
         url: `${process.env.NEXT_PUBLIC_API}medications`,
-        method: 'POST',
+        method,
         payload
       });
-
-      return {
-        ...result,
-        payload
-      };
     },
     {
-      onSuccess: ({ status, payload }) => {
+      onSuccess: ({ status, data }) => {
         if (status === 201) {
-          setMedications([...medications, payload]);
+          // Created
+          setMedications([...medications, data]);
           onClose();
           toast({
             ...toastOptions,
             title: 'Medication successfuly created',
+            status: 'success'
+          });
+        } else if (status === 200) {
+          // Updated
+          const index = medications.findIndex(med => med._id === data._id);
+          setMedications([...medications.slice(0, index), data, ...medications.slice(index + 1)]);
+          onClose();
+          toast({
+            ...toastOptions,
+            title: 'Medication successfuly updated',
             status: 'success'
           });
         } else {
@@ -438,7 +436,7 @@ function useMedicationService(onClose: () => void) {
   return mutation;
 }
 
-function formatDateFromISO(isoDate: Date): string {
-  const [yyyy, mm, dd] = isoDate.toString().split('T')[0].split('-');
-  return new Date(`${mm}/${dd}/${yyyy}`).toLocaleDateString();
+function toDate(dateAsString: string): Date {
+  const [yyyy, mm, dd] = dateAsString.split('-');
+  return new Date(`${mm}/${dd}/${yyyy}`);
 }

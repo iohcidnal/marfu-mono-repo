@@ -41,8 +41,8 @@ export interface IMedicationDto extends IModelBase {
   dosage: string;
   route: string;
   note?: string;
-  startDate: Date;
-  endDate: Date;
+  startDate: string;
+  endDate: string;
   frequencies?: IFrequencyDto[];
   status?: medicationStatus;
   createdBy: string;

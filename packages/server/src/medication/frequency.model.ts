@@ -6,8 +6,8 @@ const FrequencySchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     required: true
   },
-  dateTime: {
-    type: Date,
+  time: {
+    type: mongoose.Schema.Types.String,
     required: true
   }
 });

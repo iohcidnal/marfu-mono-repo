@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { IMedicationDto } from '@common';
+import { IFrequencyDto, IMedicationDto } from '@common';
 
 const MedicationSchema = new mongoose.Schema(
   {
@@ -24,10 +24,13 @@ const MedicationSchema = new mongoose.Schema(
       required: false
     },
     startDate: {
-      type: Date,
+      type: String,
       required: true
     },
-    endDate: { type: Date },
+    endDate: {
+      type: String,
+      required: true
+    },
     frequencies: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -49,11 +52,14 @@ interface IMedicationDocument extends IMedicationDto, mongoose.Document {
 }
 
 interface IMedicationModel extends mongoose.Model<IMedicationDocument> {
-  toDto: (doc: IMedicationDocument) => IMedicationDto;
+  toDto: (doc: IMedicationDocument, frequenciesDto: IFrequencyDto[]) => IMedicationDto;
 }
 
 /* istanbul ignore next */
-MedicationSchema.statics.toDto = function (doc: IMedicationDocument): IMedicationDto {
+MedicationSchema.statics.toDto = function (
+  doc: IMedicationDocument,
+  frequenciesDto: IFrequencyDto[]
+): IMedicationDto {
   return {
     _id: doc._id,
     memberId: doc.memberId,
@@ -63,6 +69,7 @@ MedicationSchema.statics.toDto = function (doc: IMedicationDocument): IMedicatio
     note: doc.note,
     startDate: doc.startDate,
     endDate: doc.endDate,
+    frequencies: frequenciesDto,
     createdBy: doc.createdBy
   };
 };
