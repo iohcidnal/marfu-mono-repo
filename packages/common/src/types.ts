@@ -19,11 +19,10 @@ export interface IMemberDto extends IModelBase {
 }
 
 export interface IDashboardDto extends IMemberDto {
-  status: medicationStatus;
+  status: MedicationStatus;
 }
 
-export const enum medicationStatus {
-  NEW = 'NEW',
+export const enum MedicationStatus {
   DONE = 'DONE',
   COMING = 'COMING',
   PAST_DUE = 'PAST_DUE'
@@ -32,7 +31,7 @@ export const enum medicationStatus {
 export interface IFrequencyDto extends IModelBase {
   medicationId?: string;
   time: string;
-  status?: medicationStatus;
+  status?: MedicationStatus | 'NEW' | 'DELETE';
 }
 
 export interface IMedicationDto extends IModelBase {
@@ -44,7 +43,7 @@ export interface IMedicationDto extends IModelBase {
   startDate: string;
   endDate: string;
   frequencies?: IFrequencyDto[];
-  status?: medicationStatus;
+  status?: MedicationStatus;
   createdBy: string;
 }
 

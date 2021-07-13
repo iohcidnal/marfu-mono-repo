@@ -1,4 +1,4 @@
-import { IDashboardDto, IMemberDto, medicationStatus } from '@common';
+import { IDashboardDto, IMemberDto, MedicationStatus } from '@common';
 import model from './member.model';
 import * as medicationService from '../medication/medication.service';
 
@@ -21,17 +21,17 @@ export async function getAllForDashboard(clientDateTime: string): Promise<IDashb
   const result: IDashboardDto[] = [];
 
   for await (const member of memberDocs) {
-    let status = medicationStatus.DONE;
+    let status = MedicationStatus.DONE;
     const medications = await medicationService.getAllByMemberId(
       member._id.toString(),
       clientDateTime
     );
-    // status is past due if there are some past due.
-    // Coming if there are some coming. Otherwise, status is done.
-    if (medications.some(med => med.status === medicationStatus.PAST_DUE)) {
-      status = medicationStatus.PAST_DUE;
-    } else if (medications.some(med => med.status === medicationStatus.COMING)) {
-      status = medicationStatus.COMING;
+    // status is `past due` if there are some past due.
+    // `Coming` if there are some coming. Otherwise, status is `done`.
+    if (medications.some(med => med.status === MedicationStatus.PAST_DUE)) {
+      status = MedicationStatus.PAST_DUE;
+    } else if (medications.some(med => med.status === MedicationStatus.COMING)) {
+      status = MedicationStatus.COMING;
     }
     result.push({
       _id: member._id,

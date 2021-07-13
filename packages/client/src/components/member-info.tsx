@@ -39,7 +39,7 @@ import {
 import { useFieldArray, useForm } from 'react-hook-form';
 import { useMutation } from 'react-query';
 
-import { IMemberDto, IMedicationDto } from '@common';
+import { IMemberDto, IMedicationDto, IFrequencyDto } from '@common';
 import { fetcher } from '../utils';
 
 interface IMemberInfoProps {
@@ -139,7 +139,8 @@ const DrawerForm = React.forwardRef(function DrawerForm(
     register,
     handleSubmit,
     formState: { errors },
-    formState
+    formState,
+    setValue
   } = useForm<IMedicationDto>({
     mode: 'all',
     defaultValues
@@ -160,7 +161,7 @@ const DrawerForm = React.forwardRef(function DrawerForm(
   React.useImperativeHandle(ref, () => ({ onOpen }), [onOpen]);
 
   async function onSubmit(payload: IMedicationDto) {
-    if (freqInputs.length === 0 || freqInputs.some(freq => !freq.time)) {
+    if (!areFreqInputsValid()) {
       toast({
         ...toastOptions,
         status: 'error',
@@ -172,7 +173,7 @@ const DrawerForm = React.forwardRef(function DrawerForm(
 
     const medication: IMedicationDto = {
       ...payload,
-      frequencies: freqInputs // TODO: on edit, handle deleting and adding of freqs
+      frequencies: freqInputs
     };
 
     if (method === 'POST') {
@@ -181,6 +182,15 @@ const DrawerForm = React.forwardRef(function DrawerForm(
     }
 
     mutation.mutate(medication);
+  }
+
+  function areFreqInputsValid(): boolean {
+    // How does react-form-hook do validation on a field array?
+    return (
+      freqInputs.length > 0 &&
+      freqInputs.every(freq => freq.time) &&
+      freqInputs.some(freq => freq.status !== 'DELETE')
+    );
   }
 
   return (
@@ -260,7 +270,9 @@ const DrawerForm = React.forwardRef(function DrawerForm(
 
               <Button
                 leftIcon={<FaPlus />}
-                onClick={() => append({ time: null })}
+                onClick={() =>
+                  append({ time: null, status: 'NEW', medicationId: defaultValues?._id })
+                }
                 colorScheme="gray"
                 w="full"
                 variant="outline"
@@ -268,23 +280,32 @@ const DrawerForm = React.forwardRef(function DrawerForm(
                 Add frequency
               </Button>
               <Stack>
-                {freqInputs.map((input, index) => {
+                {freqInputs.map((input: IFrequencyDto, index) => {
+                  if (input.status === 'DELETE') return null;
+
                   const inputError = errors.frequencies && errors.frequencies[index]?.time.message;
                   return (
                     <FormControl
-                      key={input.id}
+                      key={index}
                       id={`frequencies[${index}].time`}
                       isRequired
                       isInvalid={!!inputError}
                     >
                       <FormLabel>{`Freq ${index + 1}`}</FormLabel>
-                      <Input
-                        type="time"
-                        size="lg"
-                        {...register(`frequencies.${index}.time`, {
-                          required: `Freq ${index + 1} is required.`
-                        })}
-                      />
+                      <HStack>
+                        <Input
+                          type="time"
+                          size="lg"
+                          {...register(`frequencies.${index}.time`, {
+                            required: `Freq ${index + 1} is required.`
+                          })}
+                        />
+                        <IconButton
+                          aria-label="Delete frequency"
+                          icon={<FaTrash />}
+                          onClick={() => setValue(`frequencies.${index}.status`, 'DELETE')}
+                        />
+                      </HStack>
                       {inputError && <FormErrorMessage>{inputError}</FormErrorMessage>}
                     </FormControl>
                   );

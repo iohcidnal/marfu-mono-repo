@@ -8,7 +8,8 @@ export default function connectDb() {
     {
       useNewUrlParser: true,
       useCreateIndex: true,
-      useUnifiedTopology: true
+      useUnifiedTopology: true,
+      useFindAndModify: false
     },
     err => {
       if (err) console.log(err);

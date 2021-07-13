@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { IMedicationDto, IFrequencyDto, IFrequencyLogDto, medicationStatus } from '@common';
+import { IMedicationDto, IFrequencyDto, IFrequencyLogDto, MedicationStatus } from '@common';
 
 import model from './medication.model';
 import freqModel from './frequency.model';
@@ -68,15 +68,28 @@ export async function getAllByMemberId(
 }
 
 export async function update(payload: IMedicationDto): Promise<IMedicationDto | null> {
+  const medication = { ...payload };
   // Update frequencies
-  // TODO: handle new created and deleted freqs
-  for await (const freq of payload.frequencies ?? []) {
-    // updateOne updates one document in the database without returning it
-    freqModel.updateOne({ _id: freq._id }, { time: freq.time }).exec();
+  for await (const freq of medication.frequencies ?? []) {
+    switch (freq.status) {
+      case 'NEW': {
+        freq._id = mongoose.Types.ObjectId().toHexString();
+        await freqModel.create(freq);
+        break;
+      }
+      case 'DELETE':
+        await freqModel.findByIdAndDelete(freq._id).exec();
+        break;
+      default:
+        // updateOne updates one document in the database without returning it
+        await freqModel.updateOne({ _id: freq._id }, { time: freq.time }).exec();
+    }
   }
+  // Make sure we update frequency references in medication after updating frequencies above.
+  medication.frequencies = medication.frequencies?.filter(freq => freq.status !== 'DELETE');
 
   const doc = await model
-    .findByIdAndUpdate(payload._id, payload, { lean: true, new: true })
+    .findByIdAndUpdate(medication._id, medication, { lean: true, new: true })
     .populate('frequencies');
 
   return doc;
@@ -92,12 +105,12 @@ async function getFrequencyLogs(docs: IMedicationDto[]): Promise<IFrequencyLogDt
   return freqLogs;
 }
 
-function getMedicationStatus(frequenciesStatus: IFrequencyDto[]): medicationStatus {
-  let status = medicationStatus.DONE;
-  if (frequenciesStatus.some(freq => freq.status === medicationStatus.PAST_DUE)) {
-    status = medicationStatus.PAST_DUE;
-  } else if (frequenciesStatus.some(freq => freq.status === medicationStatus.COMING)) {
-    status = medicationStatus.COMING;
+function getMedicationStatus(frequenciesStatus: IFrequencyDto[]): MedicationStatus {
+  let status = MedicationStatus.DONE;
+  if (frequenciesStatus.some(freq => freq.status === MedicationStatus.PAST_DUE)) {
+    status = MedicationStatus.PAST_DUE;
+  } else if (frequenciesStatus.some(freq => freq.status === MedicationStatus.COMING)) {
+    status = MedicationStatus.COMING;
   }
 
   return status;
@@ -121,7 +134,7 @@ function getFrequenciesStatus(
         _id: freqId,
         medicationId,
         time: freq.time,
-        status: medicationStatus.DONE
+        status: MedicationStatus.DONE
       });
 
       return accumulator;
@@ -136,7 +149,7 @@ function getFrequenciesStatus(
           _id: freqId,
           medicationId,
           time: freq.time,
-          status: medicationStatus.COMING
+          status: MedicationStatus.COMING
         });
 
         return accumulator;
@@ -149,7 +162,7 @@ function getFrequenciesStatus(
       _id: freqId,
       medicationId,
       time: freq.time,
-      status: isFreqPastWithinAnHour ? medicationStatus.COMING : medicationStatus.PAST_DUE
+      status: isFreqPastWithinAnHour ? MedicationStatus.COMING : MedicationStatus.PAST_DUE
     });
 
     return accumulator;
