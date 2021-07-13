@@ -3,90 +3,107 @@
 exports[`SignIn should render properly 1`] = `
 <DocumentFragment>
   <div
-    class="css-23x5or"
+    class="chakra-stack css-n21gh5"
   >
     <div
-      class="chakra-stack css-84zodg"
+      class="css-23x5or"
     >
-      <button
-        aria-controls="menu-list-3"
-        aria-expanded="false"
-        aria-haspopup="menu"
-        aria-label="Options"
-        class="chakra-button chakra-menu__menu-button css-1lxgc9v"
-        id="menu-button-3"
-        type="button"
+      <div
+        class="chakra-stack css-84zodg"
+      >
+        <button
+          aria-controls="menu-list-3"
+          aria-expanded="false"
+          aria-haspopup="menu"
+          aria-label="Options"
+          class="chakra-button chakra-menu__menu-button css-1lxgc9v"
+          id="menu-button-3"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="chakra-icon css-onkibi"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M 3 5 A 1.0001 1.0001 0 1 0 3 7 L 21 7 A 1.0001 1.0001 0 1 0 21 5 L 3 5 z M 3 11 A 1.0001 1.0001 0 1 0 3 13 L 21 13 A 1.0001 1.0001 0 1 0 21 11 L 3 11 z M 3 17 A 1.0001 1.0001 0 1 0 3 19 L 21 19 A 1.0001 1.0001 0 1 0 21 17 L 3 17 z"
+              fill="currentColor"
+            />
+          </svg>
+        </button>
+        <div
+          class="css-r6z5ec"
+          data-popper-escaped=""
+          data-popper-placement="bottom-start"
+          data-popper-reference-hidden=""
+          style="visibility: hidden; margin: 0px; --popper-transform-origin: top left; position: absolute; left: 0px; top: 0px; transform: translate(0px, 8px);"
+        >
+          <div
+            aria-orientation="vertical"
+            class="chakra-menu__menu-list css-1av6si2"
+            id="menu-list-3"
+            role="menu"
+            style="transform-origin: var(--popper-transform-origin); opacity: 0; visibility: hidden; transform: scale(0.8) translateZ(0);"
+            tabindex="-1"
+          >
+            <button
+              class="chakra-menu__menuitem css-1b7iky1"
+              id="menuitem-1"
+              role="menuitem"
+              tabindex="-1"
+              type="button"
+            >
+              <span
+                class="chakra-menu__icon-wrapper css-15v20fh"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="chakra-icon chakra-menu__icon css-onkibi"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M0,12a1.5,1.5,0,0,0,1.5,1.5h8.75a.25.25,0,0,1,.25.25V22.5a1.5,1.5,0,0,0,3,0V13.75a.25.25,0,0,1,.25-.25H22.5a1.5,1.5,0,0,0,0-3H13.75a.25.25,0,0,1-.25-.25V1.5a1.5,1.5,0,0,0-3,0v8.75a.25.25,0,0,1-.25.25H1.5A1.5,1.5,0,0,0,0,12Z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </span>
+              <span
+                style="pointer-events: none; flex: 1;"
+              >
+                Add new member
+              </span>
+            </button>
+          </div>
+        </div>
+        <p
+          class="chakra-text css-1ei8ds1"
+        >
+          Dashboard
+        </p>
+      </div>
+    </div>
+    <div
+      class="chakra-alert css-1adt752"
+      role="alert"
+    >
+      <span
+        class="chakra-alert__icon css-n0gcl4"
       >
         <svg
-          aria-hidden="true"
-          class="chakra-icon css-onkibi"
+          class="chakra-icon css-fi0ww0"
           focusable="false"
           viewBox="0 0 24 24"
         >
           <path
-            d="M 3 5 A 1.0001 1.0001 0 1 0 3 7 L 21 7 A 1.0001 1.0001 0 1 0 21 5 L 3 5 z M 3 11 A 1.0001 1.0001 0 1 0 3 13 L 21 13 A 1.0001 1.0001 0 1 0 21 11 L 3 11 z M 3 17 A 1.0001 1.0001 0 1 0 3 19 L 21 19 A 1.0001 1.0001 0 1 0 21 17 L 3 17 z"
+            d="M12,0A12,12,0,1,0,24,12,12.013,12.013,0,0,0,12,0Zm.25,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,12.25,5ZM14.5,18.5h-4a1,1,0,0,1,0-2h.75a.25.25,0,0,0,.25-.25v-4.5a.25.25,0,0,0-.25-.25H10.5a1,1,0,0,1,0-2h1a2,2,0,0,1,2,2v4.75a.25.25,0,0,0,.25.25h.75a1,1,0,1,1,0,2Z"
             fill="currentColor"
           />
         </svg>
-      </button>
-      <div
-        class="css-r6z5ec"
-        data-popper-escaped=""
-        data-popper-placement="bottom-start"
-        data-popper-reference-hidden=""
-        style="visibility: hidden; margin: 0px; --popper-transform-origin: top left; position: absolute; left: 0px; top: 0px; transform: translate(0px, 8px);"
-      >
-        <div
-          aria-orientation="vertical"
-          class="chakra-menu__menu-list css-1av6si2"
-          id="menu-list-3"
-          role="menu"
-          style="transform-origin: var(--popper-transform-origin); opacity: 0; visibility: hidden; transform: scale(0.8) translateZ(0);"
-          tabindex="-1"
-        >
-          <button
-            class="chakra-menu__menuitem css-1b7iky1"
-            id="menuitem-1"
-            role="menuitem"
-            tabindex="-1"
-            type="button"
-          >
-            <span
-              class="chakra-menu__icon-wrapper css-15v20fh"
-            >
-              <svg
-                aria-hidden="true"
-                class="chakra-icon chakra-menu__icon css-onkibi"
-                focusable="false"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M0,12a1.5,1.5,0,0,0,1.5,1.5h8.75a.25.25,0,0,1,.25.25V22.5a1.5,1.5,0,0,0,3,0V13.75a.25.25,0,0,1,.25-.25H22.5a1.5,1.5,0,0,0,0-3H13.75a.25.25,0,0,1-.25-.25V1.5a1.5,1.5,0,0,0-3,0v8.75a.25.25,0,0,1-.25.25H1.5A1.5,1.5,0,0,0,0,12Z"
-                  fill="currentColor"
-                />
-              </svg>
-            </span>
-            <span
-              style="pointer-events: none; flex: 1;"
-            >
-              Add new member
-            </span>
-          </button>
-        </div>
-      </div>
-      <p
-        class="chakra-text css-1ei8ds1"
-      >
-        Dashboard
-      </p>
+      </span>
+      There are no members yet. Select \`Add new member\` from the menu to create one.
     </div>
-  </div>
-  <div
-    class="chakra-wrap css-1pvq104"
-  >
-    <ul
-      class="chakra-wrap__list css-p0a8v8"
-    />
   </div>
 </DocumentFragment>
 `;

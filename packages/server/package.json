@@ -6,7 +6,7 @@
   "description": "Medication Admin Record for Family Use API",
   "main": "build/server.js",
   "engines": {
-    "node": "15.x"
+    "node": "16.x"
   },
   "scripts": {
     "dev": "NODE_ENV=development concurrently \"yarn compile:watch\" \"yarn dev:server\"",

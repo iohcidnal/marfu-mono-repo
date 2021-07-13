@@ -1,15 +1,18 @@
 import Link from 'next/link';
 import {
+  Alert,
+  AlertIcon,
+  Box,
+  HStack,
+  IconButton,
   Menu,
   MenuButton,
-  MenuList,
   MenuItem,
-  IconButton,
-  Box,
-  Wrap,
-  WrapItem,
+  MenuList,
+  Stack,
   Text,
-  HStack
+  Wrap,
+  WrapItem
 } from '@chakra-ui/react';
 import { HamburgerIcon, AddIcon } from '@chakra-ui/icons';
 
@@ -32,25 +35,39 @@ const colorMap = {
 
 export default function MembersDashboard({ members }: IProps) {
   return (
-    <>
-      <Box p="4" shadow="md">
-        <HStack>
-          <Menu>
-            <MenuButton
-              as={IconButton}
-              aria-label="Options"
-              icon={<HamburgerIcon />}
-              variant="outline"
-            />
-            <MenuList>
-              <MenuItem icon={<AddIcon />}>Add new member</MenuItem>
-            </MenuList>
-          </Menu>
-          <Text fontSize="lg" fontWeight="semibold" color="gray.600">
-            Dashboard
-          </Text>
-        </HStack>
-      </Box>
+    <Stack>
+      <TitleBar />
+      <Cards members={members} />
+    </Stack>
+  );
+}
+
+function TitleBar() {
+  return (
+    <Box p="4" shadow="md">
+      <HStack>
+        <Menu>
+          <MenuButton
+            as={IconButton}
+            aria-label="Options"
+            icon={<HamburgerIcon />}
+            variant="outline"
+          />
+          <MenuList>
+            <MenuItem icon={<AddIcon />}>Add new member</MenuItem>
+          </MenuList>
+        </Menu>
+        <Text fontSize="lg" fontWeight="semibold" color="gray.600">
+          Dashboard
+        </Text>
+      </HStack>
+    </Box>
+  );
+}
+
+function Cards({ members }: IProps) {
+  if (members.length > 0) {
+    return (
       <Wrap p="10" justify="center" alignContent="flex-start">
         {members.map(member => {
           return (
@@ -74,6 +91,13 @@ export default function MembersDashboard({ members }: IProps) {
           );
         })}
       </Wrap>
-    </>
+    );
+  }
+
+  return (
+    <Alert>
+      <AlertIcon />
+      There are no members yet. Select `Add new member` from the menu to create one.
+    </Alert>
   );
 }

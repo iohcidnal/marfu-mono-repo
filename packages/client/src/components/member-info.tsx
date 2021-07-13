@@ -1,5 +1,7 @@
 import * as React from 'react';
 import {
+  Alert,
+  AlertIcon,
   Box,
   Button,
   Drawer,
@@ -79,6 +81,12 @@ export default function MemberInfo({
     <MemberInfoContext.Provider value={value}>
       {/* TODO: Display breadcrumbs */}
       <TitleBar />
+      {medications.length === 0 && (
+        <Alert status="info" mt="2">
+          <AlertIcon />
+          There are no medications yet. Select `Add new medication` from the menu to create one.
+        </Alert>
+      )}
       <MedicationCards />
     </MemberInfoContext.Provider>
   );
@@ -281,6 +289,7 @@ const DrawerForm = React.forwardRef(function DrawerForm(
               </Button>
               <Stack>
                 {freqInputs.map((input: IFrequencyDto, index) => {
+                  // STOP HERE: When deleting and adding freqs, labels and validations get messed up
                   if (input.status === 'DELETE') return null;
 
                   const inputError = errors.frequencies && errors.frequencies[index]?.time.message;
