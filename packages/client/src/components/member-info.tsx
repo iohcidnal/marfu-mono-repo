@@ -138,7 +138,7 @@ const DrawerForm = React.forwardRef(function DrawerForm(
   { method, defaultValues }: IDrawerFormProps,
   ref
 ) {
-  const { currentUserId, member } = useMemberInfoContext();
+  const { currentUserId, member, setMedications, medications } = useMemberInfoContext();
   const { isOpen, onClose, onOpen } = useDisclosure();
   const toast = useToast();
   const {
@@ -147,6 +147,7 @@ const DrawerForm = React.forwardRef(function DrawerForm(
     register,
     handleSubmit,
     formState: { errors },
+    reset,
     setValue
   } = useForm<IMedicationDto>({
     mode: 'all',
@@ -163,7 +164,7 @@ const DrawerForm = React.forwardRef(function DrawerForm(
     ...watchInputs[index]
   }));
 
-  const mutation = useMedicationService(onClose, method);
+  const mutation = useMedicationService(handleSuccessSubmit, method);
 
   React.useImperativeHandle(ref, () => ({ onOpen }), [onOpen]);
 
@@ -200,8 +201,38 @@ const DrawerForm = React.forwardRef(function DrawerForm(
     );
   }
 
+  function handleClose() {
+    reset();
+    onClose();
+  }
+
+  function handleSuccessSubmit(data: IMedicationDto) {
+    reset(data);
+
+    if (method === 'POST') {
+      // Created
+      setMedications([...medications, data]);
+      toast({
+        ...toastOptions,
+        title: 'Medication successfuly created',
+        status: 'success'
+      });
+    } else {
+      // Updated
+      const index = medications.findIndex(med => med._id === data._id);
+      setMedications([...medications.slice(0, index), data, ...medications.slice(index + 1)]);
+      toast({
+        ...toastOptions,
+        title: 'Medication successfuly updated',
+        status: 'success'
+      });
+    }
+
+    onClose();
+  }
+
   return (
-    <Drawer onClose={onClose} isOpen={isOpen} size="md">
+    <Drawer onClose={handleClose} isOpen={isOpen} size="md">
       <DrawerOverlay />
       <DrawerContent>
         <DrawerCloseButton />
@@ -280,9 +311,8 @@ const DrawerForm = React.forwardRef(function DrawerForm(
                 onClick={() =>
                   append({ time: null, status: 'NEW', medicationId: defaultValues?._id })
                 }
-                colorScheme="gray"
+                colorScheme="blue"
                 w="full"
-                variant="outline"
               >
                 Add frequency
               </Button>
@@ -319,7 +349,13 @@ const DrawerForm = React.forwardRef(function DrawerForm(
               </Stack>
 
               <HStack pt="4">
-                <Button colorScheme="blue" w="full" size="lg" variant="outline" onClick={onClose}>
+                <Button
+                  colorScheme="blue"
+                  w="full"
+                  size="lg"
+                  variant="outline"
+                  onClick={handleClose}
+                >
                   Cancel
                 </Button>
                 <Button
@@ -416,8 +452,7 @@ function CardActions({ medication }: { medication: IMedicationDto }) {
   );
 }
 
-function useMedicationService(onClose: () => void, method: method) {
-  const { medications, setMedications } = useMemberInfoContext();
+function useMedicationService(onSuccessSubmit: (data: IMedicationDto) => void, method: method) {
   const toast = useToast();
 
   const mutation = useMutation(
@@ -429,26 +464,9 @@ function useMedicationService(onClose: () => void, method: method) {
       });
     },
     {
-      onSuccess: ({ status, data }) => {
-        if (status === 201) {
-          // Created
-          setMedications([...medications, data]);
-          onClose();
-          toast({
-            ...toastOptions,
-            title: 'Medication successfuly created',
-            status: 'success'
-          });
-        } else if (status === 200) {
-          // Updated
-          const index = medications.findIndex(med => med._id === data._id);
-          setMedications([...medications.slice(0, index), data, ...medications.slice(index + 1)]);
-          onClose();
-          toast({
-            ...toastOptions,
-            title: 'Medication successfuly updated',
-            status: 'success'
-          });
+      onSuccess: ({ status, data }: { status: number; data: IMedicationDto }) => {
+        if ([200, 201].includes(status)) {
+          onSuccessSubmit(data);
         } else {
           toast({ ...toastOptions, title: 'An error occured', status: 'error' });
         }
