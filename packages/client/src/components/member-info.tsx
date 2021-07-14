@@ -147,7 +147,6 @@ const DrawerForm = React.forwardRef(function DrawerForm(
     register,
     handleSubmit,
     formState: { errors },
-    formState,
     setValue
   } = useForm<IMedicationDto>({
     mode: 'all',
@@ -289,7 +288,6 @@ const DrawerForm = React.forwardRef(function DrawerForm(
               </Button>
               <Stack>
                 {freqInputs.map((input: IFrequencyDto, index) => {
-                  // STOP HERE: When deleting and adding freqs, labels and validations get messed up
                   if (input.status === 'DELETE') return null;
 
                   const inputError = errors.frequencies && errors.frequencies[index]?.time.message;
@@ -300,13 +298,12 @@ const DrawerForm = React.forwardRef(function DrawerForm(
                       isRequired
                       isInvalid={!!inputError}
                     >
-                      <FormLabel>{`Freq ${index + 1}`}</FormLabel>
                       <HStack>
                         <Input
                           type="time"
                           size="lg"
                           {...register(`frequencies.${index}.time`, {
-                            required: `Freq ${index + 1} is required.`
+                            required: `Frequency is required.`
                           })}
                         />
                         <IconButton
@@ -327,7 +324,6 @@ const DrawerForm = React.forwardRef(function DrawerForm(
                 </Button>
                 <Button
                   colorScheme="blue"
-                  disabled={!formState.isValid}
                   isLoading={mutation.isLoading}
                   size="lg"
                   type="submit"
