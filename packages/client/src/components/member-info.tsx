@@ -1,6 +1,13 @@
 import * as React from 'react';
 import {
   Alert,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogCloseButton,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogOverlay,
   AlertIcon,
   Box,
   Button,
@@ -127,7 +134,7 @@ function MedicationMenu() {
   );
 }
 
-type method = 'PUT' | 'POST';
+type method = 'PUT' | 'POST' | 'DELETE';
 
 interface IDrawerFormProps {
   method: method;
@@ -189,7 +196,7 @@ const DrawerForm = React.forwardRef(function DrawerForm(
       medication.createdBy = currentUserId;
     }
 
-    mutation.mutate(medication);
+    mutation.mutate({ payload: medication, url: `${process.env.NEXT_PUBLIC_API}medications` });
   }
 
   function areFreqInputsValid(): boolean {
@@ -433,6 +440,7 @@ function MedicationCards() {
 
 function CardActions({ medication }: { medication: IMedicationDto }) {
   const formRef = React.useRef<{ onOpen: () => void }>();
+  const confirmDeleteRef = React.useRef<{ onOpen: () => void }>();
 
   return (
     <>
@@ -442,23 +450,83 @@ function CardActions({ medication }: { medication: IMedicationDto }) {
           <MenuItem icon={<FaRegEdit />} onClick={() => formRef.current.onOpen()}>
             Edit medication
           </MenuItem>
-          <MenuItem icon={<FaTrash />}>Delete medication</MenuItem>
+          <MenuItem icon={<FaTrash />} onClick={() => confirmDeleteRef.current.onOpen()}>
+            Delete medication
+          </MenuItem>
           <MenuItem icon={<FaList />}>View logs</MenuItem>
           <MenuItem icon={<FaNotesMedical />}>Add logs</MenuItem>
         </MenuList>
       </Menu>
       <DrawerForm defaultValues={medication} method="PUT" ref={formRef} />
+      <ConfirmDeleteDialog medication={medication} ref={confirmDeleteRef} />
     </>
   );
 }
+
+const ConfirmDeleteDialog = React.forwardRef(function ConfirmDeleteDialog(
+  { medication }: { medication: IMedicationDto },
+  ref
+) {
+  const { setMedications, medications } = useMemberInfoContext();
+  const { isOpen, onClose, onOpen } = useDisclosure();
+  const cancelRef = React.useRef();
+  const toast = useToast();
+
+  React.useImperativeHandle(ref, () => ({ onOpen }), [onOpen]);
+
+  const mutation = useMedicationService(handleDeleteSuccess, 'DELETE');
+
+  function handleDeleteSuccess() {
+    const index = medications.findIndex(med => med._id === medication._id);
+    setMedications([...medications.slice(0, index), ...medications.slice(index + 1)]);
+    toast({
+      ...toastOptions,
+      title: `${medication.medicationName} successfuly deleted`,
+      status: 'success'
+    });
+  }
+
+  return (
+    <AlertDialog
+      motionPreset="slideInBottom"
+      leastDestructiveRef={cancelRef}
+      onClose={onClose}
+      isOpen={isOpen}
+    >
+      <AlertDialogOverlay />
+      <AlertDialogContent>
+        <AlertDialogHeader>{`Delete ${medication.medicationName}?`}</AlertDialogHeader>
+        <AlertDialogCloseButton />
+        <AlertDialogBody>Are you sure you want to delete this medication?</AlertDialogBody>
+        <AlertDialogFooter>
+          <Button ref={cancelRef} onClick={onClose}>
+            No
+          </Button>
+          <Button
+            colorScheme="red"
+            ml={3}
+            onClick={() =>
+              mutation.mutate({
+                payload: undefined,
+                url: `${process.env.NEXT_PUBLIC_API}medications/${medication._id}`
+              })
+            }
+          >
+            Yes
+          </Button>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+});
 
 function useMedicationService(onSuccessSubmit: (data: IMedicationDto) => void, method: method) {
   const toast = useToast();
 
   const mutation = useMutation(
-    (payload: IMedicationDto) => {
+    ({ payload, url }: { payload: IMedicationDto; url: string }) => {
       return fetcher({
-        url: `${process.env.NEXT_PUBLIC_API}medications`,
+        url,
         method,
         payload
       });

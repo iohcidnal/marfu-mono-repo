@@ -1,5 +1,7 @@
 import mongoose from 'mongoose';
 import { IFrequencyDto, IMedicationDto } from '@common';
+import frequencyModel from './frequency.model';
+import frequencyLogModel from '../frequency-log/frequency-log.model';
 
 const MedicationSchema = new mongoose.Schema(
   {
@@ -73,6 +75,18 @@ MedicationSchema.statics.toDto = function (
     createdBy: doc.createdBy
   };
 };
+
+// Middleware to delete all related frequencies and frequency logs for the medication to delete
+MedicationSchema.pre('findOneAndDelete', async function () {
+  const medication: IMedicationDocument = await this.findOne(this.getFilter()).lean();
+  const frequencies = await frequencyModel.find({ medicationId: medication._id }).lean();
+  const deleteManyPromises = frequencies.map(freq =>
+    frequencyLogModel.deleteMany({ frequencyId: freq._id })
+  );
+
+  await Promise.allSettled(deleteManyPromises);
+  await frequencyModel.deleteMany({ medicationId: medication._id });
+});
 
 export default mongoose.model<IMedicationDocument, IMedicationModel>(
   'medication',

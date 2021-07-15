@@ -8,5 +8,6 @@ const router = express.Router();
 router.post('/medications', validateUser, controller.post);
 router.get('/medications/:memberId', validateUser, controller.getAllByMemberId);
 router.put('/medications', validateUser, controller.put);
+router.delete('/medications/:id', validateUser, controller.deleteById);
 
 export default router;

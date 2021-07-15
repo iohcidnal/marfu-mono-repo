@@ -95,6 +95,11 @@ export async function update(payload: IMedicationDto): Promise<IMedicationDto | 
   return doc;
 }
 
+export async function deleteById(id: string): Promise<IMedicationDto | null> {
+  const result = await model.findOneAndDelete({ _id: id });
+  return result;
+}
+
 async function getFrequencyLogs(docs: IMedicationDto[]): Promise<IFrequencyLogDto[] | null> {
   // Get all frequency IDs to retrieve
   const frequencyIds = docs.flatMap(doc =>
