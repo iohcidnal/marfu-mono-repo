@@ -29,6 +29,8 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
+  Radio,
+  RadioGroup,
   Stack,
   Text,
   useDisclosure,
@@ -48,7 +50,7 @@ import {
 import { useFieldArray, useForm } from 'react-hook-form';
 import { useMutation } from 'react-query';
 
-import { IMemberDto, IMedicationDto, IFrequencyDto } from '@common';
+import { IMemberDto, IMedicationDto, IFrequencyDto, IFrequencyLogDto } from '@common';
 import { fetcher } from '../utils';
 
 interface IMemberInfoProps {
@@ -172,7 +174,7 @@ const AddEditMedicationForm = React.forwardRef(function AddEditMedicationForm(
     ...watchInputs[index]
   }));
 
-  const mutation = useMedicationService(handleSuccessSubmit, method);
+  const mutation = useFetcher<IMedicationDto>(handleSuccessSubmit, method);
 
   React.useImperativeHandle(ref, () => ({ onOpen }), [onOpen]);
 
@@ -438,12 +440,18 @@ function MedicationCards() {
 }
 
 function CardActions({ medication }: { medication: IMedicationDto }) {
-  const formRef = React.useRef<{ onOpen: () => void }>();
+  const addEditFormMedicationRef = React.useRef<{ onOpen: () => void }>();
   const confirmDeleteRef = React.useRef<{ onOpen: () => void }>();
+  const addLogFormRef = React.useRef<{ onOpen: () => void }>();
 
   return (
     <HStack>
-      <IconButton aria-label="Add log" icon={<FaNotesMedical />} colorScheme="blue" />
+      <IconButton
+        aria-label="Add log"
+        icon={<FaNotesMedical />}
+        colorScheme="blue"
+        onClick={() => addLogFormRef.current.onOpen()}
+      />
       <Menu>
         <MenuButton
           as={IconButton}
@@ -453,7 +461,7 @@ function CardActions({ medication }: { medication: IMedicationDto }) {
           variant="outline"
         />
         <MenuList>
-          <MenuItem icon={<FaRegEdit />} onClick={() => formRef.current.onOpen()}>
+          <MenuItem icon={<FaRegEdit />} onClick={() => addEditFormMedicationRef.current.onOpen()}>
             Edit medication
           </MenuItem>
           <MenuItem icon={<FaTrash />} onClick={() => confirmDeleteRef.current.onOpen()}>
@@ -462,8 +470,9 @@ function CardActions({ medication }: { medication: IMedicationDto }) {
           <MenuItem icon={<FaList />}>Log History</MenuItem>
         </MenuList>
       </Menu>
-      <AddEditMedicationForm medication={medication} method="PUT" ref={formRef} />
+      <AddEditMedicationForm medication={medication} method="PUT" ref={addEditFormMedicationRef} />
       <ConfirmDeleteDialog medication={medication} ref={confirmDeleteRef} />
+      <AddLogForm medication={medication} ref={addLogFormRef} />
     </HStack>
   );
 }
@@ -479,7 +488,7 @@ const ConfirmDeleteDialog = React.forwardRef(function ConfirmDeleteDialog(
 
   React.useImperativeHandle(ref, () => ({ onOpen }), [onOpen]);
 
-  const mutation = useMedicationService(handleDeleteSuccess, 'DELETE');
+  const mutation = useFetcher<IMedicationDto>(handleDeleteSuccess, 'DELETE');
 
   function handleDeleteSuccess() {
     const index = medications.findIndex(med => med._id === medication._id);
@@ -526,11 +535,164 @@ const ConfirmDeleteDialog = React.forwardRef(function ConfirmDeleteDialog(
   );
 });
 
-function useMedicationService(onSuccessSubmit: (data: IMedicationDto) => void, method: method) {
+const AddLogForm = React.forwardRef(function AddLogForm(
+  { medication }: { medication: IMedicationDto },
+  ref
+) {
+  const { isOpen, onClose, onOpen } = useDisclosure();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    formState,
+    reset
+  } = useForm<IFrequencyLogDto>({
+    mode: 'all'
+  });
+  const toast = useToast();
+  const [selectedFrequencyId, setSelectedFrequencyId] = React.useState<string>();
+  const { currentUserId } = useMemberInfoContext();
+  const mutation = useFetcher<IFrequencyLogDto>(handleSubmitSuccess, 'POST');
+
+  React.useImperativeHandle(ref, () => ({ onOpen }), [onOpen]);
+
+  const getDefaultValues = React.useCallback(() => {
+    return {
+      administeredDate: new Date().toISOString().split('T')[0],
+      administeredTime: `${new Date()
+        .getHours()
+        .toString()
+        .padStart(2, '0')}:${new Date().getMinutes().toString().padStart(2, '0')}`,
+      note: '',
+      frequencyId: null,
+      administeredBy: currentUserId
+    };
+  }, [currentUserId]);
+
+  React.useEffect(() => {
+    reset(getDefaultValues());
+  }, [currentUserId, getDefaultValues, reset]);
+
+  function onSubmit(payload: IFrequencyLogDto) {
+    if (!selectedFrequencyId) {
+      toast({
+        ...toastOptions,
+        status: 'error',
+        title: 'Not able to save',
+        description: 'Select a time for the log to apply to.'
+      });
+      return;
+    }
+
+    const freqLog: IFrequencyLogDto = {
+      ...payload,
+      frequencyId: selectedFrequencyId
+    };
+
+    mutation.mutate({ payload: freqLog, url: `${process.env.NEXT_PUBLIC_API}frequency-logs` });
+  }
+
+  function handleSubmitSuccess() {
+    toast({
+      ...toastOptions,
+      status: 'success',
+      title: 'Log created successfully'
+    });
+    handleClose();
+  }
+
+  function handleClose() {
+    reset(getDefaultValues());
+    onClose();
+  }
+
+  return (
+    <Drawer onClose={handleClose} isOpen={isOpen} size="md">
+      <DrawerOverlay />
+      <DrawerContent>
+        <DrawerCloseButton />
+        <DrawerHeader borderBottomWidth="1px">{`Add Log for ${medication.medicationName}`}</DrawerHeader>
+        <DrawerBody>
+          <form noValidate onSubmit={handleSubmit(onSubmit)}>
+            <Stack>
+              <RadioGroup
+                onChange={setSelectedFrequencyId}
+                value={selectedFrequencyId}
+                size="lg"
+                mb="4"
+              >
+                <FormLabel>Apply log to:</FormLabel>
+                <HStack spacing="4">
+                  {medication.frequencies.map(freq => (
+                    <Radio key={freq._id} value={freq._id}>
+                      {freq.time}
+                    </Radio>
+                  ))}
+                </HStack>
+              </RadioGroup>
+              <FormControl id="administeredDate" isRequired isInvalid={!!errors.administeredDate}>
+                <FormLabel>Administered Date:</FormLabel>
+                <Input
+                  type="date"
+                  size="lg"
+                  {...register('administeredDate', {
+                    required: 'Administered date is required.'
+                  })}
+                />
+                {errors.administeredDate && (
+                  <FormErrorMessage>{errors.administeredDate.message}</FormErrorMessage>
+                )}
+              </FormControl>
+              <FormControl id="administeredTime" isRequired isInvalid={!!errors.administeredTime}>
+                <FormLabel>Administered Time:</FormLabel>
+                <Input
+                  type="time"
+                  size="lg"
+                  {...register('administeredTime', {
+                    required: 'Administered time is required.'
+                  })}
+                />
+                {errors.administeredTime && (
+                  <FormErrorMessage>{errors.administeredTime.message}</FormErrorMessage>
+                )}
+              </FormControl>
+              <FormControl id="note">
+                <FormLabel>Note</FormLabel>
+                <Input type="text" size="lg" {...register('note')} />
+              </FormControl>
+              <HStack pt="4">
+                <Button
+                  colorScheme="blue"
+                  w="full"
+                  size="lg"
+                  variant="outline"
+                  onClick={handleClose}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  colorScheme="blue"
+                  isLoading={formState.isSubmitting}
+                  size="lg"
+                  type="submit"
+                  w="full"
+                >
+                  Save
+                </Button>
+              </HStack>
+            </Stack>
+          </form>
+        </DrawerBody>
+      </DrawerContent>
+    </Drawer>
+  );
+});
+
+function useFetcher<T>(onSuccessSubmit: (data: T) => void, method: method) {
   const toast = useToast();
 
   const mutation = useMutation(
-    ({ payload, url }: { payload: IMedicationDto; url: string }) => {
+    ({ payload, url }: { payload: T; url: string }) => {
       return fetcher({
         url,
         method,
@@ -538,7 +700,7 @@ function useMedicationService(onSuccessSubmit: (data: IMedicationDto) => void, m
       });
     },
     {
-      onSuccess: ({ status, data }: { status: number; data: IMedicationDto }) => {
+      onSuccess: ({ status, data }: { status: number; data: T }) => {
         if ([200, 201].includes(status)) {
           onSuccessSubmit(data);
         } else {

@@ -49,7 +49,8 @@ export interface IMedicationDto extends IModelBase {
 
 export interface IFrequencyLogDto extends IModelBase {
   frequencyId: string;
-  administeredDateTime: Date;
+  administeredDate: string;
+  administeredTime: string;
   note: string;
   administeredBy: string;
 }

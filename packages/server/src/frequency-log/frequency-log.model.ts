@@ -7,8 +7,12 @@ const FrequencyLogSchema = new mongoose.Schema(
       required: true,
       type: mongoose.Schema.Types.ObjectId
     },
-    administeredDateTime: {
-      type: Date,
+    administeredDate: {
+      type: String,
+      required: true
+    },
+    administeredTime: {
+      type: String,
       required: true
     },
     note: {
@@ -35,7 +39,8 @@ FrequencyLogSchema.statics.toDto = function (doc: IFrequencyLogDocument): IFrequ
   return {
     _id: doc._id,
     frequencyId: doc.frequencyId,
-    administeredDateTime: doc.administeredDateTime,
+    administeredDate: doc.administeredDate,
+    administeredTime: doc.administeredTime,
     note: doc.note,
     administeredBy: doc.administeredBy
   };
