@@ -215,10 +215,9 @@ const AddEditMedicationForm = React.forwardRef(function AddEditMedicationForm(
   }
 
   function handleSuccessSubmit(data: IMedicationDto) {
-    reset(data);
-
     if (method === 'POST') {
       // Created
+      reset();
       setMedications([...medications, data]);
       toast({
         ...toastOptions,
@@ -227,6 +226,7 @@ const AddEditMedicationForm = React.forwardRef(function AddEditMedicationForm(
       });
     } else {
       // Updated
+      reset(data);
       const index = medications.findIndex(med => med._id === data._id);
       setMedications([...medications.slice(0, index), data, ...medications.slice(index + 1)]);
       toast({
@@ -489,6 +489,7 @@ const ConfirmDeleteDialog = React.forwardRef(function ConfirmDeleteDialog(
       title: `${medication.medicationName} successfuly deleted`,
       status: 'success'
     });
+    onClose();
   }
 
   return (
