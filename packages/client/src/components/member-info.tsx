@@ -129,20 +129,21 @@ function MedicationMenu() {
           </MenuItem>
         </MenuList>
       </Menu>
-      <DrawerForm method="POST" ref={formRef} />
+      <AddEditMedicationForm method="POST" ref={formRef} />
     </>
   );
 }
 
 type method = 'PUT' | 'POST' | 'DELETE';
 
-interface IDrawerFormProps {
-  method: method;
-  defaultValues?: IMedicationDto;
-}
-
-const DrawerForm = React.forwardRef(function DrawerForm(
-  { method, defaultValues }: IDrawerFormProps,
+const AddEditMedicationForm = React.forwardRef(function AddEditMedicationForm(
+  {
+    method,
+    medication
+  }: {
+    method: method;
+    medication?: IMedicationDto;
+  },
   ref
 ) {
   const { currentUserId, member, setMedications, medications } = useMemberInfoContext();
@@ -158,7 +159,7 @@ const DrawerForm = React.forwardRef(function DrawerForm(
     setValue
   } = useForm<IMedicationDto>({
     mode: 'all',
-    defaultValues
+    defaultValues: medication
   });
 
   const { fields, append } = useFieldArray({
@@ -315,9 +316,7 @@ const DrawerForm = React.forwardRef(function DrawerForm(
 
               <Button
                 leftIcon={<FaPlus />}
-                onClick={() =>
-                  append({ time: null, status: 'NEW', medicationId: defaultValues?._id })
-                }
+                onClick={() => append({ time: null, status: 'NEW', medicationId: medication?._id })}
                 colorScheme="blue"
                 w="full"
               >
@@ -463,7 +462,7 @@ function CardActions({ medication }: { medication: IMedicationDto }) {
           <MenuItem icon={<FaList />}>Log History</MenuItem>
         </MenuList>
       </Menu>
-      <DrawerForm defaultValues={medication} method="PUT" ref={formRef} />
+      <AddEditMedicationForm medication={medication} method="PUT" ref={formRef} />
       <ConfirmDeleteDialog medication={medication} ref={confirmDeleteRef} />
     </HStack>
   );
