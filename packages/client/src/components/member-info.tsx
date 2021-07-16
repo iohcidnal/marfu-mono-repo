@@ -38,7 +38,7 @@ import {
 } from '@chakra-ui/react';
 import {
   FaBars,
-  FaEllipsisH,
+  FaEllipsisV,
   FaList,
   FaNotesMedical,
   FaPlus,
@@ -181,7 +181,7 @@ const DrawerForm = React.forwardRef(function DrawerForm(
         ...toastOptions,
         status: 'error',
         title: 'Not able to save',
-        description: 'Frequency is required.'
+        description: 'Time is required.'
       });
       return;
     }
@@ -321,7 +321,7 @@ const DrawerForm = React.forwardRef(function DrawerForm(
                 colorScheme="blue"
                 w="full"
               >
-                Add frequency
+                Add Time
               </Button>
               <Stack>
                 {freqInputs.map((input: IFrequencyDto, index) => {
@@ -340,11 +340,11 @@ const DrawerForm = React.forwardRef(function DrawerForm(
                           type="time"
                           size="lg"
                           {...register(`frequencies.${index}.time`, {
-                            required: `Frequency is required.`
+                            required: `Time is required.`
                           })}
                         />
                         <IconButton
-                          aria-label="Delete frequency"
+                          aria-label="Delete time"
                           icon={<FaTrash />}
                           onClick={() => setValue(`frequencies.${index}.status`, 'DELETE')}
                         />
@@ -443,9 +443,16 @@ function CardActions({ medication }: { medication: IMedicationDto }) {
   const confirmDeleteRef = React.useRef<{ onOpen: () => void }>();
 
   return (
-    <>
+    <HStack>
+      <IconButton aria-label="Add log" icon={<FaNotesMedical />} colorScheme="blue" />
       <Menu>
-        <MenuButton as={IconButton} aria-label="Options" icon={<FaEllipsisH />} variant="outline" />
+        <MenuButton
+          as={IconButton}
+          aria-label="Options"
+          backgroundColor="gray.200"
+          icon={<FaEllipsisV />}
+          variant="outline"
+        />
         <MenuList>
           <MenuItem icon={<FaRegEdit />} onClick={() => formRef.current.onOpen()}>
             Edit medication
@@ -453,13 +460,12 @@ function CardActions({ medication }: { medication: IMedicationDto }) {
           <MenuItem icon={<FaTrash />} onClick={() => confirmDeleteRef.current.onOpen()}>
             Delete medication
           </MenuItem>
-          <MenuItem icon={<FaList />}>View logs</MenuItem>
-          <MenuItem icon={<FaNotesMedical />}>Add logs</MenuItem>
+          <MenuItem icon={<FaList />}>Log History</MenuItem>
         </MenuList>
       </Menu>
       <DrawerForm defaultValues={medication} method="PUT" ref={formRef} />
       <ConfirmDeleteDialog medication={medication} ref={confirmDeleteRef} />
-    </>
+    </HStack>
   );
 }
 
