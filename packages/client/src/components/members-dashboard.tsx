@@ -1,26 +1,34 @@
+import * as React from 'react';
 import Link from 'next/link';
 import {
   Alert,
   AlertIcon,
   Box,
+  Button,
+  FormControl,
+  FormErrorMessage,
+  FormLabel,
   HStack,
   IconButton,
+  Input,
   Menu,
   MenuButton,
   MenuItem,
   MenuList,
   Stack,
   Text,
+  useDisclosure,
+  useToast,
   Wrap,
   WrapItem
 } from '@chakra-ui/react';
 import { HamburgerIcon, AddIcon } from '@chakra-ui/icons';
 
-import { IDashboardDto } from '@common';
-
-interface IProps {
-  members: IDashboardDto[];
-}
+import { IDashboardDto, IMemberDto } from '@common';
+import DrawerContainer from './common/drawer-container';
+import useFetcher, { method } from './common/use-fetcher';
+import { useForm } from 'react-hook-form';
+import toastOptions from './common/toast-options';
 
 const colorMap = {
   PAST_DUE: {
@@ -33,12 +41,39 @@ const colorMap = {
   }
 };
 
-export default function MembersDashboard({ members }: IProps) {
+export interface IDashboardProps {
+  currentUserId: string;
+  dashboardItems: IDashboardDto[];
+}
+
+interface IDashboardContextProps extends IDashboardProps {
+  setDashboardItems: React.Dispatch<IDashboardDto[]>;
+}
+
+const DashboardContext = React.createContext<IDashboardContextProps>(null);
+const useDashboardContext = () => React.useContext(DashboardContext);
+
+export default function MembersDashboard({
+  currentUserId,
+  dashboardItems: initialDashboardItems
+}: IDashboardProps) {
+  const [dashboardItems, setDashboardItems] = React.useState(initialDashboardItems);
+  const value = React.useMemo(
+    () => ({
+      currentUserId,
+      dashboardItems,
+      setDashboardItems
+    }),
+    [currentUserId, dashboardItems]
+  );
+
   return (
-    <Stack>
-      <TitleBar />
-      <Cards members={members} />
-    </Stack>
+    <DashboardContext.Provider value={value}>
+      <Stack>
+        <TitleBar />
+        <Cards />
+      </Stack>
+    </DashboardContext.Provider>
   );
 }
 
@@ -46,17 +81,7 @@ function TitleBar() {
   return (
     <Box p="4" shadow="md">
       <HStack>
-        <Menu>
-          <MenuButton
-            as={IconButton}
-            aria-label="Options"
-            icon={<HamburgerIcon />}
-            variant="outline"
-          />
-          <MenuList>
-            <MenuItem icon={<AddIcon />}>Add new member</MenuItem>
-          </MenuList>
-        </Menu>
+        <MemberMenu />
         <Text fontSize="lg" fontWeight="semibold" color="gray.600">
           Dashboard
         </Text>
@@ -65,11 +90,36 @@ function TitleBar() {
   );
 }
 
-function Cards({ members }: IProps) {
-  if (members.length > 0) {
+function MemberMenu() {
+  const formRef = React.useRef<{ onOpen: () => void }>();
+
+  return (
+    <>
+      <Menu>
+        <MenuButton
+          as={IconButton}
+          aria-label="Options"
+          icon={<HamburgerIcon />}
+          variant="outline"
+        />
+        <MenuList>
+          <MenuItem icon={<AddIcon />} onClick={() => formRef.current.onOpen()}>
+            Add new member
+          </MenuItem>
+        </MenuList>
+      </Menu>
+      <AddEditMemberForm method="POST" ref={formRef} />
+    </>
+  );
+}
+
+function Cards() {
+  const { dashboardItems } = useDashboardContext();
+
+  if (dashboardItems.length > 0) {
     return (
       <Wrap p="10" justify="center" alignContent="flex-start">
-        {members.map(member => {
+        {dashboardItems.map(member => {
           return (
             <Link href={`/member/${encodeURIComponent(member._id)}`} key={member._id}>
               <WrapItem>
@@ -101,3 +151,92 @@ function Cards({ members }: IProps) {
     </Alert>
   );
 }
+
+const AddEditMemberForm = React.forwardRef(function AddEditMemberForm(
+  { member, method }: { member?: IMemberDto; method: method },
+  ref
+) {
+  const { isOpen, onClose, onOpen } = useDisclosure();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    formState,
+    reset,
+    setValue
+  } = useForm<IMemberDto>({
+    mode: 'all',
+    defaultValues: member
+  });
+  const toast = useToast();
+  const { currentUserId } = useDashboardContext();
+  const mutation = useFetcher<IMemberDto>(handleSubmitSuccess, method);
+
+  React.useImperativeHandle(ref, () => ({ onOpen }), [onOpen]);
+
+  function onSubmit(payload: IMemberDto) {
+    const member: IMemberDto = { ...payload, createdBy: currentUserId };
+    mutation.mutate({ payload: member, url: `${process.env.NEXT_PUBLIC_API}members` });
+  }
+
+  function handleSubmitSuccess(data: IMemberDto) {
+    // STOP HERE: Insert data into dashboard items
+    toast({
+      ...toastOptions,
+      status: 'success',
+      title: 'Member created successfully'
+    });
+    handleClose();
+  }
+
+  function handleClose() {
+    reset();
+    onClose();
+  }
+
+  return (
+    <DrawerContainer onClose={handleClose} isOpen={isOpen} size="md" title="Add New Member">
+      <form noValidate onSubmit={handleSubmit(onSubmit)}>
+        <Stack>
+          <FormControl id="firstName" isRequired isInvalid={!!errors.firstName}>
+            <FormLabel>First name</FormLabel>
+            <Input
+              type="text"
+              size="lg"
+              {...register('firstName', {
+                required: 'First name is required.'
+              })}
+            />
+            {errors.firstName && <FormErrorMessage>{errors.firstName.message}</FormErrorMessage>}
+          </FormControl>
+          <FormControl id="lastName" isRequired isInvalid={!!errors.lastName}>
+            <FormLabel>Last name</FormLabel>
+            <Input
+              type="text"
+              size="lg"
+              {...register('lastName', {
+                required: 'Last name is required.'
+              })}
+            />
+            {errors.lastName && <FormErrorMessage>{errors.lastName.message}</FormErrorMessage>}
+          </FormControl>
+          <HStack pt="4">
+            <Button colorScheme="blue" w="full" size="lg" variant="outline" onClick={handleClose}>
+              Cancel
+            </Button>
+            <Button
+              disabled={!formState.isValid}
+              colorScheme="blue"
+              // isLoading={mutation.isLoading}
+              size="lg"
+              type="submit"
+              w="full"
+            >
+              Save
+            </Button>
+          </HStack>
+        </Stack>
+      </form>
+    </DrawerContainer>
+  );
+});

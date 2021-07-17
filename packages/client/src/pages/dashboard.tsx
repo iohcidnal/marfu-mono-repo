@@ -1,24 +1,31 @@
 import { GetServerSideProps } from 'next';
-import { MembersDashboard } from '../components';
-import { fetcher } from '../utils';
 
-export default function Dashboard({ members }) {
-  return <MembersDashboard members={members} />;
+import { IDashboardProps, MembersDashboard } from '../components';
+import { fetcher, IFetchResult } from '../utils';
+
+export default function Dashboard({ currentUserId, dashboardItems }: IDashboardProps) {
+  return <MembersDashboard currentUserId={currentUserId} dashboardItems={dashboardItems} />;
 }
 
 export const getServerSideProps: GetServerSideProps = async context => {
-  const result = await fetcher(
-    {
-      url: `${process.env.NEXT_PUBLIC_API}members/dashboard`,
-      method: 'POST',
-      payload: {
-        clientDateTime: new Date()
-      }
-    },
-    context
-  );
+  const results = await Promise.allSettled([
+    fetcher({ url: `${process.env.NEXT_PUBLIC_API}users/session` }, context),
+    fetcher(
+      {
+        url: `${process.env.NEXT_PUBLIC_API}members/dashboard`,
+        method: 'POST',
+        payload: {
+          clientDateTime: new Date()
+        }
+      },
+      context
+    )
+  ]);
 
-  if (result.status !== 200) {
+  if (
+    results.some(result => result.status === 'rejected') ||
+    results.some(result => result['value'].status !== 200)
+  ) {
     return {
       redirect: {
         permanent: false,
@@ -27,9 +34,12 @@ export const getServerSideProps: GetServerSideProps = async context => {
     };
   }
 
+  const [sessionResult, dashboardResult] = results as PromiseFulfilledResult<IFetchResult>[];
+
   return {
     props: {
-      members: result.data
+      currentUserId: sessionResult.value.data._id,
+      dashboardItems: dashboardResult.value.data
     }
   };
 };
