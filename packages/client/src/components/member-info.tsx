@@ -11,13 +11,6 @@ import {
   AlertIcon,
   Box,
   Button,
-  Drawer,
-  DrawerBody,
-  DrawerCloseButton,
-  DrawerContent,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerOverlay,
   FormControl,
   FormErrorMessage,
   FormLabel,
@@ -43,7 +36,6 @@ import {
   Tr,
   useDisclosure,
   useToast,
-  UseToastOptions,
   Wrap
 } from '@chakra-ui/react';
 import {
@@ -56,9 +48,12 @@ import {
   FaTrash
 } from 'react-icons/fa';
 import { useFieldArray, useForm } from 'react-hook-form';
-import { useMutation, useQuery } from 'react-query';
+import { useQuery } from 'react-query';
 
 import { IMemberDto, IMedicationDto, IFrequencyDto, IFrequencyLogDto } from '@common';
+import DrawerContainer from './common/drawer-container';
+import useFetcher, { method } from './common/use-fetcher';
+import toastOptions from './common/toast-options';
 import { fetcher } from '../utils';
 
 interface IMemberInfoProps {
@@ -71,10 +66,6 @@ interface IMemberInfoContextProps extends IMemberInfoProps {
   setMedications: React.Dispatch<IMedicationDto[]>;
 }
 
-const toastOptions: UseToastOptions = {
-  position: 'top-right',
-  isClosable: true
-};
 const MemberInfoContext = React.createContext<IMemberInfoContextProps>(null);
 const useMemberInfoContext = () => React.useContext(MemberInfoContext);
 
@@ -144,8 +135,6 @@ function MedicationMenu() {
   );
 }
 
-type method = 'PUT' | 'POST' | 'DELETE';
-
 const AddEditMedicationForm = React.forwardRef(function AddEditMedicationForm(
   {
     method,
@@ -183,6 +172,7 @@ const AddEditMedicationForm = React.forwardRef(function AddEditMedicationForm(
   }));
 
   const mutation = useFetcher<IMedicationDto>(handleSuccessSubmit, method);
+  const title = method === 'POST' ? 'Add New Medication' : 'Edit Medication';
 
   React.useImperativeHandle(ref, () => ({ onOpen }), [onOpen]);
 
@@ -250,145 +240,128 @@ const AddEditMedicationForm = React.forwardRef(function AddEditMedicationForm(
   }
 
   return (
-    <Drawer onClose={handleClose} isOpen={isOpen} size="md">
-      <DrawerOverlay />
-      <DrawerContent>
-        <DrawerCloseButton />
-        <DrawerHeader borderBottomWidth="1px">
-          {method === 'POST' ? 'Add New Medication' : 'Edit Medication'}
-        </DrawerHeader>
-        <DrawerBody>
-          <form noValidate onSubmit={handleSubmit(onSubmit)}>
-            <Stack>
-              <FormControl id="medicationName" isRequired isInvalid={!!errors.medicationName}>
-                <FormLabel>Medication name</FormLabel>
-                <Input
-                  type="text"
-                  size="lg"
-                  {...register('medicationName', {
-                    required: 'Medication name is required.'
-                  })}
-                />
-                {errors.medicationName && (
-                  <FormErrorMessage>{errors.medicationName.message}</FormErrorMessage>
-                )}
-              </FormControl>
-              <FormControl id="dosage" isRequired isInvalid={!!errors.dosage}>
-                <FormLabel>Dosage</FormLabel>
-                <Input
-                  type="text"
-                  size="lg"
-                  {...register('dosage', {
-                    required: 'Dosage is required.'
-                  })}
-                />
-                {errors.dosage && <FormErrorMessage>{errors.dosage.message}</FormErrorMessage>}
-              </FormControl>
-              <FormControl id="route" isRequired isInvalid={!!errors.route}>
-                <FormLabel>Route</FormLabel>
-                <Input
-                  type="text"
-                  size="lg"
-                  {...register('route', {
-                    required: 'Route is required.'
-                  })}
-                />
-                {errors.route && <FormErrorMessage>{errors.route.message}</FormErrorMessage>}
-              </FormControl>
-              <FormControl id="startDate" isRequired isInvalid={!!errors.startDate}>
-                <FormLabel>Start date:</FormLabel>
-                <Input
-                  type="date"
-                  size="lg"
-                  {...register('startDate', {
-                    required: 'Start date is required.'
-                  })}
-                />
-                {errors.startDate && (
-                  <FormErrorMessage>{errors.startDate.message}</FormErrorMessage>
-                )}
-              </FormControl>
-              <FormControl id="endDate" isRequired isInvalid={!!errors.endDate}>
-                <FormLabel>End date:</FormLabel>
-                <Input
-                  type="date"
-                  size="lg"
-                  {...register('endDate', {
-                    required: 'End date is required.'
-                  })}
-                />
-                {errors.endDate && <FormErrorMessage>{errors.endDate.message}</FormErrorMessage>}
-              </FormControl>
-              <FormControl id="note">
-                <FormLabel>Note</FormLabel>
-                <Input type="text" size="lg" {...register('note')} />
-              </FormControl>
+    <DrawerContainer onClose={handleClose} isOpen={isOpen} title={title} size="md">
+      <form noValidate onSubmit={handleSubmit(onSubmit)}>
+        <Stack>
+          <FormControl id="medicationName" isRequired isInvalid={!!errors.medicationName}>
+            <FormLabel>Medication name</FormLabel>
+            <Input
+              type="text"
+              size="lg"
+              {...register('medicationName', {
+                required: 'Medication name is required.'
+              })}
+            />
+            {errors.medicationName && (
+              <FormErrorMessage>{errors.medicationName.message}</FormErrorMessage>
+            )}
+          </FormControl>
+          <FormControl id="dosage" isRequired isInvalid={!!errors.dosage}>
+            <FormLabel>Dosage</FormLabel>
+            <Input
+              type="text"
+              size="lg"
+              {...register('dosage', {
+                required: 'Dosage is required.'
+              })}
+            />
+            {errors.dosage && <FormErrorMessage>{errors.dosage.message}</FormErrorMessage>}
+          </FormControl>
+          <FormControl id="route" isRequired isInvalid={!!errors.route}>
+            <FormLabel>Route</FormLabel>
+            <Input
+              type="text"
+              size="lg"
+              {...register('route', {
+                required: 'Route is required.'
+              })}
+            />
+            {errors.route && <FormErrorMessage>{errors.route.message}</FormErrorMessage>}
+          </FormControl>
+          <FormControl id="startDate" isRequired isInvalid={!!errors.startDate}>
+            <FormLabel>Start date:</FormLabel>
+            <Input
+              type="date"
+              size="lg"
+              {...register('startDate', {
+                required: 'Start date is required.'
+              })}
+            />
+            {errors.startDate && <FormErrorMessage>{errors.startDate.message}</FormErrorMessage>}
+          </FormControl>
+          <FormControl id="endDate" isRequired isInvalid={!!errors.endDate}>
+            <FormLabel>End date:</FormLabel>
+            <Input
+              type="date"
+              size="lg"
+              {...register('endDate', {
+                required: 'End date is required.'
+              })}
+            />
+            {errors.endDate && <FormErrorMessage>{errors.endDate.message}</FormErrorMessage>}
+          </FormControl>
+          <FormControl id="note">
+            <FormLabel>Note</FormLabel>
+            <Input type="text" size="lg" {...register('note')} />
+          </FormControl>
 
-              <Button
-                leftIcon={<FaPlus />}
-                onClick={() => append({ time: null, status: 'NEW', medicationId: medication?._id })}
-                colorScheme="blue"
-                w="full"
-              >
-                Add Time
-              </Button>
-              <Stack>
-                {freqInputs.map((input: IFrequencyDto, index) => {
-                  if (input.status === 'DELETE') return null;
+          <Button
+            leftIcon={<FaPlus />}
+            onClick={() => append({ time: null, status: 'NEW', medicationId: medication?._id })}
+            colorScheme="blue"
+            w="full"
+          >
+            Add Time
+          </Button>
+          <Stack>
+            {freqInputs.map((input: IFrequencyDto, index) => {
+              if (input.status === 'DELETE') return null;
 
-                  const inputError = errors.frequencies && errors.frequencies[index]?.time.message;
-                  return (
-                    <FormControl
-                      key={index}
-                      id={`frequencies[${index}].time`}
-                      isRequired
-                      isInvalid={!!inputError}
-                    >
-                      <HStack>
-                        <Input
-                          type="time"
-                          size="lg"
-                          {...register(`frequencies.${index}.time`, {
-                            required: `Time is required.`
-                          })}
-                        />
-                        <IconButton
-                          aria-label="Delete time"
-                          icon={<FaTrash />}
-                          onClick={() => setValue(`frequencies.${index}.status`, 'DELETE')}
-                        />
-                      </HStack>
-                      {inputError && <FormErrorMessage>{inputError}</FormErrorMessage>}
-                    </FormControl>
-                  );
-                })}
-              </Stack>
-
-              <HStack pt="4">
-                <Button
-                  colorScheme="blue"
-                  w="full"
-                  size="lg"
-                  variant="outline"
-                  onClick={handleClose}
+              const inputError = errors.frequencies && errors.frequencies[index]?.time.message;
+              return (
+                <FormControl
+                  key={index}
+                  id={`frequencies[${index}].time`}
+                  isRequired
+                  isInvalid={!!inputError}
                 >
-                  Cancel
-                </Button>
-                <Button
-                  colorScheme="blue"
-                  isLoading={mutation.isLoading}
-                  size="lg"
-                  type="submit"
-                  w="full"
-                >
-                  Save
-                </Button>
-              </HStack>
-            </Stack>
-          </form>
-        </DrawerBody>
-      </DrawerContent>
-    </Drawer>
+                  <HStack>
+                    <Input
+                      type="time"
+                      size="lg"
+                      {...register(`frequencies.${index}.time`, {
+                        required: `Time is required.`
+                      })}
+                    />
+                    <IconButton
+                      aria-label="Delete time"
+                      icon={<FaTrash />}
+                      onClick={() => setValue(`frequencies.${index}.status`, 'DELETE')}
+                    />
+                  </HStack>
+                  {inputError && <FormErrorMessage>{inputError}</FormErrorMessage>}
+                </FormControl>
+              );
+            })}
+          </Stack>
+
+          <HStack pt="4">
+            <Button colorScheme="blue" w="full" size="lg" variant="outline" onClick={handleClose}>
+              Cancel
+            </Button>
+            <Button
+              colorScheme="blue"
+              isLoading={mutation.isLoading}
+              size="lg"
+              type="submit"
+              w="full"
+            >
+              Save
+            </Button>
+          </HStack>
+        </Stack>
+      </form>
+    </DrawerContainer>
   );
 });
 
@@ -619,84 +592,76 @@ const AddLogForm = React.forwardRef(function AddLogForm(
   }
 
   return (
-    <Drawer onClose={handleClose} isOpen={isOpen} size="md">
-      <DrawerOverlay />
-      <DrawerContent>
-        <DrawerCloseButton />
-        <DrawerHeader borderBottomWidth="1px">{`Add Log for ${medication.medicationName}`}</DrawerHeader>
-        <DrawerBody>
-          <form noValidate onSubmit={handleSubmit(onSubmit)}>
-            <Stack>
-              <RadioGroup
-                onChange={setSelectedFrequencyId}
-                value={selectedFrequencyId}
-                size="lg"
-                mb="4"
-              >
-                <FormLabel>Apply log to:</FormLabel>
-                <HStack spacing="4">
-                  {medication.frequencies.map(freq => (
-                    <Radio key={freq._id} value={freq._id}>
-                      {freq.time}
-                    </Radio>
-                  ))}
-                </HStack>
-              </RadioGroup>
-              <FormControl id="administeredDate" isRequired isInvalid={!!errors.administeredDate}>
-                <FormLabel>Administered Date:</FormLabel>
-                <Input
-                  type="date"
-                  size="lg"
-                  {...register('administeredDate', {
-                    required: 'Administered date is required.'
-                  })}
-                />
-                {errors.administeredDate && (
-                  <FormErrorMessage>{errors.administeredDate.message}</FormErrorMessage>
-                )}
-              </FormControl>
-              <FormControl id="administeredTime" isRequired isInvalid={!!errors.administeredTime}>
-                <FormLabel>Administered Time:</FormLabel>
-                <Input
-                  type="time"
-                  size="lg"
-                  {...register('administeredTime', {
-                    required: 'Administered time is required.'
-                  })}
-                />
-                {errors.administeredTime && (
-                  <FormErrorMessage>{errors.administeredTime.message}</FormErrorMessage>
-                )}
-              </FormControl>
-              <FormControl id="note">
-                <FormLabel>Note</FormLabel>
-                <Input type="text" size="lg" {...register('note')} />
-              </FormControl>
-              <HStack pt="4">
-                <Button
-                  colorScheme="blue"
-                  w="full"
-                  size="lg"
-                  variant="outline"
-                  onClick={handleClose}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  colorScheme="blue"
-                  isLoading={formState.isSubmitting}
-                  size="lg"
-                  type="submit"
-                  w="full"
-                >
-                  Save
-                </Button>
-              </HStack>
-            </Stack>
-          </form>
-        </DrawerBody>
-      </DrawerContent>
-    </Drawer>
+    <DrawerContainer
+      onClose={handleClose}
+      isOpen={isOpen}
+      size="md"
+      title={`Add Log for ${medication.medicationName}`}
+    >
+      <form noValidate onSubmit={handleSubmit(onSubmit)}>
+        <Stack>
+          <RadioGroup
+            onChange={setSelectedFrequencyId}
+            value={selectedFrequencyId}
+            size="lg"
+            mb="4"
+          >
+            <FormLabel>Apply log to:</FormLabel>
+            <HStack spacing="4">
+              {medication.frequencies.map(freq => (
+                <Radio key={freq._id} value={freq._id}>
+                  {freq.time}
+                </Radio>
+              ))}
+            </HStack>
+          </RadioGroup>
+          <FormControl id="administeredDate" isRequired isInvalid={!!errors.administeredDate}>
+            <FormLabel>Administered Date:</FormLabel>
+            <Input
+              type="date"
+              size="lg"
+              {...register('administeredDate', {
+                required: 'Administered date is required.'
+              })}
+            />
+            {errors.administeredDate && (
+              <FormErrorMessage>{errors.administeredDate.message}</FormErrorMessage>
+            )}
+          </FormControl>
+          <FormControl id="administeredTime" isRequired isInvalid={!!errors.administeredTime}>
+            <FormLabel>Administered Time:</FormLabel>
+            <Input
+              type="time"
+              size="lg"
+              {...register('administeredTime', {
+                required: 'Administered time is required.'
+              })}
+            />
+            {errors.administeredTime && (
+              <FormErrorMessage>{errors.administeredTime.message}</FormErrorMessage>
+            )}
+          </FormControl>
+          <FormControl id="note">
+            <FormLabel>Note</FormLabel>
+            <Input type="text" size="lg" {...register('note')} />
+          </FormControl>
+          <HStack pt="4">
+            <Button colorScheme="blue" w="full" size="lg" variant="outline" onClick={handleClose}>
+              Cancel
+            </Button>
+            <Button
+              colorScheme="blue"
+              isLoading={formState.isSubmitting}
+              size="lg"
+              type="submit"
+              w="full"
+            >
+              Save
+            </Button>
+          </HStack>
+        </Stack>
+      </form>
+    </DrawerContainer>
   );
 });
 
@@ -737,102 +702,67 @@ const LogsHistory = React.forwardRef(function LogsHistory(
   }
 
   return (
-    <Drawer onClose={handleClose} isOpen={isOpen} size="full">
-      <DrawerOverlay />
-      <DrawerContent>
-        <DrawerCloseButton />
-        <DrawerHeader borderBottomWidth="1px">{`Logs for ${medication.medicationName}`}</DrawerHeader>
-        <DrawerBody>
-          <Stack>
-            <RadioGroup
-              onChange={setSelectedFrequencyId}
-              value={selectedFrequencyId}
-              size="lg"
-              mb="4"
-            >
-              <FormLabel>Select time:</FormLabel>
-              <HStack spacing="4">
-                {medication.frequencies.map(freq => (
-                  <Radio key={freq._id} value={freq._id}>
-                    {freq.time}
-                  </Radio>
+    <DrawerContainer
+      onClose={handleClose}
+      isOpen={isOpen}
+      size="full"
+      title={`Logs for ${medication.medicationName}`}
+      footer={
+        <Button
+          colorScheme="blue"
+          w="full"
+          size="lg"
+          variant="outline"
+          isLoading={isFetching}
+          onClick={handleClose}
+        >
+          Close
+        </Button>
+      }
+    >
+      <Stack>
+        <RadioGroup onChange={setSelectedFrequencyId} value={selectedFrequencyId} size="lg" mb="4">
+          <FormLabel>Select time:</FormLabel>
+          <HStack spacing="4">
+            {medication.frequencies.map(freq => (
+              <Radio key={freq._id} value={freq._id}>
+                {freq.time}
+              </Radio>
+            ))}
+          </HStack>
+        </RadioGroup>
+        <Skeleton isLoaded={!isFetching}>
+          {logs.length > 0 && (
+            <Table variant="striped" colorScheme="gray">
+              <Thead>
+                <Tr>
+                  <Th>Administered Date/Time</Th>
+                  <Th>By</Th>
+                  <Th>Note</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {logs.map(log => (
+                  <Tr key={log._id} justifyContent="space-between">
+                    <Td>
+                      {`${toDate(log.administeredDate).toLocaleDateString()} ${
+                        log.administeredTime
+                      }`}
+                    </Td>
+                    <Td>
+                      {`${log.administeredBy['firstName']} ${log.administeredBy['lastName']}`}
+                    </Td>
+                    <Td>{log.note}</Td>
+                  </Tr>
                 ))}
-              </HStack>
-            </RadioGroup>
-            <Skeleton isLoaded={!isFetching}>
-              {logs.length > 0 && (
-                <Table variant="striped" colorScheme="gray">
-                  <Thead>
-                    <Tr>
-                      <Th>Administered Date/Time</Th>
-                      <Th>By</Th>
-                      <Th>Note</Th>
-                    </Tr>
-                  </Thead>
-                  <Tbody>
-                    {logs.map(log => (
-                      <Tr key={log._id} justifyContent="space-between">
-                        <Td>
-                          {`${toDate(log.administeredDate).toLocaleDateString()} ${
-                            log.administeredTime
-                          }`}
-                        </Td>
-                        <Td>
-                          {`${log.administeredBy['firstName']} ${log.administeredBy['lastName']}`}
-                        </Td>
-                        <Td>{log.note}</Td>
-                      </Tr>
-                    ))}
-                  </Tbody>
-                </Table>
-              )}
-            </Skeleton>
-          </Stack>
-        </DrawerBody>
-        <DrawerFooter>
-          <Button
-            colorScheme="blue"
-            w="full"
-            size="lg"
-            variant="outline"
-            isLoading={isFetching}
-            onClick={handleClose}
-          >
-            Close
-          </Button>
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
+              </Tbody>
+            </Table>
+          )}
+        </Skeleton>
+      </Stack>
+    </DrawerContainer>
   );
 });
-
-function useFetcher<T>(onSuccessSubmit: (data: T) => void, method: method) {
-  const toast = useToast();
-
-  const mutation = useMutation(
-    ({ payload, url }: { payload: T; url: string }) => {
-      return fetcher({
-        url,
-        method,
-        payload
-      });
-    },
-    {
-      onSuccess: ({ status, data }: { status: number; data: T }) => {
-        if ([200, 201].includes(status)) {
-          onSuccessSubmit(data);
-        } else {
-          toast({ ...toastOptions, title: 'An error occured', status: 'error' });
-        }
-      },
-      onError: () => {
-        toast({ ...toastOptions, title: 'An error occured', status: 'error' });
-      }
-    }
-  );
-
-  return mutation;
-}
 
 function toDate(dateAsString: string): Date {
   const [yyyy, mm, dd] = dateAsString.split('-');
