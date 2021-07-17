@@ -16,6 +16,7 @@ import {
   FormLabel,
   Heading,
   HStack,
+  Icon,
   IconButton,
   Input,
   LinkBox,
@@ -40,10 +41,12 @@ import {
 } from '@chakra-ui/react';
 import {
   FaBars,
+  FaCapsules,
   FaEllipsisV,
   FaList,
   FaNotesMedical,
   FaPlus,
+  FaPlusSquare,
   FaRegEdit,
   FaTrash
 } from 'react-icons/fa';
@@ -102,34 +105,25 @@ export default function MemberInfo({
 
 function TitleBar() {
   const { member } = useMemberInfoContext();
-
-  return (
-    <>
-      <Box p="4" shadow="md">
-        <HStack>
-          <MedicationMenu />
-          <Text fontSize="lg" fontWeight="semibold" color="gray.600">
-            {`Medications for ${member.firstName} ${member.lastName}`}
-          </Text>
-        </HStack>
-      </Box>
-    </>
-  );
-}
-
-function MedicationMenu() {
   const formRef = React.useRef<{ onOpen: () => void }>();
 
   return (
     <>
-      <Menu>
-        <MenuButton as={IconButton} aria-label="Options" icon={<FaBars />} variant="outline" />
-        <MenuList>
-          <MenuItem icon={<FaPlus />} onClick={() => formRef.current.onOpen()}>
-            Add new medication
-          </MenuItem>
-        </MenuList>
-      </Menu>
+      <Box p="4" shadow="md">
+        <HStack justifyContent="space-between">
+          <HStack>
+            <Icon as={FaCapsules} />
+            <Text fontSize="lg" fontWeight="semibold" color="gray.600">
+              {`Medications for ${member.firstName} ${member.lastName}`}
+            </Text>
+          </HStack>
+          <IconButton
+            aria-label="Add new medication"
+            icon={<FaPlus />}
+            onClick={() => formRef.current.onOpen()}
+          />
+        </HStack>
+      </Box>
       <AddEditMedicationForm method="POST" ref={formRef} />
     </>
   );

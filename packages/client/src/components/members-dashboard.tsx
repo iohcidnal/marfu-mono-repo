@@ -9,8 +9,10 @@ import {
   FormErrorMessage,
   FormLabel,
   HStack,
+  Icon,
   IconButton,
   Input,
+  LinkBox,
   Menu,
   MenuButton,
   MenuItem,
@@ -29,6 +31,7 @@ import DrawerContainer from './common/drawer-container';
 import useFetcher, { method } from './common/use-fetcher';
 import { useForm } from 'react-hook-form';
 import toastOptions from './common/toast-options';
+import { FaCapsules, FaTh, FaTrash, FaUserEdit, FaUserPlus } from 'react-icons/fa';
 
 const colorMap = {
   PAST_DUE: {
@@ -78,36 +81,25 @@ export default function MembersDashboard({
 }
 
 function TitleBar() {
-  return (
-    <Box p="4" shadow="md">
-      <HStack>
-        <MemberMenu />
-        <Text fontSize="lg" fontWeight="semibold" color="gray.600">
-          Dashboard
-        </Text>
-      </HStack>
-    </Box>
-  );
-}
-
-function MemberMenu() {
   const formRef = React.useRef<{ onOpen: () => void }>();
 
   return (
     <>
-      <Menu>
-        <MenuButton
-          as={IconButton}
-          aria-label="Options"
-          icon={<HamburgerIcon />}
-          variant="outline"
-        />
-        <MenuList>
-          <MenuItem icon={<AddIcon />} onClick={() => formRef.current.onOpen()}>
-            Add new member
-          </MenuItem>
-        </MenuList>
-      </Menu>
+      <Box p="4" shadow="md">
+        <HStack justifyContent="space-between">
+          <HStack>
+            <Icon as={FaTh} />
+            <Text fontSize="lg" fontWeight="semibold" color="gray.600">
+              Dashboard
+            </Text>
+          </HStack>
+          <IconButton
+            aria-label="Add new user"
+            icon={<FaUserPlus />}
+            onClick={() => formRef.current.onOpen()}
+          />
+        </HStack>
+      </Box>
       <AddEditMemberForm method="POST" ref={formRef} />
     </>
   );
@@ -118,26 +110,36 @@ function Cards() {
 
   if (dashboardItems.length > 0) {
     return (
-      <Wrap p="10" justify="center" alignContent="flex-start">
+      <Wrap p="10" justify="center">
         {dashboardItems.map(member => {
           return (
-            <Link href={`/member/${encodeURIComponent(member._id)}`} key={member._id}>
-              <WrapItem>
-                <Box
-                  w="xs"
-                  borderWidth="1px"
-                  borderRadius="lg"
-                  p="4"
-                  as="button"
-                  shadow="md"
-                  {...colorMap[member.status]}
-                >
-                  <Text fontSize="lg" fontWeight="semibold">
-                    {member.firstName} {member.lastName}
-                  </Text>
-                </Box>
-              </WrapItem>
-            </Link>
+            <LinkBox
+              key={member._id}
+              as="article"
+              w="sm"
+              padding="4"
+              borderWidth="1px"
+              rounded="md"
+              shadow="md"
+              {...colorMap[member.status]}
+            >
+              <HStack justifyContent="space-between">
+                <Text fontWeight="bold">
+                  {member.firstName} {member.lastName}
+                </Text>
+                <HStack justifyContent="flex-end">
+                  <Link href={`/member/${encodeURIComponent(member._id)}`}>
+                    <IconButton
+                      aria-label="View medications"
+                      icon={<FaCapsules />}
+                      colorScheme="blue"
+                    />
+                  </Link>
+                  <IconButton aria-label="Edit member" icon={<FaUserEdit />} colorScheme="blue" />
+                  <IconButton aria-label="Delete member" icon={<FaTrash />} colorScheme="blue" />
+                </HStack>
+              </HStack>
+            </LinkBox>
           );
         })}
       </Wrap>
