@@ -15,6 +15,7 @@ import {
   DrawerBody,
   DrawerCloseButton,
   DrawerContent,
+  DrawerFooter,
   DrawerHeader,
   DrawerOverlay,
   FormControl,
@@ -31,8 +32,15 @@ import {
   MenuList,
   Radio,
   RadioGroup,
+  Skeleton,
   Stack,
+  Table,
+  Tbody,
+  Td,
   Text,
+  Th,
+  Thead,
+  Tr,
   useDisclosure,
   useToast,
   UseToastOptions,
@@ -48,7 +56,7 @@ import {
   FaTrash
 } from 'react-icons/fa';
 import { useFieldArray, useForm } from 'react-hook-form';
-import { useMutation } from 'react-query';
+import { useMutation, useQuery } from 'react-query';
 
 import { IMemberDto, IMedicationDto, IFrequencyDto, IFrequencyLogDto } from '@common';
 import { fetcher } from '../utils';
@@ -443,6 +451,7 @@ function CardActions({ medication }: { medication: IMedicationDto }) {
   const addEditFormMedicationRef = React.useRef<{ onOpen: () => void }>();
   const confirmDeleteRef = React.useRef<{ onOpen: () => void }>();
   const addLogFormRef = React.useRef<{ onOpen: () => void }>();
+  const logsHistoryRef = React.useRef<{ onOpen: () => void }>();
 
   return (
     <HStack>
@@ -467,12 +476,15 @@ function CardActions({ medication }: { medication: IMedicationDto }) {
           <MenuItem icon={<FaTrash />} onClick={() => confirmDeleteRef.current.onOpen()}>
             Delete medication
           </MenuItem>
-          <MenuItem icon={<FaList />}>Log History</MenuItem>
+          <MenuItem icon={<FaList />} onClick={() => logsHistoryRef.current.onOpen()}>
+            Logs History
+          </MenuItem>
         </MenuList>
       </Menu>
       <AddEditMedicationForm medication={medication} method="PUT" ref={addEditFormMedicationRef} />
       <ConfirmDeleteDialog medication={medication} ref={confirmDeleteRef} />
       <AddLogForm medication={medication} ref={addLogFormRef} />
+      <LogsHistory medication={medication} ref={logsHistoryRef} />
     </HStack>
   );
 }
@@ -683,6 +695,112 @@ const AddLogForm = React.forwardRef(function AddLogForm(
             </Stack>
           </form>
         </DrawerBody>
+      </DrawerContent>
+    </Drawer>
+  );
+});
+
+const LogsHistory = React.forwardRef(function LogsHistory(
+  { medication }: { medication: IMedicationDto },
+  ref
+) {
+  const { isOpen, onClose, onOpen } = useDisclosure();
+  const [selectedFrequencyId, setSelectedFrequencyId] = React.useState<string>();
+
+  const { data, isFetching, refetch } = useQuery(
+    ['logs-history', selectedFrequencyId],
+    async () => {
+      const { data }: { data: IFrequencyLogDto[] } = await fetcher({
+        url: `${process.env.NEXT_PUBLIC_API}frequency-logs/${selectedFrequencyId}`
+      });
+      return data;
+    },
+    { enabled: false, initialData: [] }
+  );
+
+  const [logs, setLogs] = React.useState<IFrequencyLogDto[]>([]);
+
+  React.useImperativeHandle(ref, () => ({ onOpen }), [onOpen]);
+
+  React.useEffect(() => {
+    setLogs(data);
+  }, [data]);
+
+  React.useEffect(() => {
+    if (selectedFrequencyId) refetch();
+  }, [refetch, selectedFrequencyId]);
+
+  function handleClose() {
+    setLogs([]);
+    setSelectedFrequencyId(null);
+    onClose();
+  }
+
+  return (
+    <Drawer onClose={handleClose} isOpen={isOpen} size="full">
+      <DrawerOverlay />
+      <DrawerContent>
+        <DrawerCloseButton />
+        <DrawerHeader borderBottomWidth="1px">{`Logs for ${medication.medicationName}`}</DrawerHeader>
+        <DrawerBody>
+          <Stack>
+            <RadioGroup
+              onChange={setSelectedFrequencyId}
+              value={selectedFrequencyId}
+              size="lg"
+              mb="4"
+            >
+              <FormLabel>Select time:</FormLabel>
+              <HStack spacing="4">
+                {medication.frequencies.map(freq => (
+                  <Radio key={freq._id} value={freq._id}>
+                    {freq.time}
+                  </Radio>
+                ))}
+              </HStack>
+            </RadioGroup>
+            <Skeleton isLoaded={!isFetching}>
+              {logs.length > 0 && (
+                <Table variant="striped" colorScheme="gray">
+                  <Thead>
+                    <Tr>
+                      <Th>Administered Date/Time</Th>
+                      <Th>By</Th>
+                      <Th>Note</Th>
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {logs.map(log => (
+                      <Tr key={log._id} justifyContent="space-between">
+                        <Td>
+                          {`${toDate(log.administeredDate).toLocaleDateString()} ${
+                            log.administeredTime
+                          }`}
+                        </Td>
+                        <Td>
+                          {`${log.administeredBy['firstName']} ${log.administeredBy['lastName']}`}
+                        </Td>
+                        <Td>{log.note}</Td>
+                      </Tr>
+                    ))}
+                  </Tbody>
+                </Table>
+              )}
+            </Skeleton>
+          </Stack>
+        </DrawerBody>
+        <DrawerFooter>
+          <Button
+            colorScheme="blue"
+            w="full"
+            size="lg"
+            variant="outline"
+            isLoading={isFetching}
+            onClick={handleClose}
+          >
+            Close
+          </Button>
+        </DrawerFooter>
       </DrawerContent>
     </Drawer>
   );
