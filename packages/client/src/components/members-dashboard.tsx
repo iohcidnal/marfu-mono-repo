@@ -169,7 +169,7 @@ const AddEditMemberForm = React.forwardRef(function AddEditMemberForm(
     defaultValues: member
   });
   const toast = useToast();
-  const { currentUserId } = useDashboardContext();
+  const { currentUserId, dashboardItems, setDashboardItems } = useDashboardContext();
   const mutation = useFetcher<IMemberDto>(handleSubmitSuccess, method);
 
   React.useImperativeHandle(ref, () => ({ onOpen }), [onOpen]);
@@ -179,12 +179,20 @@ const AddEditMemberForm = React.forwardRef(function AddEditMemberForm(
     mutation.mutate({ payload: member, url: `${process.env.NEXT_PUBLIC_API}members` });
   }
 
-  function handleSubmitSuccess(data: IMemberDto) {
-    // STOP HERE: Insert data into dashboard items
+  function handleSubmitSuccess(data: IDashboardDto) {
+    let toastTitle: string;
+
+    if (method === 'POST') {
+      toastTitle = 'Member succesfully created';
+      setDashboardItems([...dashboardItems, data]);
+    } else {
+      toastTitle = 'Member sucessfully updated';
+    }
+
     toast({
       ...toastOptions,
       status: 'success',
-      title: 'Member created successfully'
+      title: toastTitle
     });
     handleClose();
   }
