@@ -42,6 +42,7 @@ import {
 import {
   FaBars,
   FaCapsules,
+  FaEdit,
   FaEllipsisV,
   FaList,
   FaNotesMedical,
@@ -166,7 +167,22 @@ const AddEditMedicationForm = React.forwardRef(function AddEditMedicationForm(
   }));
 
   const mutation = useFetcher<IMedicationDto>(handleSuccessSubmit, method);
-  const title = method === 'POST' ? 'Add New Medication' : 'Edit Medication';
+  const title = (
+    <HStack>
+      {method === 'POST' ? (
+        <>
+          <Icon as={FaPlus} />
+          <Text>Add New Medication</Text>
+        </>
+      ) : (
+        <>
+          <Icon as={FaEdit} />
+          <Text>Edit Medication</Text>
+        </>
+      )}
+    </HStack>
+  );
+  // method === 'POST' ? 'Add New Medication' : 'Edit Medication';
 
   React.useImperativeHandle(ref, () => ({ onOpen }), [onOpen]);
 
@@ -437,7 +453,7 @@ function CardActions({ medication }: { medication: IMedicationDto }) {
           variant="outline"
         />
         <MenuList>
-          <MenuItem icon={<FaRegEdit />} onClick={() => addEditFormMedicationRef.current.onOpen()}>
+          <MenuItem icon={<FaEdit />} onClick={() => addEditFormMedicationRef.current.onOpen()}>
             Edit medication
           </MenuItem>
           <MenuItem icon={<FaTrash />} onClick={() => confirmDeleteRef.current.onOpen()}>
@@ -590,7 +606,12 @@ const AddLogForm = React.forwardRef(function AddLogForm(
       onClose={handleClose}
       isOpen={isOpen}
       size="md"
-      title={`Add Log for ${medication.medicationName}`}
+      title={
+        <HStack>
+          <Icon as={FaNotesMedical} />
+          <Text>{`Add Log for ${medication.medicationName}`}</Text>
+        </HStack>
+      }
     >
       <form noValidate onSubmit={handleSubmit(onSubmit)}>
         <Stack>
@@ -700,7 +721,12 @@ const LogsHistory = React.forwardRef(function LogsHistory(
       onClose={handleClose}
       isOpen={isOpen}
       size="full"
-      title={`Logs for ${medication.medicationName}`}
+      title={
+        <HStack>
+          <Icon as={FaList} />
+          <Text>{`Logs for ${medication.medicationName}`}</Text>
+        </HStack>
+      }
       footer={
         <Button
           colorScheme="blue"

@@ -10,7 +10,7 @@ import {
 import { DrawerFooter, DrawerProps } from '@chakra-ui/react';
 
 interface IProps extends DrawerProps {
-  title: string;
+  title: React.ReactNode;
   children: React.ReactNode;
   footer?: React.ReactNode;
 }

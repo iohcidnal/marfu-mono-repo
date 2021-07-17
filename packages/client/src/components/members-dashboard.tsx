@@ -205,7 +205,17 @@ const AddEditMemberForm = React.forwardRef(function AddEditMemberForm(
   }
 
   return (
-    <DrawerContainer onClose={handleClose} isOpen={isOpen} size="md" title="Add New Member">
+    <DrawerContainer
+      onClose={handleClose}
+      isOpen={isOpen}
+      size="md"
+      title={
+        <HStack>
+          <Icon as={FaUserPlus} />
+          <Text>Add New Member</Text>
+        </HStack>
+      }
+    >
       <form noValidate onSubmit={handleSubmit(onSubmit)}>
         <Stack>
           <FormControl id="firstName" isRequired isInvalid={!!errors.firstName}>
