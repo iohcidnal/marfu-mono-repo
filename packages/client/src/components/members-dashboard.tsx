@@ -111,33 +111,23 @@ function Cards() {
   if (dashboardItems.length > 0) {
     return (
       <Wrap p="10" justify="center">
-        {dashboardItems.map(member => {
+        {dashboardItems.map(item => {
           return (
             <LinkBox
-              key={member._id}
+              key={item._id}
               as="article"
               w="sm"
               padding="4"
               borderWidth="1px"
               rounded="md"
               shadow="md"
-              {...colorMap[member.status]}
+              {...colorMap[item.status]}
             >
               <HStack justifyContent="space-between">
                 <Text fontWeight="bold">
-                  {member.firstName} {member.lastName}
+                  {item.firstName} {item.lastName}
                 </Text>
-                <HStack justifyContent="flex-end">
-                  <Link href={`/member/${encodeURIComponent(member._id)}`}>
-                    <IconButton
-                      aria-label="View medications"
-                      icon={<FaCapsules />}
-                      colorScheme="blue"
-                    />
-                  </Link>
-                  <IconButton aria-label="Edit member" icon={<FaUserEdit />} colorScheme="blue" />
-                  <IconButton aria-label="Delete member" icon={<FaTrash />} colorScheme="blue" />
-                </HStack>
+                <CardActions dashboardItem={item} />
               </HStack>
             </LinkBox>
           );
@@ -154,8 +144,30 @@ function Cards() {
   );
 }
 
+function CardActions({ dashboardItem }: { dashboardItem: IDashboardDto }) {
+  const formRef = React.useRef<{ onOpen: () => void }>();
+
+  return (
+    <>
+      <HStack justifyContent="flex-end">
+        <Link href={`/member/${encodeURIComponent(dashboardItem._id)}`}>
+          <IconButton aria-label="View medications" icon={<FaCapsules />} colorScheme="blue" />
+        </Link>
+        <IconButton
+          aria-label="Edit member"
+          icon={<FaUserEdit />}
+          colorScheme="blue"
+          onClick={() => formRef.current.onOpen()}
+        />
+        <IconButton aria-label="Delete member" icon={<FaTrash />} colorScheme="blue" />
+      </HStack>
+      <AddEditMemberForm dashboardItem={dashboardItem} method="PUT" ref={formRef} />
+    </>
+  );
+}
+
 const AddEditMemberForm = React.forwardRef(function AddEditMemberForm(
-  { member, method }: { member?: IMemberDto; method: method },
+  { dashboardItem, method }: { dashboardItem?: IDashboardDto; method: method },
   ref
 ) {
   const { isOpen, onClose, onOpen } = useDisclosure();
@@ -168,7 +180,7 @@ const AddEditMemberForm = React.forwardRef(function AddEditMemberForm(
     setValue
   } = useForm<IMemberDto>({
     mode: 'all',
-    defaultValues: member
+    defaultValues: dashboardItem
   });
   const toast = useToast();
   const { currentUserId, dashboardItems, setDashboardItems } = useDashboardContext();
@@ -181,14 +193,23 @@ const AddEditMemberForm = React.forwardRef(function AddEditMemberForm(
     mutation.mutate({ payload: member, url: `${process.env.NEXT_PUBLIC_API}members` });
   }
 
-  function handleSubmitSuccess(data: IDashboardDto) {
+  function handleSubmitSuccess(data: IMemberDto) {
     let toastTitle: string;
 
     if (method === 'POST') {
       toastTitle = 'Member succesfully created';
       setDashboardItems([...dashboardItems, data]);
+      reset();
     } else {
       toastTitle = 'Member sucessfully updated';
+      const index = dashboardItems.findIndex(item => item._id === data._id);
+      const newItem = { ...data, status: dashboardItem.status };
+      setDashboardItems([
+        ...dashboardItems.slice(0, index),
+        newItem,
+        ...dashboardItems.slice(index + 1)
+      ]);
+      reset(newItem);
     }
 
     toast({
@@ -196,7 +217,7 @@ const AddEditMemberForm = React.forwardRef(function AddEditMemberForm(
       status: 'success',
       title: toastTitle
     });
-    handleClose();
+    onClose();
   }
 
   function handleClose() {

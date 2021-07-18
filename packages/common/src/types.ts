@@ -19,7 +19,7 @@ export interface IMemberDto extends IModelBase {
 }
 
 export interface IDashboardDto extends IMemberDto {
-  status: MedicationStatus;
+  status?: MedicationStatus;
 }
 
 export const enum MedicationStatus {
