@@ -30,8 +30,7 @@ const MedicationSchema = new mongoose.Schema(
       required: true
     },
     endDate: {
-      type: String,
-      required: true
+      type: String
     },
     frequencies: [
       {

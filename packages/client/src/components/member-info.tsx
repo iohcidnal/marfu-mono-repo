@@ -303,16 +303,9 @@ const AddEditMedicationForm = React.forwardRef(function AddEditMedicationForm(
             />
             {errors.startDate && <FormErrorMessage>{errors.startDate.message}</FormErrorMessage>}
           </FormControl>
-          <FormControl id="endDate" isRequired isInvalid={!!errors.endDate}>
+          <FormControl id="endDate">
             <FormLabel>End date:</FormLabel>
-            <Input
-              type="date"
-              size="lg"
-              {...register('endDate', {
-                required: 'End date is required.'
-              })}
-            />
-            {errors.endDate && <FormErrorMessage>{errors.endDate.message}</FormErrorMessage>}
+            <Input type="date" size="lg" {...register('endDate')} />
           </FormControl>
           <FormControl id="note">
             <FormLabel>Note</FormLabel>
@@ -409,10 +402,12 @@ function MedicationCards() {
               <Text fontWeight="semibold">Start:</Text>
               <Text>{toDate(medication.startDate).toLocaleDateString()}</Text>
             </HStack>
-            <HStack>
-              <Text fontWeight="semibold">End:</Text>
-              <Text>{toDate(medication.endDate).toLocaleDateString()}</Text>
-            </HStack>
+            {medication.endDate && (
+              <HStack>
+                <Text fontWeight="semibold">End:</Text>
+                <Text>{toDate(medication.endDate).toLocaleDateString()}</Text>
+              </HStack>
+            )}
           </HStack>
 
           <HStack>
