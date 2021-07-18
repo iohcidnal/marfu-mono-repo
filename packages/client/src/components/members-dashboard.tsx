@@ -13,18 +13,12 @@ import {
   IconButton,
   Input,
   LinkBox,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
   Stack,
   Text,
   useDisclosure,
   useToast,
-  Wrap,
-  WrapItem
+  Wrap
 } from '@chakra-ui/react';
-import { HamburgerIcon, AddIcon } from '@chakra-ui/icons';
 
 import { IDashboardDto, IMemberDto } from '@common';
 import DrawerContainer from './common/drawer-container';
@@ -36,11 +30,11 @@ import { FaCapsules, FaTh, FaTrash, FaUserEdit, FaUserPlus } from 'react-icons/f
 const colorMap = {
   PAST_DUE: {
     color: 'white',
-    bgColor: 'red'
+    bgColor: 'red.400'
   },
   COMING: {
     color: 'white',
-    bgColor: 'green'
+    bgColor: 'green.400'
   }
 };
 
@@ -159,6 +153,7 @@ function CardActions({ dashboardItem }: { dashboardItem: IDashboardDto }) {
           colorScheme="blue"
           onClick={() => formRef.current.onOpen()}
         />
+        {/* STOP HERE: DELETE MEMBER */}
         <IconButton aria-label="Delete member" icon={<FaTrash />} colorScheme="blue" />
       </HStack>
       <AddEditMemberForm dashboardItem={dashboardItem} method="PUT" ref={formRef} />
