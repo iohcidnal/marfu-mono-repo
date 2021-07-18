@@ -183,9 +183,12 @@ const AddEditMedicationForm = React.forwardRef(function AddEditMedicationForm(
       )}
     </HStack>
   );
-  // method === 'POST' ? 'Add New Medication' : 'Edit Medication';
 
   React.useImperativeHandle(ref, () => ({ onOpen }), [onOpen]);
+
+  React.useEffect(() => {
+    reset(medication);
+  }, [medication, reset]);
 
   async function onSubmit(payload: IMedicationDto) {
     if (!areFreqInputsValid()) {
