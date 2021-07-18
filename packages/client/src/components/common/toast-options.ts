@@ -1,7 +1,7 @@
 import { UseToastOptions } from '@chakra-ui/react';
 
 const toastOptions: UseToastOptions = {
-  position: 'top',
+  position: 'bottom',
   variant: 'left-accent',
   isClosable: true
 };
