@@ -20,7 +20,6 @@ interface IProps {
 const ConfirmDialog = React.forwardRef(function ConfirmDialog(
   { handleConfirm, title, message }: IProps,
   ref: React.MutableRefObject<{
-    onClose: () => void;
     onOpen: () => void;
   }>
 ) {

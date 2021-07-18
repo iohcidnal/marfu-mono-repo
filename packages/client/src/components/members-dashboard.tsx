@@ -8,6 +8,7 @@ import {
   FormControl,
   FormErrorMessage,
   FormLabel,
+  GridItem,
   HStack,
   Icon,
   IconButton,
@@ -26,6 +27,7 @@ import useFetcher, { method } from './common/use-fetcher';
 import { useForm } from 'react-hook-form';
 import toastOptions from './common/toast-options';
 import { FaCapsules, FaTh, FaTrash, FaUserEdit, FaUserPlus } from 'react-icons/fa';
+import ConfirmDialog from './common/confirm-dialog';
 
 const colorMap = {
   PAST_DUE: {
@@ -140,6 +142,7 @@ function Cards() {
 
 function CardActions({ dashboardItem }: { dashboardItem: IDashboardDto }) {
   const formRef = React.useRef<{ onOpen: () => void }>();
+  const confirmDeleteRef = React.useRef<{ onOpen: () => void }>();
 
   return (
     <>
@@ -153,10 +156,15 @@ function CardActions({ dashboardItem }: { dashboardItem: IDashboardDto }) {
           colorScheme="blue"
           onClick={() => formRef.current.onOpen()}
         />
-        {/* STOP HERE: DELETE MEMBER */}
-        <IconButton aria-label="Delete member" icon={<FaTrash />} colorScheme="blue" />
+        <IconButton
+          aria-label="Delete member"
+          icon={<FaTrash />}
+          colorScheme="blue"
+          onClick={() => confirmDeleteRef.current.onOpen()}
+        />
       </HStack>
       <AddEditMemberForm dashboardItem={dashboardItem} method="PUT" ref={formRef} />
+      <ConfirmDeleteDialog dashboardItem={dashboardItem} ref={confirmDeleteRef} />
     </>
   );
 }
@@ -171,8 +179,7 @@ const AddEditMemberForm = React.forwardRef(function AddEditMemberForm(
     handleSubmit,
     formState: { errors },
     formState,
-    reset,
-    setValue
+    reset
   } = useForm<IMemberDto>({
     mode: 'all',
     defaultValues: dashboardItem
@@ -182,6 +189,10 @@ const AddEditMemberForm = React.forwardRef(function AddEditMemberForm(
   const mutation = useFetcher<IMemberDto>(handleSubmitSuccess, method);
 
   React.useImperativeHandle(ref, () => ({ onOpen }), [onOpen]);
+
+  React.useEffect(() => {
+    reset(dashboardItem);
+  }, [dashboardItem, reset]);
 
   function onSubmit(payload: IMemberDto) {
     const member: IMemberDto = { ...payload, createdBy: currentUserId };
@@ -274,5 +285,51 @@ const AddEditMemberForm = React.forwardRef(function AddEditMemberForm(
         </Stack>
       </form>
     </DrawerContainer>
+  );
+});
+
+const ConfirmDeleteDialog = React.forwardRef(function ConfirmDeleteDialog(
+  { dashboardItem }: { dashboardItem: IDashboardDto },
+  ref: React.MutableRefObject<{
+    onOpen: () => void;
+  }>
+) {
+  const { dashboardItems, setDashboardItems } = useDashboardContext();
+  const confirmDialogRef = React.useRef<{ onOpen: () => void }>();
+  const toast = useToast();
+
+  React.useImperativeHandle(ref, () => ({ onOpen: confirmDialogRef.current.onOpen }), []);
+
+  const mutation = useFetcher<IDashboardDto>(handleDeleteSuccess, 'DELETE');
+
+  function handleDeleteSuccess() {
+    const index = dashboardItems.findIndex(item => item._id === dashboardItem._id);
+    setDashboardItems([...dashboardItems.slice(0, index), ...dashboardItems.slice(index + 1)]);
+    toast({
+      ...toastOptions,
+      title: `${dashboardItem.firstName} ${dashboardItem.lastName} successfuly deleted`,
+      status: 'success'
+    });
+  }
+
+  function handleDelete() {
+    mutation.mutate({
+      payload: undefined,
+      url: `${process.env.NEXT_PUBLIC_API}members/${dashboardItem._id}`
+    });
+  }
+
+  return (
+    <ConfirmDialog
+      ref={confirmDialogRef}
+      handleConfirm={handleDelete}
+      title={
+        <HStack>
+          <Icon as={FaTrash} />
+          <Text>{`Delete ${dashboardItem.firstName} ${dashboardItem.lastName}?`}</Text>
+        </HStack>
+      }
+      message="Are you sure you want to delete this member?"
+    />
   );
 });

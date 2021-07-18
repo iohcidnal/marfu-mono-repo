@@ -483,7 +483,7 @@ const ConfirmDeleteDialog = React.forwardRef(function ConfirmDeleteDialog(
   }>
 ) {
   const { setMedications, medications } = useMemberInfoContext();
-  const confirmDialogRef = React.useRef<{ onClose: () => void; onOpen: () => void }>();
+  const confirmDialogRef = React.useRef<{ onOpen: () => void }>();
   const toast = useToast();
 
   React.useImperativeHandle(ref, () => ({ onOpen: confirmDialogRef.current.onOpen }), []);
@@ -498,7 +498,6 @@ const ConfirmDeleteDialog = React.forwardRef(function ConfirmDeleteDialog(
       title: `${medication.medicationName} successfuly deleted`,
       status: 'success'
     });
-    confirmDialogRef.current.onClose();
   }
 
   function handleDelete() {
