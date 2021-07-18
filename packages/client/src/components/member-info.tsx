@@ -59,6 +59,7 @@ import DrawerContainer from './common/drawer-container';
 import useFetcher, { method } from './common/use-fetcher';
 import toastOptions from './common/toast-options';
 import { fetcher } from '../utils';
+import ConfirmDialog from './common/confirm-dialog';
 
 interface IMemberInfoProps {
   currentUserId: string;
@@ -474,14 +475,15 @@ function CardActions({ medication }: { medication: IMedicationDto }) {
 
 const ConfirmDeleteDialog = React.forwardRef(function ConfirmDeleteDialog(
   { medication }: { medication: IMedicationDto },
-  ref
+  ref: React.MutableRefObject<{
+    onOpen: () => void;
+  }>
 ) {
   const { setMedications, medications } = useMemberInfoContext();
-  const { isOpen, onClose, onOpen } = useDisclosure();
-  const cancelRef = React.useRef();
+  const confirmDialogRef = React.useRef<{ onClose: () => void; onOpen: () => void }>();
   const toast = useToast();
 
-  React.useImperativeHandle(ref, () => ({ onOpen }), [onOpen]);
+  React.useImperativeHandle(ref, () => ({ onOpen: confirmDialogRef.current.onOpen }), []);
 
   const mutation = useFetcher<IMedicationDto>(handleDeleteSuccess, 'DELETE');
 
@@ -493,40 +495,28 @@ const ConfirmDeleteDialog = React.forwardRef(function ConfirmDeleteDialog(
       title: `${medication.medicationName} successfuly deleted`,
       status: 'success'
     });
-    onClose();
+    confirmDialogRef.current.onClose();
+  }
+
+  function handleDelete() {
+    mutation.mutate({
+      payload: undefined,
+      url: `${process.env.NEXT_PUBLIC_API}medications/${medication._id}`
+    });
   }
 
   return (
-    <AlertDialog
-      motionPreset="slideInBottom"
-      leastDestructiveRef={cancelRef}
-      onClose={onClose}
-      isOpen={isOpen}
-    >
-      <AlertDialogOverlay />
-      <AlertDialogContent>
-        <AlertDialogHeader>{`Delete ${medication.medicationName}?`}</AlertDialogHeader>
-        <AlertDialogCloseButton />
-        <AlertDialogBody>Are you sure you want to delete this medication?</AlertDialogBody>
-        <AlertDialogFooter>
-          <Button ref={cancelRef} onClick={onClose}>
-            No
-          </Button>
-          <Button
-            colorScheme="red"
-            ml={3}
-            onClick={() =>
-              mutation.mutate({
-                payload: undefined,
-                url: `${process.env.NEXT_PUBLIC_API}medications/${medication._id}`
-              })
-            }
-          >
-            Yes
-          </Button>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <ConfirmDialog
+      ref={confirmDialogRef}
+      handleConfirm={handleDelete}
+      title={
+        <HStack>
+          <Icon as={FaTrash} />
+          <Text>{`Delete ${medication.medicationName}?`}</Text>
+        </HStack>
+      }
+      message="Are you sure you want to delete this medication?"
+    />
   );
 });
 
