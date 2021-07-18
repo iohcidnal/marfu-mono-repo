@@ -17,7 +17,7 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
       return res.status(200).json(result);
     }
 
-    return res.status(404).json({ message: 'User name or password do not match.' });
+    return res.status(404).json({ message: 'Username or password do not match.' });
   } catch (error) {
     next(error);
   }

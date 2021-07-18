@@ -63,10 +63,10 @@ function Form() {
           <form onSubmit={handleSubmit(onSubmit)} noValidate>
             <Stack spacing={6}>
               <FormControl id="userName" isRequired isInvalid={!!errors.userName}>
-                <FormLabel>User name</FormLabel>
+                <FormLabel>Username</FormLabel>
                 <Input
                   {...register('userName', {
-                    required: 'User name is required.'
+                    required: 'Username is required.'
                   })}
                   type="email"
                   size="lg"
