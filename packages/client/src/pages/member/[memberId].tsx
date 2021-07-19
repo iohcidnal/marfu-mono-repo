@@ -12,7 +12,16 @@ export const getServerSideProps: GetServerSideProps = async context => {
   const results = await Promise.allSettled([
     fetcher({ url: `${process.env.NEXT_PUBLIC_API}users/session` }, context),
     fetcher({ url: `${process.env.NEXT_PUBLIC_API}members/${memberId}` }, context),
-    fetcher({ url: `${process.env.NEXT_PUBLIC_API}medications/${memberId}` }, context)
+    fetcher(
+      {
+        url: `${process.env.NEXT_PUBLIC_API}medications/${memberId}`,
+        method: 'POST',
+        payload: {
+          clientDateTime: new Date()
+        }
+      },
+      context
+    )
   ]);
 
   if (

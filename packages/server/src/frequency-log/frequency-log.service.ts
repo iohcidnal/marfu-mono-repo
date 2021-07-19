@@ -16,8 +16,8 @@ export async function getByFrequencyId(id: string): Promise<IFrequencyLogDto[]> 
 
 export async function getAllByFrequencyIds(
   frequencyIds: string[] | undefined
-): Promise<IFrequencyLogDto[] | null> {
-  if (!frequencyIds) return null;
+): Promise<IFrequencyLogDto[]> {
+  if (!frequencyIds) return [];
 
   const docs = await model.find().lean().where('frequencyId').in(frequencyIds);
   return docs;
