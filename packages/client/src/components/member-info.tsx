@@ -1,13 +1,6 @@
 import * as React from 'react';
 import {
   Alert,
-  AlertDialog,
-  AlertDialogBody,
-  AlertDialogCloseButton,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogOverlay,
   AlertIcon,
   Box,
   Button,
@@ -40,15 +33,12 @@ import {
   Wrap
 } from '@chakra-ui/react';
 import {
-  FaBars,
   FaCapsules,
   FaEdit,
   FaEllipsisV,
   FaList,
   FaNotesMedical,
   FaPlus,
-  FaPlusSquare,
-  FaRegEdit,
   FaTrash
 } from 'react-icons/fa';
 import { useFieldArray, useForm } from 'react-hook-form';
