@@ -3,10 +3,8 @@ import { IMedicationDto, IFrequencyDto, IFrequencyLogDto, MedicationStatus } fro
 
 import medicationModel from './medication.model';
 import freqModel from './frequency.model';
-import { getAllByFrequencyIds as getAllFreqLogsByFrequencyIds } from '../frequency-log/frequency-log.service';
 import getFrequencyStatus from './status-handler';
-
-const ONE_HOUR_IN_MILLISECONDS = 3600000;
+import frequencyLogModel from '../frequency-log/frequency-log.model';
 
 /* istanbul ignore next */
 /* mongodbMemoryServerOptions does not support transactions */
@@ -43,8 +41,9 @@ export async function getAllByMemberId(
   memberId: string,
   clientDateTime: string
 ): Promise<IMedicationDto[]> {
-  console.log('clientDateTime :>> ', clientDateTime);
-  const currentDateTime = toDate(new Date(clientDateTime))('0:0');
+  const currentDate = toDate(new Date(clientDateTime))('0:0');
+  const currentDateTime = new Date(clientDateTime);
+  console.log('currentDateTime :>> ', currentDateTime);
   const docs = await medicationModel.find({ memberId }).lean().populate('frequencies');
 
   // Get meds that fall within the start and end dates
@@ -55,22 +54,22 @@ export async function getAllByMemberId(
     } else {
       const startDate = toDate(new Date(doc.startDate))('0:0');
       const endDate = toDate(new Date(doc.endDate as string))('0:0');
-      console.log('startDate :>> ', startDate);
-      console.log('endDate :>> ', endDate);
-      console.log('currentDateTime :>> ', currentDateTime);
-      if (currentDateTime >= startDate && currentDateTime <= endDate) {
+      if (currentDate >= startDate && currentDate <= endDate) {
         medications.push(doc);
       }
     }
   }
 
-  const freqLogs = await getFrequencyLogs(medications);
-  const getFrequencyStatusFn = getFrequencyStatus.bind(null, clientDateTime, freqLogs);
+  const freqLogs = await getFrequencyLogs(medications, currentDate);
+  const getFrequencyStatusFn = getFrequencyStatus.bind(null, currentDateTime.toString(), freqLogs);
 
   const result: IMedicationDto[] = medications.map(med => {
-    const frequenciesStatus = med.frequencies?.map(freq =>
-      getFrequencyStatusFn(freq)
-    ) as MedicationStatus[];
+    const frequencies = med.frequencies?.map(freq => {
+      const freqStatus = getFrequencyStatusFn(freq);
+      return { ...freq, status: freqStatus };
+    });
+
+    const frequenciesStatus = frequencies?.map(freq => freq.status) as MedicationStatus[];
     const medicationStatus = getMedicationStatus(frequenciesStatus);
 
     return {
@@ -78,7 +77,7 @@ export async function getAllByMemberId(
       memberId: med.memberId,
       medicationName: med.medicationName,
       dosage: med.dosage,
-      frequencies: med.frequencies,
+      frequencies: frequencies,
       route: med.route,
       note: med.note,
       startDate: med.startDate,
@@ -124,12 +123,22 @@ export async function deleteById(id: string): Promise<IMedicationDto | null> {
   return result;
 }
 
-async function getFrequencyLogs(docs: IMedicationDto[]): Promise<IFrequencyLogDto[]> {
+async function getFrequencyLogs(
+  docs: IMedicationDto[],
+  currentDate: Date
+): Promise<IFrequencyLogDto[]> {
   // Get all frequency IDs to retrieve
   const frequencyIds = docs.flatMap(doc =>
     doc.frequencies?.map(freq => freq._id.toString())
   ) as string[];
-  const freqLogs = await getAllFreqLogsByFrequencyIds(frequencyIds);
+  // Filter logs that are equal to current date
+  const administeredDate = currentDate.toISOString().split('T')[0];
+  const freqLogs = await frequencyLogModel
+    .find({
+      frequencyId: { $in: frequencyIds },
+      administeredDate: administeredDate
+    })
+    .lean();
 
   return freqLogs;
 }
