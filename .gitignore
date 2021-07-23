@@ -1,7 +1,6 @@
 .DS_Store
 .env
 .next
-.vscode
 build
 coverage
 globalConfig.json

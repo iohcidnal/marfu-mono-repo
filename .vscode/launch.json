@@ -1,0 +1,18 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "pwa-node",
+      "request": "launch",
+      "name": "Debug server",
+      "program": "${workspaceFolder}/packages/server/src/server.ts",
+      "outFiles": ["${workspaceFolder}/packages/server/build/**/*.js"],
+      "env": { "NODE_ENV": "development" },
+      "resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"],
+      "preLaunchTask": "npm: compile - packages/server"
+    }
+  ]
+}
