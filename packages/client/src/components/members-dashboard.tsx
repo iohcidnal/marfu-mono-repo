@@ -13,6 +13,7 @@ import {
   IconButton,
   Input,
   LinkBox,
+  Skeleton,
   Stack,
   Text,
   useDisclosure,
@@ -54,22 +55,11 @@ const DashboardContext = React.createContext<IDashboardContextProps>(null);
 const useDashboardContext = () => React.useContext(DashboardContext);
 
 export default function MembersDashboard({ currentUserId }: IDashboardProps) {
-  const [dashboardItems, setDashboardItems] = React.useState<IDashboardDto[]>([]);
-  const { data, isFetching, refetch } = useQuery(
-    ['members-dashboard'],
-    async () => {
-      const clientDateTime = new Date();
-      clientDateTime.setSeconds(0);
-      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const url = `${
-        process.env.NEXT_PUBLIC_API
-      }members/dashboard?dt=${clientDateTime.toISOString()}&tz=${timeZone}`;
-      const { data }: { data: IDashboardDto[] } = await fetcher({ url });
-
-      return data;
-    },
-    { enabled: false, initialData: [] }
-  );
+  const { data, isFetching, refetch } = useQuery(['members-dashboard'], fetchDashboardItems, {
+    enabled: false,
+    initialData: []
+  });
+  const [dashboardItems, setDashboardItems] = React.useState(data);
 
   React.useEffect(() => {
     refetch();
@@ -88,13 +78,13 @@ export default function MembersDashboard({ currentUserId }: IDashboardProps) {
     [currentUserId, dashboardItems]
   );
 
-  if (isFetching) return null;
-
   return (
     <DashboardContext.Provider value={value}>
       <Stack>
         <TitleBar />
-        <Cards />
+        <Skeleton isLoaded={!isFetching}>
+          <Cards />
+        </Skeleton>
       </Stack>
     </DashboardContext.Provider>
   );
@@ -357,3 +347,16 @@ const ConfirmDeleteDialog = React.forwardRef(function ConfirmDeleteDialog(
     />
   );
 });
+
+async function fetchDashboardItems() {
+  const clientDateTime = new Date();
+  clientDateTime.setSeconds(0);
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const { data }: { data: IDashboardDto[] } = await fetcher({
+    url: `${
+      process.env.NEXT_PUBLIC_API
+    }members/dashboard?dt=${clientDateTime.toISOString()}&tz=${timeZone}`
+  });
+
+  return data;
+}
