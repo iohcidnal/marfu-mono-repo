@@ -8,7 +8,6 @@ import {
   FormControl,
   FormErrorMessage,
   FormLabel,
-  GridItem,
   HStack,
   Icon,
   IconButton,
@@ -20,13 +19,15 @@ import {
   useToast,
   Wrap
 } from '@chakra-ui/react';
+import { FaCapsules, FaTh, FaTrash, FaUserEdit, FaUserPlus } from 'react-icons/fa';
+import { useForm } from 'react-hook-form';
+import { useQuery } from 'react-query';
 
 import { IDashboardDto, IMemberDto } from '@common';
 import DrawerContainer from './common/drawer-container';
 import useFetcher, { method } from './common/use-fetcher';
-import { useForm } from 'react-hook-form';
+import { fetcher } from '../utils';
 import toastOptions from './common/toast-options';
-import { FaCapsules, FaTh, FaTrash, FaUserEdit, FaUserPlus } from 'react-icons/fa';
 import ConfirmDialog from './common/confirm-dialog';
 
 const colorMap = {
@@ -42,21 +43,42 @@ const colorMap = {
 
 export interface IDashboardProps {
   currentUserId: string;
-  dashboardItems: IDashboardDto[];
 }
 
 interface IDashboardContextProps extends IDashboardProps {
   setDashboardItems: React.Dispatch<IDashboardDto[]>;
+  dashboardItems: IDashboardDto[];
 }
 
 const DashboardContext = React.createContext<IDashboardContextProps>(null);
 const useDashboardContext = () => React.useContext(DashboardContext);
 
-export default function MembersDashboard({
-  currentUserId,
-  dashboardItems: initialDashboardItems
-}: IDashboardProps) {
-  const [dashboardItems, setDashboardItems] = React.useState(initialDashboardItems);
+export default function MembersDashboard({ currentUserId }: IDashboardProps) {
+  const [dashboardItems, setDashboardItems] = React.useState<IDashboardDto[]>([]);
+  const { data, isFetching, refetch } = useQuery(
+    ['members-dashboard'],
+    async () => {
+      const clientDateTime = new Date();
+      clientDateTime.setSeconds(0);
+      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const url = `${
+        process.env.NEXT_PUBLIC_API
+      }members/dashboard?dt=${clientDateTime.toISOString()}&tz=${timeZone}`;
+      const { data }: { data: IDashboardDto[] } = await fetcher({ url });
+
+      return data;
+    },
+    { enabled: false, initialData: [] }
+  );
+
+  React.useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  React.useEffect(() => {
+    setDashboardItems(data);
+  }, [data]);
+
   const value = React.useMemo(
     () => ({
       currentUserId,
@@ -65,6 +87,8 @@ export default function MembersDashboard({
     }),
     [currentUserId, dashboardItems]
   );
+
+  if (isFetching) return null;
 
   return (
     <DashboardContext.Provider value={value}>
