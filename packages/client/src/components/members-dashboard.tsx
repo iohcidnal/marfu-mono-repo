@@ -20,7 +20,7 @@ import {
   useToast,
   Wrap
 } from '@chakra-ui/react';
-import { FaCapsules, FaTh, FaTrash, FaUserEdit, FaUserPlus } from 'react-icons/fa';
+import { FaCapsules, FaEdit, FaTh, FaTrash, FaUserEdit, FaUserPlus } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
 import { useQuery } from 'react-query';
 
@@ -252,8 +252,8 @@ const AddEditMemberForm = React.forwardRef(function AddEditMemberForm(
       size="md"
       title={
         <HStack>
-          <Icon as={FaUserPlus} />
-          <Text>Add New Member</Text>
+          <Icon as={method === 'POST' ? FaUserPlus : FaEdit} />
+          <Text>{`${method === 'POST' ? 'Add New' : 'Edit'} Member`}</Text>
         </HStack>
       }
     >
