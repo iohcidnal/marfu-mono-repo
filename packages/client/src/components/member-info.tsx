@@ -59,6 +59,7 @@ import toastOptions from './common/toast-options';
 import { fetcher } from '../utils';
 import ConfirmDialog from './common/confirm-dialog';
 import getDateTimeAndTimeZone from './common/get-dt-tz';
+import badgeStatus from './common/badge-status';
 
 export interface IMemberInfoProps {
   currentUserId: string;
@@ -450,8 +451,8 @@ function MedicationCards() {
               {medication.frequencies.map(freq => (
                 <Text key={freq._id}>
                   {freq.time}
-                  {freq.status !== 'DONE' && (
-                    <Badge ml="1" colorScheme={freq.status === 'PAST_DUE' ? 'red' : 'green'}>
+                  {badgeStatus[freq.status] && (
+                    <Badge ml="1" colorScheme={badgeStatus[freq.status]}>
                       <Icon as={FaCapsules} />
                     </Badge>
                   )}
@@ -562,7 +563,7 @@ const AddLogForm = React.forwardRef(function AddLogForm(
   });
   const toast = useToast();
   const [selectedFrequencyId, setSelectedFrequencyId] = React.useState<string>();
-  const { currentUserId } = useMemberInfoContext();
+  const { currentUserId, medications, setMedications } = useMemberInfoContext();
   const mutation = useFetcher<IFrequencyLogDto>(handleSubmitSuccess, 'POST');
 
   React.useImperativeHandle(ref, () => ({ onOpen }), [onOpen]);
@@ -604,6 +605,23 @@ const AddLogForm = React.forwardRef(function AddLogForm(
   }
 
   function handleSubmitSuccess() {
+    const medIndex = medications.findIndex(med => med._id === medication._id);
+    const medicationToUpdate = { ...medications[medIndex] };
+    const freqIndex = medicationToUpdate.frequencies.findIndex(
+      freq => freq._id === selectedFrequencyId
+    );
+    medicationToUpdate.frequencies = [
+      ...medicationToUpdate.frequencies.slice(0, freqIndex),
+      { ...medicationToUpdate.frequencies[freqIndex], status: 'NEW' },
+      ...medicationToUpdate.frequencies.slice(freqIndex + 1)
+    ];
+
+    setMedications([
+      ...medications.slice(0, medIndex),
+      medicationToUpdate,
+      ...medications.slice(medIndex + 1)
+    ]);
+
     toast({
       ...toastOptions,
       status: 'success',

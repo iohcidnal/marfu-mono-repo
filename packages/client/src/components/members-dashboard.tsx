@@ -32,6 +32,7 @@ import { fetcher } from '../utils';
 import toastOptions from './common/toast-options';
 import ConfirmDialog from './common/confirm-dialog';
 import getDateTimeAndTimeZone from './common/get-dt-tz';
+import badgeStatus from './common/badge-status';
 
 export interface IDashboardProps {
   currentUserId: string;
@@ -106,11 +107,6 @@ function TitleBar() {
     </>
   );
 }
-
-const badgeStatus = {
-  COMING: 'green',
-  PAST_DUE: 'red'
-};
 
 function Cards() {
   const { dashboardItems } = useDashboardContext();
