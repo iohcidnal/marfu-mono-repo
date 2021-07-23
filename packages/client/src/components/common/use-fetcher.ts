@@ -6,11 +6,11 @@ import toastOptions from './toast-options';
 
 export type method = 'PUT' | 'POST' | 'DELETE';
 
-export default function useFetcher<T>(onSuccessSubmit: (data: T) => void, method: method) {
+export default function useFetcher<T, P = T>(onSuccessSubmit: (data: T) => void, method: method) {
   const toast = useToast();
 
   const mutation = useMutation(
-    ({ payload, url }: { payload: T; url: string }) => {
+    ({ payload, url }: { payload: P; url: string }) => {
       return fetcher({
         url,
         method,

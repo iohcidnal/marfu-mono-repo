@@ -1,5 +1,11 @@
 import mongoose from 'mongoose';
-import { IMedicationDto, IFrequencyDto, IFrequencyLogDto, MedicationStatus } from '@common';
+import {
+  IMedicationDto,
+  IFrequencyDto,
+  IFrequencyLogDto,
+  MedicationStatus,
+  IMedicationPostPutPayload
+} from '@common';
 
 import medicationModel from './medication.model';
 import freqModel from './frequency.model';
@@ -8,10 +14,14 @@ import frequencyLogModel from '../frequency-log/frequency-log.model';
 
 /* istanbul ignore next */
 /* mongodbMemoryServerOptions does not support transactions */
-export async function create({
-  frequencies,
-  ...medication
-}: IMedicationDto): Promise<IMedicationDto> {
+export async function create(payload: IMedicationPostPutPayload): Promise<IMedicationDto> {
+  const {
+    medication,
+    medication: { frequencies },
+    clientDateTime,
+    timeZone
+  } = payload;
+
   const session = await medicationModel.startSession();
   session.startTransaction();
 
@@ -34,7 +44,10 @@ export async function create({
   await session.commitTransaction();
   session.endSession();
 
-  return medicationModel.toDto(medicationDoc, frequenciesDto);
+  const medicationDto = medicationModel.toDto(medicationDoc, frequenciesDto);
+  const result = await getFrequenciesStatusByMedication(medicationDto, clientDateTime, timeZone);
+
+  return result;
 }
 
 export async function getAllByMemberId(
@@ -95,8 +108,9 @@ export async function getAllByMemberId(
   return result;
 }
 
-export async function update(payload: IMedicationDto): Promise<IMedicationDto | null> {
-  const medication = { ...payload };
+export async function update(payload: IMedicationPostPutPayload): Promise<IMedicationDto | null> {
+  const { medication, clientDateTime, timeZone } = payload;
+
   // Update frequencies
   for await (const freq of medication.frequencies ?? []) {
     switch (freq.status) {
@@ -116,11 +130,16 @@ export async function update(payload: IMedicationDto): Promise<IMedicationDto | 
   // Make sure we update frequency references in medication after updating frequencies above.
   medication.frequencies = medication.frequencies?.filter(freq => freq.status !== 'DELETE');
 
-  const doc = await medicationModel
+  const medicationDoc = await medicationModel
     .findByIdAndUpdate(medication._id, medication, { lean: true, new: true })
     .populate('frequencies');
+  const result = await getFrequenciesStatusByMedication(
+    medicationDoc as IMedicationDto,
+    clientDateTime,
+    timeZone
+  );
 
-  return doc;
+  return result;
 }
 
 export async function deleteById(id: string): Promise<IMedicationDto | null> {
@@ -157,6 +176,37 @@ function getMedicationStatus(frequenciesStatus: MedicationStatus[]): MedicationS
   }
 
   return status;
+}
+
+/**
+ * Get the status of each frequency in a medication.
+ * @param medication
+ * @param clientDateTime
+ * @param timeZone
+ * @returns Promise<IMedicationDto>
+ */
+async function getFrequenciesStatusByMedication(
+  medication: IMedicationDto,
+  clientDateTime: string,
+  timeZone: string
+): Promise<IMedicationDto> {
+  const currentDate = toDate(new Date(clientDateTime))('0:0');
+  const currentDateTime = new Date(clientDateTime);
+
+  const freqLogs = await getFrequencyLogs([medication], currentDate);
+  const getFrequencyStatusFn = getFrequencyStatus.bind(
+    null,
+    currentDateTime.toString(),
+    timeZone,
+    freqLogs
+  );
+  const frequenciesWithStatus = medication.frequencies?.map(freq => {
+    const status = getFrequencyStatusFn(freq);
+    return { ...freq, status };
+  });
+
+  const result: IMedicationDto = { ...medication, frequencies: frequenciesWithStatus };
+  return result;
 }
 
 function toDate(currentDateTime: Date): (time: string) => Date {

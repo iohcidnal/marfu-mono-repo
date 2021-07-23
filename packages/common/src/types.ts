@@ -54,3 +54,9 @@ export interface IFrequencyLogDto extends IModelBase {
   note: string;
   administeredBy: string;
 }
+
+export interface IMedicationPostPutPayload {
+  medication: IMedicationDto;
+  clientDateTime: string;
+  timeZone: string;
+}

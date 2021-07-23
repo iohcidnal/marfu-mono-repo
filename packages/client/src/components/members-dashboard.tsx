@@ -31,6 +31,7 @@ import useFetcher, { method } from './common/use-fetcher';
 import { fetcher } from '../utils';
 import toastOptions from './common/toast-options';
 import ConfirmDialog from './common/confirm-dialog';
+import getDateTimeAndTimeZone from './common/get-dt-tz';
 
 export interface IDashboardProps {
   currentUserId: string;
@@ -348,9 +349,7 @@ const ConfirmDeleteDialog = React.forwardRef(function ConfirmDeleteDialog(
 });
 
 async function fetchDashboardItems() {
-  const clientDateTime = new Date();
-  clientDateTime.setSeconds(0);
-  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const { clientDateTime, timeZone } = getDateTimeAndTimeZone();
   const { data }: { data: IDashboardDto[] } = await fetcher({
     url: `${
       process.env.NEXT_PUBLIC_API

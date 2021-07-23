@@ -2,6 +2,7 @@ import * as React from 'react';
 import {
   Alert,
   AlertIcon,
+  Badge,
   Box,
   Button,
   FormControl,
@@ -45,12 +46,19 @@ import {
 import { useFieldArray, useForm } from 'react-hook-form';
 import { useQuery } from 'react-query';
 
-import { IMemberDto, IMedicationDto, IFrequencyDto, IFrequencyLogDto } from '@common';
+import {
+  IMemberDto,
+  IMedicationDto,
+  IFrequencyDto,
+  IFrequencyLogDto,
+  IMedicationPostPutPayload
+} from '@common';
 import DrawerContainer from './common/drawer-container';
 import useFetcher, { method } from './common/use-fetcher';
 import toastOptions from './common/toast-options';
 import { fetcher } from '../utils';
 import ConfirmDialog from './common/confirm-dialog';
+import getDateTimeAndTimeZone from './common/get-dt-tz';
 
 export interface IMemberInfoProps {
   currentUserId: string;
@@ -180,7 +188,10 @@ const AddEditMedicationForm = React.forwardRef(function AddEditMedicationForm(
     ...watchInputs[index]
   }));
 
-  const mutation = useFetcher<IMedicationDto>(handleSuccessSubmit, method);
+  const mutation = useFetcher<IMedicationDto, IMedicationPostPutPayload>(
+    handleSuccessSubmit,
+    method
+  );
   const title = (
     <HStack>
       {method === 'POST' ? (
@@ -224,7 +235,11 @@ const AddEditMedicationForm = React.forwardRef(function AddEditMedicationForm(
       medication.createdBy = currentUserId;
     }
 
-    mutation.mutate({ payload: medication, url: `${process.env.NEXT_PUBLIC_API}medications` });
+    const { clientDateTime, timeZone } = getDateTimeAndTimeZone();
+    mutation.mutate({
+      payload: { medication, clientDateTime: clientDateTime.toString(), timeZone },
+      url: `${process.env.NEXT_PUBLIC_API}medications`
+    });
   }
 
   function areFreqInputsValid(): boolean {
@@ -433,7 +448,14 @@ function MedicationCards() {
             <Text fontWeight="semibold">Schedule:</Text>
             <HStack>
               {medication.frequencies.map(freq => (
-                <Text key={freq._id}>{freq.time}</Text>
+                <Text key={freq._id}>
+                  {freq.time}
+                  {freq.status !== 'DONE' && (
+                    <Badge ml="1" colorScheme={freq.status === 'PAST_DUE' ? 'red' : 'green'}>
+                      <Icon as={FaCapsules} />
+                    </Badge>
+                  )}
+                </Text>
               ))}
             </HStack>
           </HStack>
@@ -784,9 +806,7 @@ function toDate(dateAsString: string): Date {
 }
 
 async function fetchMedications(memberId: string): Promise<IMedicationDto[]> {
-  const clientDateTime = new Date();
-  clientDateTime.setSeconds(0);
-  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const { clientDateTime, timeZone } = getDateTimeAndTimeZone();
   const { data }: { data: IMedicationDto[] } = await fetcher({
     url: `${process.env.NEXT_PUBLIC_API}medications/members/${memberId}?dt=${clientDateTime}&tz=${timeZone}`
   });
