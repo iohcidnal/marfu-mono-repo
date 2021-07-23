@@ -51,25 +51,38 @@ import toastOptions from './common/toast-options';
 import { fetcher } from '../utils';
 import ConfirmDialog from './common/confirm-dialog';
 
-interface IMemberInfoProps {
+export interface IMemberInfoProps {
   currentUserId: string;
   member: IMemberDto;
-  medications: IMedicationDto[];
 }
 
 interface IMemberInfoContextProps extends IMemberInfoProps {
   setMedications: React.Dispatch<IMedicationDto[]>;
+  medications: IMedicationDto[];
 }
 
 const MemberInfoContext = React.createContext<IMemberInfoContextProps>(null);
 const useMemberInfoContext = () => React.useContext(MemberInfoContext);
 
-export default function MemberInfo({
-  currentUserId,
-  member,
-  medications: initialMedications
-}: IMemberInfoProps) {
-  const [medications, setMedications] = React.useState(initialMedications);
+export default function MemberInfo({ currentUserId, member }: IMemberInfoProps) {
+  const { data, isFetching, refetch } = useQuery(
+    ['member-info', member._id],
+    () => fetchMedications(member._id),
+    {
+      enabled: false,
+      initialData: []
+    }
+  );
+  const [medications, setMedications] = React.useState(data);
+
+  React.useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  React.useEffect(() => {
+    setMedications(data);
+  }, [data]);
+
   const value = React.useMemo(
     () => ({
       currentUserId,
@@ -84,13 +97,15 @@ export default function MemberInfo({
     <MemberInfoContext.Provider value={value}>
       {/* TODO: Display breadcrumbs */}
       <TitleBar />
-      {medications.length === 0 && (
-        <Alert status="info" mt="2">
-          <AlertIcon />
-          There are no medications yet. Select `Add new medication` from the menu to create one.
-        </Alert>
-      )}
-      <MedicationCards />
+      <Skeleton isLoaded={!isFetching}>
+        {medications.length === 0 && (
+          <Alert status="info" mt="2">
+            <AlertIcon />
+            There are no medications yet. Select `Add new medication` from the menu to create one.
+          </Alert>
+        )}
+        <MedicationCards />
+      </Skeleton>
     </MemberInfoContext.Provider>
   );
 }
@@ -764,4 +779,15 @@ const LogsHistory = React.forwardRef(function LogsHistory(
 function toDate(dateAsString: string): Date {
   const [yyyy, mm, dd] = dateAsString.split('-');
   return new Date(`${mm}/${dd}/${yyyy}`);
+}
+
+async function fetchMedications(memberId: string): Promise<IMedicationDto[]> {
+  const clientDateTime = new Date();
+  clientDateTime.setSeconds(0);
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const { data }: { data: IMedicationDto[] } = await fetcher({
+    url: `${process.env.NEXT_PUBLIC_API}medications/members/${memberId}?dt=${clientDateTime}&tz=${timeZone}`
+  });
+
+  return data;
 }

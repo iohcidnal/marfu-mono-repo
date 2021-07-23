@@ -1,27 +1,17 @@
 import { GetServerSideProps } from 'next';
 
 import { fetcher, IFetchResult } from '../../utils';
-import { MemberInfo } from '../../components';
+import { IMemberInfoProps, MemberInfo } from '../../components';
 
-export default function Member({ currentUserId, member, medications }) {
-  return <MemberInfo currentUserId={currentUserId} member={member} medications={medications} />;
+export default function Member({ currentUserId, member }: IMemberInfoProps) {
+  return <MemberInfo currentUserId={currentUserId} member={member} />;
 }
 
 export const getServerSideProps: GetServerSideProps = async context => {
   const { memberId } = context.query;
   const results = await Promise.allSettled([
     fetcher({ url: `${process.env.NEXT_PUBLIC_API}users/session` }, context),
-    fetcher({ url: `${process.env.NEXT_PUBLIC_API}members/${memberId}` }, context),
-    fetcher(
-      {
-        url: `${process.env.NEXT_PUBLIC_API}medications/${memberId}`,
-        method: 'POST',
-        payload: {
-          clientDateTime: new Date()
-        }
-      },
-      context
-    )
+    fetcher({ url: `${process.env.NEXT_PUBLIC_API}members/${memberId}` }, context)
   ]);
 
   if (
@@ -36,17 +26,12 @@ export const getServerSideProps: GetServerSideProps = async context => {
     };
   }
 
-  const [
-    sessionResult,
-    memberResult,
-    medicationResult
-  ] = results as PromiseFulfilledResult<IFetchResult>[];
+  const [sessionResult, memberResult] = results as PromiseFulfilledResult<IFetchResult>[];
 
   return {
     props: {
       currentUserId: sessionResult.value.data._id,
-      member: memberResult.value.data,
-      medications: medicationResult.value.data
+      member: memberResult.value.data
     }
   };
 };
