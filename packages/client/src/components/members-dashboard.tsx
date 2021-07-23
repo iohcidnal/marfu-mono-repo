@@ -3,6 +3,7 @@ import Link from 'next/link';
 import {
   Alert,
   AlertIcon,
+  Badge,
   Box,
   Button,
   FormControl,
@@ -30,17 +31,6 @@ import useFetcher, { method } from './common/use-fetcher';
 import { fetcher } from '../utils';
 import toastOptions from './common/toast-options';
 import ConfirmDialog from './common/confirm-dialog';
-
-const colorMap = {
-  PAST_DUE: {
-    color: 'white',
-    bgColor: 'red.400'
-  },
-  COMING: {
-    color: 'white',
-    bgColor: 'green.400'
-  }
-};
 
 export interface IDashboardProps {
   currentUserId: string;
@@ -131,11 +121,19 @@ function Cards() {
               borderWidth="1px"
               rounded="md"
               shadow="md"
-              {...colorMap[item.status]}
             >
               <HStack justifyContent="space-between">
                 <Text fontWeight="bold">
                   {item.firstName} {item.lastName}
+                  {item.status !== 'DONE' && (
+                    <Badge
+                      ml="2"
+                      colorScheme={item.status === 'PAST_DUE' ? 'red' : 'green'}
+                      fontSize="md"
+                    >
+                      <Icon as={FaCapsules} />
+                    </Badge>
+                  )}
                 </Text>
                 <CardActions dashboardItem={item} />
               </HStack>
@@ -162,18 +160,18 @@ function CardActions({ dashboardItem }: { dashboardItem: IDashboardDto }) {
     <>
       <HStack justifyContent="flex-end">
         <Link href={`/member/${encodeURIComponent(dashboardItem._id)}`}>
-          <IconButton aria-label="View medications" icon={<FaCapsules />} colorScheme="blue" />
+          <IconButton aria-label="View medications" icon={<FaCapsules />} variant="outline" />
         </Link>
         <IconButton
           aria-label="Edit member"
           icon={<FaUserEdit />}
-          colorScheme="blue"
+          variant="outline"
           onClick={() => formRef.current.onOpen()}
         />
         <IconButton
           aria-label="Delete member"
           icon={<FaTrash />}
-          colorScheme="blue"
+          variant="outline"
           onClick={() => confirmDeleteRef.current.onOpen()}
         />
       </HStack>
