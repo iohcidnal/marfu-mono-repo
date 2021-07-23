@@ -107,6 +107,11 @@ function TitleBar() {
   );
 }
 
+const badgeStatus = {
+  COMING: 'green',
+  PAST_DUE: 'red'
+};
+
 function Cards() {
   const { dashboardItems } = useDashboardContext();
 
@@ -127,12 +132,8 @@ function Cards() {
               <HStack justifyContent="space-between">
                 <Text fontWeight="bold">
                   {item.firstName} {item.lastName}
-                  {item.status !== 'DONE' && (
-                    <Badge
-                      ml="2"
-                      colorScheme={item.status === 'PAST_DUE' ? 'red' : 'green'}
-                      fontSize="md"
-                    >
+                  {badgeStatus[item.status] && (
+                    <Badge ml="2" colorScheme={badgeStatus[item.status]} fontSize="md">
                       <Icon as={FaCapsules} />
                     </Badge>
                   )}
