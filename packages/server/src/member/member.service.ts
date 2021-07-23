@@ -12,19 +12,24 @@ export async function getAll(): Promise<IMemberDto[]> {
   return docs;
 }
 
-export async function getAllForDashboard(clientDateTime: string): Promise<IDashboardDto[]> {
+export async function getAllForDashboard(
+  clientDateTime: string,
+  timeZone: string
+): Promise<IDashboardDto[]> {
   const memberDocs = await model
     .find()
     .sort({ firstName: 1, lastName: 1 })
     .lean()
     .populate('createdBy', '_id firstName lastName');
+
   const result: IDashboardDto[] = [];
 
   for await (const member of memberDocs) {
     let status = MedicationStatus.DONE;
     const medications = await medicationService.getAllByMemberId(
       member._id.toString(),
-      clientDateTime
+      clientDateTime,
+      timeZone
     );
     // status is `past due` if there are some past due.
     // `Coming` if there are some coming. Otherwise, status is `done`.

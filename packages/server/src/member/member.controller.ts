@@ -21,8 +21,10 @@ export async function getAll(req: Request, res: Response, next: NextFunction) {
 
 export async function getAllForDashboard(req: Request, res: Response, next: NextFunction) {
   try {
-    const clientDateTime = req.body.clientDateTime;
-    const result = await service.getAllForDashboard(clientDateTime);
+    const clientDateTime = req.query.dt as string;
+    const timeZone = req.query.tz as string;
+    const result = await service.getAllForDashboard(clientDateTime, timeZone);
+
     return res.status(200).json(result);
   } catch (error) {
     next(error);

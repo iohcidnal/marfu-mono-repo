@@ -15,8 +15,9 @@ export async function post(req: Request, res: Response, next: NextFunction) {
 export async function getAllByMemberId(req: Request, res: Response, next: NextFunction) {
   try {
     const memberId: string = req.params.memberId;
-    const clientDateTime: string = req.body.clientDateTime;
-    const result = await service.getAllByMemberId(memberId, clientDateTime);
+    const clientDateTime = req.query.dt as string;
+    const timeZone = req.query.tz as string;
+    const result = await service.getAllByMemberId(memberId, clientDateTime, timeZone);
 
     return res.status(200).json(result);
   } catch (error) {

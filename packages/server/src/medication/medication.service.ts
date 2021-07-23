@@ -39,11 +39,11 @@ export async function create({
 
 export async function getAllByMemberId(
   memberId: string,
-  clientDateTime: string
+  clientDateTime: string,
+  timeZone: string
 ): Promise<IMedicationDto[]> {
   const currentDate = toDate(new Date(clientDateTime))('0:0');
   const currentDateTime = new Date(clientDateTime);
-  console.log('currentDateTime :>> ', currentDateTime);
   const docs = await medicationModel.find({ memberId }).lean().populate('frequencies');
 
   // Get meds that fall within the start and end dates
@@ -61,7 +61,12 @@ export async function getAllByMemberId(
   }
 
   const freqLogs = await getFrequencyLogs(medications, currentDate);
-  const getFrequencyStatusFn = getFrequencyStatus.bind(null, currentDateTime.toString(), freqLogs);
+  const getFrequencyStatusFn = getFrequencyStatus.bind(
+    null,
+    currentDateTime.toString(),
+    timeZone,
+    freqLogs
+  );
 
   const result: IMedicationDto[] = medications.map(med => {
     const frequencies = med.frequencies?.map(freq => {
