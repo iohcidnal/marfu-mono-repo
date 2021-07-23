@@ -34,6 +34,7 @@ import {
 } from '@chakra-ui/react';
 import {
   FaCapsules,
+  FaChevronLeft,
   FaEdit,
   FaEllipsisV,
   FaList,
@@ -95,7 +96,6 @@ export default function MemberInfo({ currentUserId, member }: IMemberInfoProps) 
 
   return (
     <MemberInfoContext.Provider value={value}>
-      {/* TODO: Display breadcrumbs */}
       <TitleBar />
       <Skeleton isLoaded={!isFetching}>
         {medications.length === 0 && (
@@ -119,6 +119,12 @@ function TitleBar() {
       <Box p="4" shadow="md">
         <HStack justifyContent="space-between">
           <HStack>
+            <IconButton
+              aria-label="Back to dashboard"
+              as="a"
+              href="/dashboard"
+              icon={<FaChevronLeft />}
+            />
             <Icon as={FaCapsules} />
             <Text fontSize="lg" fontWeight="semibold" color="gray.600">
               {`Medications for ${member.firstName} ${member.lastName}`}
