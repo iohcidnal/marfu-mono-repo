@@ -96,6 +96,7 @@ function TitleBar() {
           <IconButton
             aria-label="Add new user"
             icon={<FaUserPlus />}
+            variant="outline"
             onClick={() => formRef.current.onOpen()}
           />
         </HStack>

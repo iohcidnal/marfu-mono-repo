@@ -124,6 +124,7 @@ function TitleBar() {
               as="a"
               href="/dashboard"
               icon={<FaChevronLeft />}
+              variant="outline"
             />
             <Icon as={FaCapsules} />
             <Text fontSize="lg" fontWeight="semibold" color="gray.600">
@@ -134,6 +135,7 @@ function TitleBar() {
             aria-label="Add new medication"
             icon={<FaPlus />}
             onClick={() => formRef.current.onOpen()}
+            variant="outline"
           />
         </HStack>
       </Box>
@@ -355,6 +357,7 @@ const AddEditMedicationForm = React.forwardRef(function AddEditMedicationForm(
                       aria-label="Delete time"
                       icon={<FaTrash />}
                       onClick={() => setValue(`frequencies.${index}.status`, 'DELETE')}
+                      variant="outline"
                     />
                   </HStack>
                   {inputError && <FormErrorMessage>{inputError}</FormErrorMessage>}
@@ -451,17 +454,10 @@ function CardActions({ medication }: { medication: IMedicationDto }) {
       <IconButton
         aria-label="Add log"
         icon={<FaNotesMedical />}
-        colorScheme="blue"
         onClick={() => addLogFormRef.current.onOpen()}
       />
       <Menu>
-        <MenuButton
-          as={IconButton}
-          aria-label="Options"
-          backgroundColor="gray.200"
-          icon={<FaEllipsisV />}
-          variant="outline"
-        />
+        <MenuButton as={IconButton} aria-label="Options" icon={<FaEllipsisV />} variant="outline" />
         <MenuList>
           <MenuItem icon={<FaEdit />} onClick={() => addEditFormMedicationRef.current.onOpen()}>
             Edit medication
