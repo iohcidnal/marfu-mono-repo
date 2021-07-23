@@ -168,11 +168,11 @@ async function getFrequencyLogs(
 }
 
 function getMedicationStatus(frequenciesStatus: MedicationStatus[]): MedicationStatus {
-  let status = MedicationStatus.DONE;
-  if (frequenciesStatus.some(status => status === MedicationStatus.PAST_DUE)) {
-    status = MedicationStatus.PAST_DUE;
-  } else if (frequenciesStatus.some(status => status === MedicationStatus.COMING)) {
-    status = MedicationStatus.COMING;
+  let status: MedicationStatus = 'DONE';
+  if (frequenciesStatus.some(status => status === 'PAST_DUE')) {
+    status = 'PAST_DUE';
+  } else if (frequenciesStatus.some(status => status === 'COMING')) {
+    status = 'COMING';
   }
 
   return status;

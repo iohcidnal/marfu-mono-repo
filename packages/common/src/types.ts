@@ -22,11 +22,7 @@ export interface IDashboardDto extends IMemberDto {
   status?: MedicationStatus;
 }
 
-export const enum MedicationStatus {
-  DONE = 'DONE',
-  COMING = 'COMING',
-  PAST_DUE = 'PAST_DUE'
-}
+export type MedicationStatus = 'DONE' | 'COMING' | 'PAST_DUE';
 
 export interface IFrequencyDto extends IModelBase {
   medicationId?: string;

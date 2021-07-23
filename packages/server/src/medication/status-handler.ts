@@ -19,14 +19,14 @@ export default function getFrequencyStatus(
 
   doneHandler.setNext(comingHandler)?.setNext(pastDueHandler)?.setNext();
 
-  return doneHandler.getStatus() ?? MedicationStatus.DONE;
+  return doneHandler.getStatus() ?? 'DONE';
 
   function markWithDoneHandler(): IStatusHandler {
     let _nextHandler: IStatusHandler | undefined;
 
     function getStatus() {
       if (freqLogs?.find(log => log.frequencyId.toString() === frequency._id.toString())) {
-        return MedicationStatus.DONE;
+        return 'DONE';
       }
 
       return _nextHandler?.getStatus();
@@ -53,7 +53,7 @@ export default function getFrequencyStatus(
       const diff = Math.abs(currentDateTime.valueOf() - frequencyDateTime.valueOf());
       // One hour before and one hour after is coming
       if (diff <= ONE_HOUR_IN_MILLISECONDS) {
-        return MedicationStatus.COMING;
+        return 'COMING';
       }
 
       return _nextHandler?.getStatus();
@@ -79,7 +79,7 @@ export default function getFrequencyStatus(
       const diff = currentDateTime.valueOf() - frequencyDateTime.valueOf();
       // If currentDateTime is past frequencyDateTime and currentDateTime is more than an hour, return past due
       if (Math.sign(diff) > -1 && diff > ONE_HOUR_IN_MILLISECONDS) {
-        return MedicationStatus.PAST_DUE;
+        return 'PAST_DUE';
       }
 
       return _nextHandler?.getStatus();

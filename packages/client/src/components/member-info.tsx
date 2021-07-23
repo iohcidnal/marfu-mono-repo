@@ -612,7 +612,7 @@ const AddLogForm = React.forwardRef(function AddLogForm(
     );
     medicationToUpdate.frequencies = [
       ...medicationToUpdate.frequencies.slice(0, freqIndex),
-      { ...medicationToUpdate.frequencies[freqIndex], status: 'NEW' },
+      { ...medicationToUpdate.frequencies[freqIndex], status: 'DONE' },
       ...medicationToUpdate.frequencies.slice(freqIndex + 1)
     ];
 

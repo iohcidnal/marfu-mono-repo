@@ -25,7 +25,7 @@ export async function getAllForDashboard(
   const result: IDashboardDto[] = [];
 
   for await (const member of memberDocs) {
-    let status = MedicationStatus.DONE;
+    let status: MedicationStatus = 'DONE';
     const medications = await medicationService.getAllByMemberId(
       member._id.toString(),
       clientDateTime,
@@ -33,10 +33,10 @@ export async function getAllForDashboard(
     );
     // status is `past due` if there are some past due.
     // `Coming` if there are some coming. Otherwise, status is `done`.
-    if (medications.some(med => med.status === MedicationStatus.PAST_DUE)) {
-      status = MedicationStatus.PAST_DUE;
-    } else if (medications.some(med => med.status === MedicationStatus.COMING)) {
-      status = MedicationStatus.COMING;
+    if (medications.some(med => med.status === 'PAST_DUE')) {
+      status = 'PAST_DUE';
+    } else if (medications.some(med => med.status === 'COMING')) {
+      status = 'COMING';
     }
     result.push({
       _id: member._id,
