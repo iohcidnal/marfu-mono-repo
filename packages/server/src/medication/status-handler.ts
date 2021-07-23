@@ -9,6 +9,7 @@ interface IStatusHandler {
 
 export default function getFrequencyStatus(
   clientDateTime: string,
+  timeZone: string,
   freqLogs: IFrequencyLogDto[],
   frequency: IFrequencyDto
 ): MedicationStatus {
@@ -24,7 +25,7 @@ export default function getFrequencyStatus(
     let _nextHandler: IStatusHandler | undefined;
 
     function getStatus() {
-      if (freqLogs?.find(log => log.frequencyId === frequency._id)) {
+      if (freqLogs?.find(log => log.frequencyId.toString() === frequency._id.toString())) {
         return MedicationStatus.DONE;
       }
 
@@ -48,7 +49,8 @@ export default function getFrequencyStatus(
     function getStatus() {
       const frequencyDateTime = toDate(frequency.time);
       const currentDateTime = new Date(clientDateTime);
-      const diff = Math.abs(frequencyDateTime.valueOf() - currentDateTime.valueOf());
+
+      const diff = Math.abs(currentDateTime.valueOf() - frequencyDateTime.valueOf());
       // One hour before and one hour after is coming
       if (diff <= ONE_HOUR_IN_MILLISECONDS) {
         return MedicationStatus.COMING;
@@ -74,9 +76,9 @@ export default function getFrequencyStatus(
     function getStatus() {
       const frequencyDateTime = toDate(frequency.time);
       const currentDateTime = new Date(clientDateTime);
-      const diff = Math.abs(frequencyDateTime.valueOf() - currentDateTime.valueOf());
-      // Greater than one hour is past due
-      if (diff > ONE_HOUR_IN_MILLISECONDS) {
+      const diff = currentDateTime.valueOf() - frequencyDateTime.valueOf();
+      // If currentDateTime is past frequencyDateTime and currentDateTime is more than an hour, return past due
+      if (Math.sign(diff) > -1 && diff > ONE_HOUR_IN_MILLISECONDS) {
         return MedicationStatus.PAST_DUE;
       }
 
@@ -98,13 +100,15 @@ export default function getFrequencyStatus(
     const currentDateTime = new Date(clientDateTime);
     const [hh, mm] = time.split(':');
     const dateTime = new Date(
-      currentDateTime.getFullYear(),
-      currentDateTime.getMonth(),
-      currentDateTime.getDate(),
+      currentDateTime.getUTCFullYear(),
+      currentDateTime.getUTCMonth(),
+      currentDateTime.getUTCDate(),
       Number(hh),
       Number(mm)
     );
+    // Make sure we're in sync with the client's time zone.
+    const result = new Date(dateTime.toLocaleString('en-US', { timeZone }));
 
-    return dateTime;
+    return result;
   }
 }
