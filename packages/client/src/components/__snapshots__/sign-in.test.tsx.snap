@@ -48,7 +48,7 @@ exports[`SignIn should render properly 1`] = `
                   for="userName"
                   id="userName-label"
                 >
-                  User name
+                  Username
                   <span
                     aria-hidden="true"
                     class="chakra-form__required-indicator css-1ssjhh"

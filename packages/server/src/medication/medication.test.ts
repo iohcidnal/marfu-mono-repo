@@ -31,25 +31,31 @@ const medicationDocs = [
       {
         // status = 'COMING'. Schedule time is 45 mins after current time
         _id: '6060bd138f88b122aa5aeb69',
-        time: '11:45',
+        time: '09:45',
         medicationId: '6060bd138f88b122aa5aeb6b'
       },
       {
         // status = 'COMING'. Schedule time is an hour past current time
         _id: '6060bd138f88b122aa5aeb6b',
-        time: '12:00',
+        time: '10:00',
         medicationId: '6060bd138f88b122aa5aeb6b'
       },
       {
         // status = 'COMING'. Schedule time is an hour before current time
         _id: '6060bd138f88b122aa5aeb6c',
-        time: '10:00',
+        time: '08:00',
         medicationId: '6060bd138f88b122aa5aeb6b'
       },
       {
         // status = 'PAST_DUE'. Schedule time is more than an hour past current time
         _id: '6060bd138f88b122aa5aeb6a',
-        time: '12:01',
+        time: '07:59',
+        medicationId: '6060bd138f88b122aa5aeb6b'
+      },
+      {
+        // status = 'DONE'. Schedule time is far from current time
+        _id: '6060bd138f88b122aa5aeb7a',
+        time: '11:00',
         medicationId: '6060bd138f88b122aa5aeb6b'
       }
     ],
@@ -78,7 +84,8 @@ describe('medication', () => {
     }));
 
     req.params = { memberId: '6060bd088f88b122aa5aeb67' };
-    req.body = { clientDateTime: new Date(2021, 11, 25, 11, 0) };
+    // Current date time = Dec 25, 2021, 9:00 AM
+    req.query = { dt: new Date(2021, 11, 25, 9, 0).toString(), tz: 'America/Denver' };
 
     const result: any = await controller.getAllByMemberId(req, res, next);
 
@@ -106,6 +113,11 @@ describe('medication', () => {
       (freq: { _id: string }) => freq._id === '6060bd138f88b122aa5aeb6c'
     );
     expect(frequency.status).toBe('COMING');
+
+    frequency = result[0].frequencies.find(
+      (freq: { _id: string }) => freq._id === '6060bd138f88b122aa5aeb7a'
+    );
+    expect(frequency.status).toBe('DONE');
   });
 
   it('GET should call next with error', async () => {
@@ -118,7 +130,7 @@ describe('medication', () => {
     }));
 
     req.params = { memberId: 'fake-id' };
-    req.body = { clientDateTime: new Date(2021, 12, 25, 11, 0) }; // Dec 25, 2021, 11AM
+    req.query = { dt: new Date(2021, 12, 25, 11, 0).toString(), tz: 'America/Denver' };
     const result: any = await controller.getAllByMemberId(req, res, next);
 
     expect(res.status).not.toHaveBeenCalled();

@@ -106,7 +106,7 @@ describe('user', () => {
       const result = await controller.authenticate(req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(404);
-      expect(result).toEqual({ message: 'User name or password do not match.' });
+      expect(result).toEqual({ message: 'Username or password do not match.' });
     });
 
     it("should return 404 when password doesn't match", async () => {
@@ -115,7 +115,7 @@ describe('user', () => {
       const result = await controller.authenticate(req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(404);
-      expect(result).toEqual({ message: 'User name or password do not match.' });
+      expect(result).toEqual({ message: 'Username or password do not match.' });
     });
 
     it('should call next with error', async () => {
