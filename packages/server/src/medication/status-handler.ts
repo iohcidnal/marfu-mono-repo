@@ -47,7 +47,7 @@ export default function getFrequencyStatus(
     let _nextHandler: IStatusHandler | undefined;
 
     function getStatus() {
-      const frequencyDateTime = toDate(frequency.time);
+      const frequencyDateTime = toTzDate(frequency.time);
       const currentDateTime = new Date(clientDateTime);
 
       const diff = Math.abs(currentDateTime.valueOf() - frequencyDateTime.valueOf());
@@ -74,7 +74,7 @@ export default function getFrequencyStatus(
     let _nextHandler: IStatusHandler | undefined;
 
     function getStatus() {
-      const frequencyDateTime = toDate(frequency.time);
+      const frequencyDateTime = toTzDate(frequency.time);
       const currentDateTime = new Date(clientDateTime);
       const diff = currentDateTime.valueOf() - frequencyDateTime.valueOf();
       // If currentDateTime is past frequencyDateTime and currentDateTime is more than an hour, return past due
@@ -96,19 +96,17 @@ export default function getFrequencyStatus(
     };
   }
 
-  function toDate(time: string): Date {
+  function toTzDate(time: string): Date {
     const currentDateTime = new Date(clientDateTime);
     const [hh, mm] = time.split(':');
     const dateTime = new Date(
-      currentDateTime.getUTCFullYear(),
-      currentDateTime.getUTCMonth(),
-      currentDateTime.getUTCDate(),
+      currentDateTime.getFullYear(),
+      currentDateTime.getMonth(),
+      currentDateTime.getDate(),
       Number(hh),
       Number(mm)
-    );
-    // Make sure we're in sync with the client's time zone.
-    const result = new Date(dateTime.toLocaleString('en-US', { timeZone }));
+    ).toLocaleString('en-US', { timeZone }); // Make sure we're in sync with the client's time zone.
 
-    return result;
+    return new Date(dateTime);
   }
 }
