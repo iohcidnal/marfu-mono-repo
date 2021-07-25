@@ -6,7 +6,7 @@ exports[`SignIn should render properly 1`] = `
     class="chakra-stack css-lgt9ky"
   >
     <div
-      class="css-lr4539"
+      class="css-1wnjbzp"
     >
       <h2
         class="chakra-heading css-14umdt2"
@@ -119,6 +119,7 @@ exports[`SignIn should render properly 1`] = `
                 </p>
                 <a
                   class="chakra-link css-t9eb1q"
+                  href="/user-registration"
                 >
                   Create an account
                 </a>

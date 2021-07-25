@@ -61,7 +61,7 @@ function Form() {
     <Stack align="center">
       <Stack spacing="6" width={['full', 'lg']}>
         <Box bg="white" borderWidth={1} p={4} boxShadow="lg">
-          {router.query.newUserRegistered === '1' && (
+          {router?.query.newUserRegistered === '1' && (
             <Alert status="success" mb="6">
               <AlertIcon />
               You have successfully registered. Enter your username and password to sign in.
