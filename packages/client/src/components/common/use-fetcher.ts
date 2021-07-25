@@ -18,7 +18,7 @@ export default function useFetcher<T, P = T>(onSuccessSubmit: (data: T) => void,
       });
     },
     {
-      onSuccess: ({ status, data }: { status: number; data: T }) => {
+      onSuccess: ({ status, data }: { status: number; data: T & { message: string } }) => {
         if ([200, 201].includes(status)) {
           onSuccessSubmit(data);
         } else {
@@ -26,7 +26,7 @@ export default function useFetcher<T, P = T>(onSuccessSubmit: (data: T) => void,
             ...toastOptions,
             title: 'An error occured',
             status: 'error',
-            description: data['errorMessage']
+            description: data.message
           });
         }
       },
