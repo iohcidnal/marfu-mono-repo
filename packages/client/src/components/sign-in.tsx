@@ -11,14 +11,12 @@ import {
   Input,
   Link,
   Stack,
-  Text,
-  useToast
+  Text
 } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
-import { useMutation } from 'react-query';
 
 import { IUserDto, signInMode } from '@common';
-import { fetcher } from '../utils';
+import useFetcher from './common/use-fetcher';
 
 export default function SignIn() {
   return (
@@ -49,11 +47,14 @@ function Form() {
     formState: { errors },
     formState
   } = useForm<IUserDto>({ mode: 'all' });
-  // TODO: Replace this with useFetcher
-  const mutation = useSignIn();
+  const router = useRouter();
+  const mutation = useFetcher(() => router.replace('/dashboard'), 'POST');
 
   function onSubmit(payload: IUserDto) {
-    mutation.mutate(payload);
+    mutation.mutate({
+      payload,
+      url: `${process.env.NEXT_PUBLIC_API}users/authenticate`
+    });
   }
 
   return (
@@ -137,31 +138,4 @@ function MessageMode() {
       {message}
     </Alert>
   );
-}
-
-function useSignIn() {
-  const router = useRouter();
-  const toast = useToast();
-
-  const mutation = useMutation(
-    (payload: Record<string, any>) =>
-      fetcher({ url: `${process.env.NEXT_PUBLIC_API}users/authenticate`, method: 'POST', payload }),
-    {
-      onSuccess: ({ status, data }) => {
-        if (status === 200) {
-          router.replace('/dashboard');
-        } else {
-          toast({
-            title: 'Sign in failed',
-            description: data.message,
-            status: 'error',
-            position: 'top-right',
-            isClosable: true
-          });
-        }
-      }
-    }
-  );
-
-  return mutation;
 }
