@@ -3,3 +3,4 @@ export { default as MembersDashboard } from './members-dashboard';
 export type { IDashboardProps } from './members-dashboard';
 export { default as MemberInfo } from './member-info';
 export type { IMemberInfoProps } from './member-info';
+export { default as UserRegistration } from './user-registration';

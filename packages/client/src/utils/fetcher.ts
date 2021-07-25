@@ -30,7 +30,12 @@ export default async function fetcher(
   }
 
   const response: Response = await fetch(config.url, option);
-  const data = await response.json();
+  let data = null;
+  if (response.headers.get('Content-Type').includes('application/json')) {
+    data = await response.json();
+  } else {
+    data = await response.text();
+  }
 
   return {
     status: response.status,

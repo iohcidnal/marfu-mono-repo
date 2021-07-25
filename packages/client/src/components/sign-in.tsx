@@ -1,5 +1,7 @@
 import { useRouter } from 'next/router';
 import {
+  Alert,
+  AlertIcon,
   Box,
   Button,
   FormControl,
@@ -29,7 +31,7 @@ export default function SignIn() {
 
 function Header() {
   return (
-    <Box textAlign="center" mb={['16', '20']} mt="4">
+    <Box textAlign="center" mb="6" mt="4">
       <Heading color="blue.600" fontSize="44px" fontWeight="extrabold">
         marfu
       </Heading>
@@ -41,12 +43,14 @@ function Header() {
 }
 
 function Form() {
+  const router = useRouter();
   const {
     register,
     handleSubmit,
     formState: { errors },
     formState
   } = useForm<IUserDto>({ mode: 'all' });
+  // TODO: Replace this with useFetcher
   const mutation = useSignIn();
 
   function onSubmit(payload: IUserDto) {
@@ -57,6 +61,12 @@ function Form() {
     <Stack align="center">
       <Stack spacing="6" width={['full', 'lg']}>
         <Box bg="white" borderWidth={1} p={4} boxShadow="lg">
+          {router.query.newUserRegistered === '1' && (
+            <Alert status="success" mb="6">
+              <AlertIcon />
+              You have successfully registered. Enter your username and password to sign in.
+            </Alert>
+          )}
           <Text color="gray.600" fontSize="20px" mb={6} fontWeight="semibold">
             Sign in to continue
           </Text>
@@ -99,7 +109,9 @@ function Form() {
               </Button>
               <Stack isInline fontSize="sm" fontWeight="bold">
                 <Text>New user?</Text>
-                <Link color="blue.600">Create an account</Link>
+                <Link color="blue.600" href="/user-registration">
+                  Create an account
+                </Link>
               </Stack>
             </Stack>
           </form>

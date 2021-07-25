@@ -22,11 +22,20 @@ export default function useFetcher<T, P = T>(onSuccessSubmit: (data: T) => void,
         if ([200, 201].includes(status)) {
           onSuccessSubmit(data);
         } else {
-          toast({ ...toastOptions, title: 'An error occured', status: 'error' });
+          toast({
+            ...toastOptions,
+            title: 'An error occured',
+            status: 'error',
+            description: data['errorMessage']
+          });
         }
       },
       onError: () => {
-        toast({ ...toastOptions, title: 'An error occured', status: 'error' });
+        toast({
+          ...toastOptions,
+          title: 'An error occured',
+          status: 'error'
+        });
       }
     }
   );

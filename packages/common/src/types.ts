@@ -12,6 +12,16 @@ export interface IUserDto extends IUserBase {
   password: string;
 }
 
+export interface INewUserDto extends IUserDto {
+  confirmPassword: string;
+  pin1: string;
+  pin2: string;
+  pin3: string;
+  pin4: string;
+  pin5: string;
+  pin6: string;
+}
+
 export interface IMemberDto extends IModelBase {
   firstName: string;
   lastName: string;

@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 
-import { IUserDto, IUserBase } from '@common';
+import { IUserDto, IUserBase, INewUserDto } from '@common';
 import model from './user.model';
 
 export async function authenticate(payload: IUserDto): Promise<IUserBase | null> {
@@ -17,12 +17,24 @@ export async function authenticate(payload: IUserDto): Promise<IUserBase | null>
   };
 }
 
-export async function create(payload: IUserDto): Promise<IUserBase> {
-  const user: IUserDto = {
-    ...payload,
+export async function create(payload: INewUserDto): Promise<IUserBase> {
+  // Check if email already exists
+  const user = await model.findOne({ userName: payload.userName }).lean();
+  if (user) {
+    throw new Error('Username already exists. Please select a new one.');
+  }
+  // Check if invitation code is valid
+  const { pin1, pin2, pin3, pin4, pin5, pin6, ...otherProps } = payload;
+  const inviteKey = `${pin1}${pin2}${pin3}${pin4}${pin5}${pin6}`;
+  if (inviteKey !== (process.env.INVITE_KEY as string)) {
+    throw new Error('Invitation code is not valid. Please contact your system administrator.');
+  }
+
+  const newUser: IUserDto = {
+    ...otherProps,
     password: bcrypt.hashSync(payload.password, 8)
   };
-  const doc = await model.create(user);
+  const doc = await model.create(newUser);
 
   return model.toDto(doc);
 }
