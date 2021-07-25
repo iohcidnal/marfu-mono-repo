@@ -8,6 +8,16 @@ import frequencyLogRoutes from './frequency-log/frequency-log.routes';
 import loadMiddlewares from './load-middlewares';
 import connectDb from './database';
 
+function catchAllErrorHandler(
+  err: Error,
+  req: express.Request,
+  res: express.Response,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  next: express.NextFunction
+) {
+  res.status(500).json({ errorMessage: err.message });
+}
+
 dotenv.config();
 connectDb();
 
@@ -18,5 +28,6 @@ app.get('/', (req: express.Request, res: express.Response) => {
 });
 
 app.use('/api', userRoutes, memberRoutes, medicationRoutes, frequencyLogRoutes);
+app.use(catchAllErrorHandler);
 
 export default app;
