@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 
-import { IUserDto, IUserBase, INewUserDto } from '@common';
+import { IUserDto, IUserBase, INewUserDto, signInMode } from '@common';
 import model from './user.model';
 
 export async function authenticate(payload: IUserDto): Promise<IUserBase | null> {
@@ -17,7 +17,7 @@ export async function authenticate(payload: IUserDto): Promise<IUserBase | null>
   };
 }
 
-export async function create(payload: INewUserDto): Promise<IUserBase> {
+export async function create(payload: INewUserDto): Promise<signInMode> {
   // Check if email already exists
   const user = await model.findOne({ userName: payload.userName }).lean();
   if (user) {
@@ -34,9 +34,9 @@ export async function create(payload: INewUserDto): Promise<IUserBase> {
     ...otherProps,
     password: bcrypt.hashSync(payload.password, 8)
   };
-  const doc = await model.create(newUser);
+  await model.create(newUser);
 
-  return model.toDto(doc);
+  return 'REGISTERED';
 }
 
 export async function update(payload: IUserDto): Promise<IUserBase | null> {

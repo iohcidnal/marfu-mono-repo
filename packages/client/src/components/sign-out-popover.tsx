@@ -15,18 +15,19 @@ import {
 } from '@chakra-ui/react';
 import { FaSignOutAlt } from 'react-icons/fa';
 import useFetcher from './common/use-fetcher';
+import { signInMode } from '@common';
 
 export default function SignOutPopover() {
   const { onOpen, onClose, isOpen } = useDisclosure();
   const initialFocusRef = React.useRef();
-  const mutation = useFetcher(handleSignOutSuccess, 'POST');
+  const mutation = useFetcher<signInMode, any>(handleSignOutSuccess, 'POST');
 
   function handleSignOut() {
     mutation.mutate({ payload: {}, url: `${process.env.NEXT_PUBLIC_API}users/signout` });
   }
 
-  function handleSignOutSuccess(data: any) {
-    window.location.replace(decodeURIComponent(`/?mode=${data.mode}`));
+  function handleSignOutSuccess(mode: signInMode) {
+    window.location.replace(decodeURIComponent(`/?mode=${mode}`));
   }
 
   return (

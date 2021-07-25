@@ -1,4 +1,3 @@
-import { useRouter } from 'next/router';
 import {
   Box,
   Button,
@@ -13,12 +12,11 @@ import {
   Stack,
   Text
 } from '@chakra-ui/react';
-import { INewUserDto } from '@common';
+import { INewUserDto, signInMode } from '@common';
 import { useForm } from 'react-hook-form';
 import useFetcher from './common/use-fetcher';
 
 export default function UserRegistration() {
-  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -28,7 +26,7 @@ export default function UserRegistration() {
   } = useForm<INewUserDto>({
     mode: 'all'
   });
-  const mutation = useFetcher<INewUserDto>(handleSubmitSuccess, 'POST');
+  const mutation = useFetcher<signInMode, INewUserDto>(handleSubmitSuccess, 'POST');
   const isPinInputInvalid =
     !!errors.pin1 ||
     !!errors.pin2 ||
@@ -41,8 +39,8 @@ export default function UserRegistration() {
     mutation.mutate({ payload, url: `${process.env.NEXT_PUBLIC_API}users` });
   }
 
-  function handleSubmitSuccess() {
-    router.replace('/?newUserRegistered=1');
+  function handleSubmitSuccess(mode: signInMode) {
+    window.location.replace(decodeURIComponent(`/?mode=${mode}`));
   }
 
   return (
@@ -65,9 +63,7 @@ export default function UserRegistration() {
                   <PinInputField maxLength={1} {...register('pin6', { required: true })} />
                 </PinInput>
               </HStack>
-              {isPinInputInvalid && (
-                <FormErrorMessage>Invitation code is not valid.</FormErrorMessage>
-              )}
+              {isPinInputInvalid && <FormErrorMessage>All codes are required.</FormErrorMessage>}
             </FormControl>
             <FormControl id="firstName" isRequired isInvalid={!!errors.firstName}>
               <FormLabel>First name</FormLabel>

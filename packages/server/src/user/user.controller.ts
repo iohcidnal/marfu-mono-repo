@@ -1,4 +1,4 @@
-import { IUserBase } from '@common';
+import { IUserBase, signInMode } from '@common';
 import { Request, Response, NextFunction } from 'express';
 import * as service from './user.service';
 
@@ -53,7 +53,8 @@ export async function signOut(req: Request, res: Response, next: NextFunction) {
         return next(err);
       }
       res.clearCookie('marfu.sid');
-      return res.status(200).json({ mode: 'signed-out' });
+      const result: signInMode = 'SIGNED_OUT';
+      return res.status(200).json(result);
     });
   } catch (error) {
     next(error);

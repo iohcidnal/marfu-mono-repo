@@ -66,3 +66,5 @@ export interface IMedicationPostPutPayload {
   clientDateTime: string;
   timeZone: string;
 }
+
+export type signInMode = 'REGISTERED' | 'SIGNED_OUT';

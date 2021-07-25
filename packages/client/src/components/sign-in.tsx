@@ -17,7 +17,7 @@ import {
 import { useForm } from 'react-hook-form';
 import { useMutation } from 'react-query';
 
-import { IUserDto } from '@common';
+import { IUserDto, signInMode } from '@common';
 import { fetcher } from '../utils';
 
 export default function SignIn() {
@@ -117,15 +117,16 @@ function Form() {
 
 function MessageMode() {
   const router = useRouter();
-  const { mode } = router?.query ?? {};
+  const mode = router?.query.mode as signInMode;
 
   if (!mode) return null;
 
-  let message: string = null;
-  if (mode === 'signed-out') {
+  let message: string;
+  if (mode === 'SIGNED_OUT') {
     message = 'You have successfully signed out. Sign back in to continue.';
-  } else if (mode === 'registered') {
-    message = 'You have successfully registered. Enter your username and password to sign in.';
+  } else if (mode === 'REGISTERED') {
+    message =
+      'You have successfully registered. You can now use your username and password to sign in.';
   }
 
   if (!message) return null;
