@@ -43,7 +43,6 @@ function Header() {
 }
 
 function Form() {
-  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -61,12 +60,7 @@ function Form() {
     <Stack align="center">
       <Stack spacing="6" width={['full', 'lg']}>
         <Box bg="white" borderWidth={1} p={4} boxShadow="lg">
-          {router?.query.newUserRegistered === '1' && (
-            <Alert status="success" mb="6">
-              <AlertIcon />
-              You have successfully registered. Enter your username and password to sign in.
-            </Alert>
-          )}
+          <MessageMode />
           <Text color="gray.600" fontSize="20px" mb={6} fontWeight="semibold">
             Sign in to continue
           </Text>
@@ -118,6 +112,29 @@ function Form() {
         </Box>
       </Stack>
     </Stack>
+  );
+}
+
+function MessageMode() {
+  const router = useRouter();
+  const { mode } = router?.query ?? {};
+
+  if (!mode) return null;
+
+  let message: string = null;
+  if (mode === 'signed-out') {
+    message = 'You have successfully signed out. Sign back in to continue.';
+  } else if (mode === 'registered') {
+    message = 'You have successfully registered. Enter your username and password to sign in.';
+  }
+
+  if (!message) return null;
+
+  return (
+    <Alert status="success" mb="6">
+      <AlertIcon />
+      {message}
+    </Alert>
   );
 }
 

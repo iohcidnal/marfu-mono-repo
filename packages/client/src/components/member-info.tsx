@@ -60,6 +60,7 @@ import { fetcher } from '../utils';
 import ConfirmDialog from './common/confirm-dialog';
 import getDateTimeAndTimeZone from './common/get-dt-tz';
 import badgeStatus from './common/badge-status';
+import SignOutPopover from './sign-out-popover';
 
 export interface IMemberInfoProps {
   currentUserId: string;
@@ -140,12 +141,15 @@ function TitleBar() {
               {`Medications for ${member.firstName} ${member.lastName}`}
             </Text>
           </HStack>
-          <IconButton
-            aria-label="Add new medication"
-            icon={<FaPlus />}
-            onClick={() => formRef.current.onOpen()}
-            variant="outline"
-          />
+          <HStack>
+            <IconButton
+              aria-label="Add new medication"
+              icon={<FaPlus />}
+              onClick={() => formRef.current.onOpen()}
+              variant="outline"
+            />
+            <SignOutPopover />
+          </HStack>
         </HStack>
       </Box>
       <AddEditMedicationForm method="POST" ref={formRef} />

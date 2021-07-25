@@ -33,6 +33,7 @@ import toastOptions from './common/toast-options';
 import ConfirmDialog from './common/confirm-dialog';
 import getDateTimeAndTimeZone from './common/get-dt-tz';
 import badgeStatus from './common/badge-status';
+import SignOutPopover from './sign-out-popover';
 
 export interface IDashboardProps {
   currentUserId: string;
@@ -95,12 +96,15 @@ function TitleBar() {
               Dashboard
             </Text>
           </HStack>
-          <IconButton
-            aria-label="Add new user"
-            icon={<FaUserPlus />}
-            variant="outline"
-            onClick={() => formRef.current.onOpen()}
-          />
+          <HStack>
+            <IconButton
+              aria-label="Add new user"
+              icon={<FaUserPlus />}
+              variant="outline"
+              onClick={() => formRef.current.onOpen()}
+            />
+            <SignOutPopover />
+          </HStack>
         </HStack>
       </Box>
       <AddEditMemberForm method="POST" ref={formRef} />
