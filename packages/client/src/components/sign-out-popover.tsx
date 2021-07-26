@@ -2,6 +2,7 @@ import * as React from 'react';
 import {
   Button,
   HStack,
+  Icon,
   IconButton,
   Popover,
   PopoverArrow,
@@ -11,6 +12,7 @@ import {
   PopoverFooter,
   PopoverHeader,
   PopoverTrigger,
+  Text,
   useDisclosure
 } from '@chakra-ui/react';
 import { FaSignOutAlt } from 'react-icons/fa';
@@ -31,28 +33,40 @@ export default function SignOutPopover() {
   }
 
   return (
-    <Popover initialFocusRef={initialFocusRef} isOpen={isOpen} onClose={onClose} onOpen={onOpen}>
+    <Popover
+      isLazy
+      initialFocusRef={initialFocusRef}
+      isOpen={isOpen}
+      onClose={onClose}
+      onOpen={onOpen}
+    >
       <PopoverTrigger>
         <IconButton aria-label="Sign out" icon={<FaSignOutAlt />} variant="outline" />
       </PopoverTrigger>
-      <PopoverContent bg="blue.900" color="white">
-        <PopoverHeader fontWeight="semibold" border="0">
-          Sign out
-        </PopoverHeader>
-        <PopoverArrow bg="blue.900" />
-        <PopoverCloseButton />
-        <PopoverBody>Are you sure you want to sign out?</PopoverBody>
-        <PopoverFooter border="0" d="flex" justifyContent="flex-end" p="4">
-          <HStack spacing="2">
-            <Button variant="outline" ref={initialFocusRef} onClick={onClose}>
-              No
-            </Button>
-            <Button colorScheme="red" onClick={handleSignOut}>
-              Yes
-            </Button>
-          </HStack>
-        </PopoverFooter>
-      </PopoverContent>
+      {/* isOpen && is needed to fix alignment in mobile */}
+      {isOpen && (
+        <PopoverContent bg="blue.900" color="white">
+          <PopoverHeader fontWeight="semibold" border="0">
+            <HStack>
+              <Icon as={FaSignOutAlt} />
+              <Text>Sign out</Text>
+            </HStack>
+          </PopoverHeader>
+          <PopoverArrow bg="blue.900" />
+          <PopoverCloseButton />
+          <PopoverBody>Are you sure you want to sign out?</PopoverBody>
+          <PopoverFooter border="0" d="flex" justifyContent="flex-end" p="4">
+            <HStack>
+              <Button colorScheme="green" ref={initialFocusRef} onClick={onClose}>
+                No
+              </Button>
+              <Button colorScheme="red" onClick={handleSignOut}>
+                Yes
+              </Button>
+            </HStack>
+          </PopoverFooter>
+        </PopoverContent>
+      )}
     </Popover>
   );
 }

@@ -36,12 +36,12 @@ const ConfirmDialog = React.forwardRef(function ConfirmDialog(
       isOpen={isOpen}
     >
       <AlertDialogOverlay />
-      <AlertDialogContent>
+      <AlertDialogContent bg="blue.900" color="white">
         <AlertDialogHeader>{title}</AlertDialogHeader>
         <AlertDialogCloseButton />
         <AlertDialogBody>{message}</AlertDialogBody>
         <AlertDialogFooter>
-          <Button ref={cancelRef} onClick={onClose}>
+          <Button colorScheme="green" ref={cancelRef} onClick={onClose}>
             No
           </Button>
           <Button colorScheme="red" ml={3} onClick={handleConfirm}>

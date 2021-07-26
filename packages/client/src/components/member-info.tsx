@@ -138,7 +138,7 @@ function TitleBar() {
             />
             <Icon as={FaCapsules} />
             <Text fontSize="lg" fontWeight="semibold" color="gray.600">
-              {`Medications for ${member.firstName} ${member.lastName}`}
+              {`${member.firstName} ${member.lastName}`}
             </Text>
           </HStack>
           <HStack>

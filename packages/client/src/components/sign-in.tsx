@@ -8,6 +8,8 @@ import {
   FormErrorMessage,
   FormLabel,
   Heading,
+  HStack,
+  Icon,
   Input,
   Link,
   Stack,
@@ -17,6 +19,7 @@ import { useForm } from 'react-hook-form';
 
 import { IUserDto, signInMode } from '@common';
 import useFetcher from './common/use-fetcher';
+import { FaCapsules } from 'react-icons/fa';
 
 export default function SignIn() {
   return (
@@ -30,9 +33,12 @@ export default function SignIn() {
 function Header() {
   return (
     <Box textAlign="center" mb="6" mt="4">
-      <Heading color="blue.600" fontSize="44px" fontWeight="extrabold">
-        marfu
-      </Heading>
+      <HStack justify="center">
+        <Icon as={FaCapsules} fontSize="xx-large" color="blue.600" />
+        <Heading color="blue.600" fontSize="44px" fontWeight="extrabold">
+          marfu
+        </Heading>
+      </HStack>
       <Text color="gray.600" fontWeight="light">
         Medication Administration Record for Family Use
       </Text>
