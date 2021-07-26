@@ -10,13 +10,17 @@
     "React",
     "ChakraUI"
   ],
+  "engines": {
+    "node": "14.x"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p $PORT",
     "test:watch": "jest --no-cache --runInBand --watch",
     "test:debug": "ndb jest --watch --no-cache --runInBand --watch",
-    "test": "jest --no-cache --runInBand"
+    "test": "jest --no-cache --runInBand",
+    "compile": "echo client compile not needed"
   },
   "dependencies": {
     "@chakra-ui/icons": "^1.0.13",

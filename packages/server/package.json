@@ -6,20 +6,20 @@
   "description": "Medication Admin Record for Family Use API",
   "main": "build/server.js",
   "engines": {
-    "node": "16.x"
+    "node": "14.x"
   },
   "scripts": {
     "dev": "NODE_ENV=development concurrently \"yarn compile:watch\" \"yarn dev:server\"",
     "compile:watch": "tsc --watch",
     "dev:server": "nodemon build/server.js",
-    "postinstall": "yarn compile",
+    "xpostinstall": "npm run compile",
     "compile": "tsc",
     "start": "node build/server.js",
     "test:watch": "jest --no-cache --runInBand --watch",
     "test:debug": "ndb jest --watch --no-cache --runInBand --watch",
     "test": "jest --no-cache --runInBand",
     "lint": "eslint './src/*.{js,ts}' --quiet --fix",
-    "deploy": "git push heroku master"
+    "deploy": "git push marfu-api master"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -29,7 +29,8 @@
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
-    "mongoose": "^5.11.18"
+    "mongoose": "^5.11.18",
+    "typescript": "^4.2.2"
   },
   "devDependencies": {
     "@shelf/jest-mongodb": "^1.2.3",
