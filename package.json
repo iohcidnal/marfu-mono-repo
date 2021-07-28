@@ -4,7 +4,7 @@
   "description": "Medication Admin Record for Family Use",
   "main": "build/server.js",
   "engines": {
-    "node": "14.x"
+    "node": "16.x"
   },
   "private": true,
   "workspaces": [
@@ -18,8 +18,7 @@
     "client:dev": "yarn workspace client dev",
     "test:all": "yarn workspaces run test",
     "dev": "concurrently \"yarn common:compile:watch\" \"yarn server:dev\" \" yarn client:dev\"",
-    "start": "yarn workspace server start",
-    "postinstall": "yarn workspace server compile"
+    "start": "yarn workspace server start"
   },
   "keywords": [
     "nodejs",

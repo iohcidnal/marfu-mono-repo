@@ -39,7 +39,7 @@ afterAll(() => {
 afterEach(jest.clearAllMocks);
 
 describe('user', () => {
-  it.skip('should create the correct user', async () => {
+  it('should create the correct user', async () => {
     req.body = {
       firstName: 'Chandler',
       lastName: 'Bing',
@@ -52,7 +52,7 @@ describe('user', () => {
     expect(result).toEqual(expect.objectContaining({ firstName: 'Chandler', lastName: 'Bing' }));
   });
 
-  it.skip('should fail validation', async () => {
+  it('should fail validation', async () => {
     req.body = { userName: 'chanbing', password: 'fakepassword' };
     const result = await controller.post(req, res, next);
 

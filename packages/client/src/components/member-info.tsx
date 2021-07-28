@@ -369,16 +369,14 @@ const AddEditMedicationForm = React.forwardRef(function AddEditMedicationForm(
                     <Input
                       type="time"
                       size="lg"
-                      {...register(`frequencies.${index}.time` as 'frequencies.0.time', {
+                      {...register(`frequencies.${index}.time`, {
                         required: `Time is required.`
                       })}
                     />
                     <IconButton
                       aria-label="Delete time"
                       icon={<FaTrash />}
-                      onClick={() =>
-                        setValue(`frequencies.${index}.status` as 'frequencies.0.status', 'DELETE')
-                      }
+                      onClick={() => setValue(`frequencies.${index}.status`, 'DELETE')}
                       variant="outline"
                     />
                   </HStack>

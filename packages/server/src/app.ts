@@ -23,9 +23,9 @@ connectDb();
 
 const app = loadMiddlewares();
 
-// app.get('/', (req: express.Request, res: express.Response) => {
-//   res.status(200).send('marfu API');
-// });
+app.get('/', (req: express.Request, res: express.Response) => {
+  res.status(200).send('marfu API');
+});
 
 app.use('/api', userRoutes, memberRoutes, medicationRoutes, frequencyLogRoutes);
 app.use(catchAllErrorHandler);
