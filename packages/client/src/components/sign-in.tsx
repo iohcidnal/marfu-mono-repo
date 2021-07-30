@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { useRouter } from 'next/router';
 import {
   Alert,
@@ -12,21 +13,35 @@ import {
   Icon,
   Input,
   Link,
+  Skeleton,
   Stack,
   Text
 } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
+import { FaCapsules } from 'react-icons/fa';
 
 import { IUserDto, signInMode } from '@common';
 import useFetcher from './common/use-fetcher';
-import { FaCapsules } from 'react-icons/fa';
 
 export default function SignIn() {
+  const router = useRouter();
+  const [isLoaded, setIsLoaded] = React.useState(false);
+
+  React.useEffect(() => {
+    if (localStorage.getItem('marfu.token')) {
+      router.replace('/dashboard');
+    } else {
+      setIsLoaded(true);
+    }
+  }, [router]);
+
   return (
-    <Stack bg="gray.50" minHeight="100vh">
-      <Header />
-      <Form />
-    </Stack>
+    <Skeleton isLoaded={isLoaded}>
+      <Stack bg="gray.50" minHeight="100vh">
+        <Header />
+        <Form />
+      </Stack>
+    </Skeleton>
   );
 }
 
@@ -54,13 +69,18 @@ function Form() {
     formState
   } = useForm<IUserDto>({ mode: 'all' });
   const router = useRouter();
-  const mutation = useFetcher(() => router.replace('/dashboard'), 'POST');
+  const mutation = useFetcher<string, IUserDto>(handleSubmitSuccess, 'POST');
 
   function onSubmit(payload: IUserDto) {
     mutation.mutate({
       payload,
       url: `${process.env.NEXT_PUBLIC_API}users/authenticate`
     });
+  }
+
+  function handleSubmitSuccess(token: string) {
+    localStorage.setItem('marfu.token', token);
+    router.replace('/dashboard');
   }
 
   return (

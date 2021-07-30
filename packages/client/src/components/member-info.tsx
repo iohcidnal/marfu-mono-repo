@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useRouter } from 'next/router';
 import {
   Alert,
   AlertIcon,
@@ -56,18 +57,16 @@ import {
 import DrawerContainer from './common/drawer-container';
 import useFetcher, { method } from './common/use-fetcher';
 import toastOptions from './common/toast-options';
-import { fetcher } from '../utils';
+import { fetcher, IFetchResult } from '../utils';
 import ConfirmDialog from './common/confirm-dialog';
 import getDateTimeAndTimeZone from './common/get-dt-tz';
 import badgeStatus from './common/badge-status';
 import SignOutPopover from './sign-out-popover';
+import useValidateSession from './common/use-validate-session';
 
-export interface IMemberInfoProps {
+interface IMemberInfoContextProps {
   currentUserId: string;
   member: IMemberDto;
-}
-
-interface IMemberInfoContextProps extends IMemberInfoProps {
   setMedications: React.Dispatch<IMedicationDto[]>;
   medications: IMedicationDto[];
 }
@@ -75,39 +74,60 @@ interface IMemberInfoContextProps extends IMemberInfoProps {
 const MemberInfoContext = React.createContext<IMemberInfoContextProps>(null);
 const useMemberInfoContext = () => React.useContext(MemberInfoContext);
 
-export default function MemberInfo({ currentUserId, member }: IMemberInfoProps) {
-  const { data, isFetching, refetch } = useQuery(
-    ['member-info', member._id],
-    () => fetchMedications(member._id),
+export default function MemberInfo() {
+  const isSessionValid = useValidateSession();
+
+  const router = useRouter();
+  const memberId = router.query.memberId as string;
+
+  const { data: memberFetchResult, isFetched: isMemberFetched } = useQuery(
+    ['member-info', memberId],
+    async () => {
+      return await fetcher<IMemberDto>({
+        url: `${process.env.NEXT_PUBLIC_API}members/${memberId}`
+      });
+    },
     {
-      enabled: false,
-      initialData: []
+      enabled: !!memberId,
+      initialData: { data: null },
+      onSuccess: fetchResult => {
+        if (fetchResult.status !== 200) router.replace('/');
+      },
+      onError: err => console.error(err)
     }
   );
-  const [medications, setMedications] = React.useState(data);
 
-  React.useEffect(() => {
-    refetch();
-  }, [refetch]);
-
-  React.useEffect(() => {
-    setMedications(data);
-  }, [data]);
+  const { data: medicationsFetchResult, isFetched: areMedicationsFetched } = useQuery(
+    ['medications', memberId],
+    () => fetchMedications(memberId),
+    {
+      enabled: memberFetchResult.status === 200,
+      initialData: { data: [] },
+      onSuccess: fetchResult => {
+        if (fetchResult.status === 200) setMedications(fetchResult.data);
+        else router.replace('/');
+      },
+      onError: err => console.error(err)
+    }
+  );
+  const [medications, setMedications] = React.useState(medicationsFetchResult.data);
 
   const value = React.useMemo(
     () => ({
-      currentUserId,
-      member,
+      currentUserId: memberFetchResult.userId,
+      member: memberFetchResult.data,
       medications,
       setMedications
     }),
-    [currentUserId, medications, member]
+    [medications, memberFetchResult.data, memberFetchResult.userId]
   );
+
+  if (!isSessionValid) return null;
 
   return (
     <MemberInfoContext.Provider value={value}>
-      <TitleBar />
-      <Skeleton isLoaded={!isFetching}>
+      {isMemberFetched && <TitleBar />}
+      <Skeleton isLoaded={isMemberFetched && areMedicationsFetched}>
         {medications.length === 0 && (
           <Alert status="info" mt="2">
             <AlertIcon />
@@ -369,14 +389,16 @@ const AddEditMedicationForm = React.forwardRef(function AddEditMedicationForm(
                     <Input
                       type="time"
                       size="lg"
-                      {...register(`frequencies.${index}.time`, {
+                      {...register(`frequencies.${index}.time` as 'frequencies.0.time', {
                         required: `Time is required.`
                       })}
                     />
                     <IconButton
                       aria-label="Delete time"
                       icon={<FaTrash />}
-                      onClick={() => setValue(`frequencies.${index}.status`, 'DELETE')}
+                      onClick={() =>
+                        setValue(`frequencies.${index}.status` as 'frequencies.0.status', 'DELETE')
+                      }
                       variant="outline"
                     />
                   </HStack>
@@ -827,11 +849,11 @@ function toDate(dateAsString: string): Date {
   return new Date(`${mm}/${dd}/${yyyy}`);
 }
 
-async function fetchMedications(memberId: string): Promise<IMedicationDto[]> {
+async function fetchMedications(memberId: string): Promise<IFetchResult<IMedicationDto[]>> {
   const { clientDateTime, timeZone } = getDateTimeAndTimeZone();
-  const { data }: { data: IMedicationDto[] } = await fetcher({
+  const fetchResult = await fetcher<IMedicationDto[]>({
     url: `${process.env.NEXT_PUBLIC_API}medications/members/${memberId}?dt=${clientDateTime}&tz=${timeZone}`
   });
 
-  return data;
+  return fetchResult;
 }

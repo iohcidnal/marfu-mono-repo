@@ -1,5 +1,6 @@
 import * as React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import {
   Alert,
   AlertIcon,
@@ -34,12 +35,10 @@ import ConfirmDialog from './common/confirm-dialog';
 import getDateTimeAndTimeZone from './common/get-dt-tz';
 import badgeStatus from './common/badge-status';
 import SignOutPopover from './sign-out-popover';
+import useValidateSession from './common/use-validate-session';
 
-export interface IDashboardProps {
+interface IDashboardContextProps {
   currentUserId: string;
-}
-
-interface IDashboardContextProps extends IDashboardProps {
   setDashboardItems: React.Dispatch<IDashboardDto[]>;
   dashboardItems: IDashboardDto[];
 }
@@ -47,35 +46,47 @@ interface IDashboardContextProps extends IDashboardProps {
 const DashboardContext = React.createContext<IDashboardContextProps>(null);
 const useDashboardContext = () => React.useContext(DashboardContext);
 
-export default function MembersDashboard({ currentUserId }: IDashboardProps) {
-  const { data, isFetching, refetch } = useQuery(['members-dashboard'], fetchDashboardItems, {
-    enabled: false,
-    initialData: []
-  });
-  const [dashboardItems, setDashboardItems] = React.useState(data);
+export default function MembersDashboard() {
+  const isSessionValid = useValidateSession();
+  const router = useRouter();
+  const { data: fetchResult, isFetched, refetch } = useQuery(
+    ['members-dashboard'],
+    fetchDashboardItems,
+    {
+      enabled: false,
+      initialData: { data: [] },
+      onSuccess: fetchResult => {
+        if (fetchResult.status === 200) {
+          setDashboardItems(fetchResult.data);
+        } else {
+          router.replace('/');
+        }
+      },
+      onError: err => console.error(err)
+    }
+  );
+  const [dashboardItems, setDashboardItems] = React.useState(fetchResult.data);
 
   React.useEffect(() => {
     refetch();
   }, [refetch]);
 
-  React.useEffect(() => {
-    setDashboardItems(data);
-  }, [data]);
-
   const value = React.useMemo(
     () => ({
-      currentUserId,
+      currentUserId: fetchResult.userId,
       dashboardItems,
       setDashboardItems
     }),
-    [currentUserId, dashboardItems]
+    [dashboardItems, fetchResult.userId]
   );
+
+  if (!isSessionValid) return null;
 
   return (
     <DashboardContext.Provider value={value}>
       <Stack>
         <TitleBar />
-        <Skeleton isLoaded={!isFetching}>
+        <Skeleton isLoaded={isFetched}>
           <Cards />
         </Skeleton>
       </Stack>
@@ -351,11 +362,11 @@ const ConfirmDeleteDialog = React.forwardRef(function ConfirmDeleteDialog(
 
 async function fetchDashboardItems() {
   const { clientDateTime, timeZone } = getDateTimeAndTimeZone();
-  const { data }: { data: IDashboardDto[] } = await fetcher({
+  const fetchResult = await fetcher<IDashboardDto[]>({
     url: `${
       process.env.NEXT_PUBLIC_API
     }members/dashboard?dt=${clientDateTime.toISOString()}&tz=${timeZone}`
   });
 
-  return data;
+  return fetchResult;
 }

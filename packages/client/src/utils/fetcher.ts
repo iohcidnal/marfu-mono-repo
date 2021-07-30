@@ -4,33 +4,30 @@ interface IFetchConfig {
   payload?: any;
 }
 
-export interface IFetchResult {
-  status: number;
-  statusText: string;
-  data: any;
+export interface IFetchResult<T> {
+  data: T;
+  status?: number;
+  statusText?: string;
+  userId?: string;
 }
 
-export default async function fetcher(
-  config: IFetchConfig = { url: null, method: 'GET', payload: null },
-  requestContext = null
-): Promise<IFetchResult> {
+export default async function fetcher<T>(
+  config: IFetchConfig = { url: null, method: 'GET', payload: null }
+): Promise<IFetchResult<T>> {
+  const token = localStorage.getItem('marfu.token');
   const option: RequestInit = {
     method: config.method,
     mode: 'cors',
-    credentials: 'include',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'x-access-token': token
     },
     ...(config.payload && { body: JSON.stringify(config.payload) })
   };
 
-  if (requestContext) {
-    // Use [] notation to make TS happy.
-    option.headers['cookie'] = requestContext.req.headers.cookie;
-  }
-
   const response: Response = await fetch(config.url, option);
   let data = null;
+  const userId = response.headers.get('user-id');
   if (response.headers.get('Content-Type').includes('application/json')) {
     data = await response.json();
   } else {
@@ -40,6 +37,7 @@ export default async function fetcher(
   return {
     status: response.status,
     statusText: response.statusText,
-    data
+    data,
+    userId
   };
 }

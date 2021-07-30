@@ -8,3 +8,4 @@ node_modules
 tsconfig.tsbuildinfo
 yarn-debug.log*
 yarn-error.log*
+.vscode

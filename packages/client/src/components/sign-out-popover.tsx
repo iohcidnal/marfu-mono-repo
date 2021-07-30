@@ -29,7 +29,8 @@ export default function SignOutPopover() {
   }
 
   function handleSignOutSuccess(mode: signInMode) {
-    window.location.replace(decodeURIComponent(`/?mode=${mode}`));
+    localStorage.removeItem('marfu.token');
+    location.replace(decodeURIComponent(`/?mode=${mode}`));
   }
 
   return (

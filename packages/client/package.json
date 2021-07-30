@@ -4,6 +4,9 @@
   "description": "MARFU client using NextJS, React, and ChakraUI",
   "author": "Ian Landicho",
   "license": "MIT",
+  "engines": {
+    "node": "14.x"
+  },
   "main": "index.js",
   "keywords": [
     "NextJS",
