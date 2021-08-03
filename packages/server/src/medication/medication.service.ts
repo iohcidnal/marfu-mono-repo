@@ -55,7 +55,7 @@ export async function getAllByMemberId(
   clientDateTime: string,
   timeZone: string
 ): Promise<IMedicationDto[]> {
-  const currentDate = toDate(new Date(clientDateTime))('0:0');
+  const currentDate = getDateOnly(clientDateTime);
   const currentDateTime = new Date(clientDateTime);
   const docs = await medicationModel.find({ memberId }).lean().populate('frequencies');
 
@@ -65,8 +65,8 @@ export async function getAllByMemberId(
     if (!doc.endDate) {
       medications.push(doc);
     } else {
-      const startDate = toDate(new Date(doc.startDate))('0:0');
-      const endDate = toDate(new Date(doc.endDate as string))('0:0');
+      const startDate = getDateOnly(doc.startDate);
+      const endDate = getDateOnly(doc.endDate);
       if (currentDate >= startDate && currentDate <= endDate) {
         medications.push(doc);
       }
@@ -190,7 +190,7 @@ async function getFrequenciesStatusByMedication(
   clientDateTime: string,
   timeZone: string
 ): Promise<IMedicationDto> {
-  const currentDate = toDate(new Date(clientDateTime))('0:0');
+  const currentDate = getDateOnly(clientDateTime);
   const currentDateTime = new Date(clientDateTime);
 
   const freqLogs = await getFrequencyLogs([medication], currentDate);
@@ -209,17 +209,8 @@ async function getFrequenciesStatusByMedication(
   return result;
 }
 
-function toDate(currentDateTime: Date): (time: string) => Date {
-  return function (time: string): Date {
-    const [hh, mm] = time.split(':');
-    const dateTime = new Date(
-      currentDateTime.getFullYear(),
-      currentDateTime.getMonth(),
-      currentDateTime.getDate(),
-      Number(hh),
-      Number(mm)
-    );
-
-    return dateTime;
-  };
+function getDateOnly(currentDateTime: string): Date {
+  const date = new Date(currentDateTime);
+  const result = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0);
+  return result;
 }
