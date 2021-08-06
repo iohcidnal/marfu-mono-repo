@@ -595,8 +595,9 @@ const AddLogForm = React.forwardRef(function AddLogForm(
   React.useImperativeHandle(ref, () => ({ onOpen }), [onOpen]);
 
   const getDefaultValues = React.useCallback(() => {
+    const localDate = new Date().toLocaleDateString();
     return {
-      administeredDate: new Date().toISOString().split('T')[0],
+      administeredDate: new Date(localDate).toISOString().split('T')[0],
       administeredTime: `${new Date()
         .getHours()
         .toString()
