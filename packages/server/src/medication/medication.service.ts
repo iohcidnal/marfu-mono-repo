@@ -57,21 +57,10 @@ export async function getAllByMemberId(
 ): Promise<IMedicationDto[]> {
   const currentDate = getDateOnly(clientDateTime);
   const currentDateTime = new Date(clientDateTime);
-  const docs = await medicationModel.find({ memberId }).lean().populate('frequencies');
 
-  // Get meds that fall within the start and end dates
-  const medications: IMedicationDto[] = [];
-  for (const doc of docs) {
-    if (!doc.endDate) {
-      medications.push(doc);
-    } else {
-      const startDate = getDateOnly(doc.startDate);
-      const endDate = getDateOnly(doc.endDate);
-      if (currentDate >= startDate && currentDate <= endDate) {
-        medications.push(doc);
-      }
-    }
-  }
+  const medications = (
+    await medicationModel.find({ memberId }).populate('frequencies').lean()
+  ).filter(filterMeds(currentDate));
 
   const freqLogs = await getFrequencyLogs(medications, currentDate);
   const getFrequencyStatusFn = getFrequencyStatus.bind(
@@ -213,4 +202,19 @@ function getDateOnly(currentDateTime: string): Date {
   const date = new Date(currentDateTime);
   const result = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0);
   return result;
+}
+
+function filterMeds(currentDate: Date) {
+  return function (med: IMedicationDto) {
+    // Get meds that fall within the start and end dates
+    let [year, month, date] = med.startDate.split('-');
+    const startDate = new Date(Number(year), Number(month) - 1, Number(date), 0, 0);
+    let endDate = currentDate;
+    if (med.endDate) {
+      [year, month, date] = med.endDate.split('-');
+      endDate = new Date(Number(year), Number(month) - 1, Number(date), 0, 0);
+    }
+
+    return currentDate >= startDate && currentDate <= endDate;
+  };
 }
