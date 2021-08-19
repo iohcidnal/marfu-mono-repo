@@ -59,7 +59,7 @@ export async function getAllByMemberId(
   const currentDateTime = new Date(clientDateTime);
 
   const medications = (
-    await medicationModel.find({ memberId }).populate('frequencies').lean()
+    await medicationModel.find({ memberId }).lean().populate('frequencies')
   ).filter(filterMeds(currentDate));
 
   const freqLogs = await getFrequencyLogs(medications, currentDate);

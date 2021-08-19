@@ -6,17 +6,9 @@ import userModel from './user.model';
 import * as controller from './user.controller';
 import { validateNewUser } from './user.middlewares';
 
-interface IReq extends Request {
-  session: any;
-}
-
-const req = {} as IReq;
+const req = {} as Request;
 const res = {} as Response;
 const next = jest.fn();
-
-req.session = jest.fn().mockImplementation(() => ({
-  user: jest.fn(result => result)
-}));
 
 res.status = jest.fn().mockImplementation(() => ({
   json: jest.fn(result => result)
@@ -39,31 +31,67 @@ afterAll(() => {
 afterEach(jest.clearAllMocks);
 
 describe('user', () => {
+  const newUser = {
+    _id: mongoose.Types.ObjectId().toHexString(),
+    firstName: 'Chandler',
+    lastName: 'Bing',
+    userName: 'chanbing',
+    password: 'fakepassword',
+    confirmPassword: 'fakepassword',
+    pin1: '1',
+    pin2: '2',
+    pin3: '3',
+    pin4: '4',
+    pin5: '5',
+    pin6: '6'
+  };
+  beforeAll(() => {
+    global.process.env.INVITE_KEY = '123456';
+  });
+
   it('should create the correct user', async () => {
-    req.body = {
-      firstName: 'Chandler',
-      lastName: 'Bing',
-      userName: 'chanbing',
-      password: 'fakepassword'
-    };
+    req.body = newUser;
     const result = await controller.post(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(201);
-    expect(result).toEqual(expect.objectContaining({ firstName: 'Chandler', lastName: 'Bing' }));
+    // Just returning a string. In real world, return created resource instead.
+    expect(result).toBe('REGISTERED');
   });
 
-  it('should fail validation', async () => {
-    req.body = { userName: 'chanbing', password: 'fakepassword' };
+  it('should fail when username already exists', async () => {
+    req.body = newUser;
+    const result = await controller.post(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(Error('Username already exists. Please select a new one.'));
+    expect(result).toBeUndefined();
+  });
+
+  it('should fail when invitation code is not valid', async () => {
+    req.body = {
+      _id: mongoose.Types.ObjectId().toHexString(),
+      firstName: 'Ross',
+      lastName: 'Gellar',
+      userName: 'rossgellar',
+      password: 'fakepassword',
+      confirmPassword: 'fakepassword',
+      pin1: '1',
+      pin2: '2',
+      pin3: '3',
+      pin4: '4',
+      pin5: '5',
+      pin6: '5'
+    };
     const result = await controller.post(req, res, next);
 
     expect(next).toHaveBeenCalledWith(
-      expect.objectContaining({ _message: 'user validation failed' })
+      Error('Invitation code is not valid. Please contact your system administrator.')
     );
     expect(result).toBeUndefined();
   });
 
   describe('authenticate', () => {
     beforeAll(async () => {
+      process.env.SECRET = 'fake-secret';
       let model = new userModel({
         firstName: 'Joey',
         lastName: 'Tribiani',
@@ -87,18 +115,7 @@ describe('user', () => {
       const result = await controller.authenticate(req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(req.session.user).toEqual(
-        expect.objectContaining({
-          firstName: 'Ross',
-          lastName: 'Gellar'
-        })
-      );
-      expect(result).toEqual(
-        expect.objectContaining({
-          firstName: 'Ross',
-          lastName: 'Gellar'
-        })
-      );
+      expect(result).toBeTruthy();
     });
 
     it("should return 404 when userName doesn't match", async () => {
