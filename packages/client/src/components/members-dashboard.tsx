@@ -59,6 +59,7 @@ export default function MembersDashboard() {
         if (fetchResult.status === 200) {
           setDashboardItems(fetchResult.data);
         } else {
+          localStorage.removeItem('marfu.token');
           router.replace('/');
         }
       },

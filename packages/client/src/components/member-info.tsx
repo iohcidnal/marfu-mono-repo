@@ -104,8 +104,12 @@ export default function MemberInfo() {
       enabled: memberFetchResult.status === 200,
       initialData: { data: [] },
       onSuccess: fetchResult => {
-        if (fetchResult.status === 200) setMedications(fetchResult.data);
-        else router.replace('/');
+        if (fetchResult.status === 200) {
+          setMedications(fetchResult.data);
+        } else {
+          localStorage.removeItem('marfu.token');
+          router.replace('/');
+        }
       },
       onError: err => console.error(err)
     }
